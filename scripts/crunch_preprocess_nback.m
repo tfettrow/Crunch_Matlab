@@ -1,3 +1,4 @@
+
 % Toggle on and off different preprocessing steps
 VDM = 1;
 Realign = 1;
@@ -20,7 +21,6 @@ spm_get_defaults('cmdline',true);
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 if VDM
-    % TF: Need to figure out this bug..
     fieldmap_file = spm_select('FPList',fullfile(data_path,'Processed/MRI_files/03_Fieldmaps/Fieldmap_nback'), '^fpm.*\.img$');
     epi_file = spm_select('FPList',fullfile(data_path,'Processed/MRI_files/03_Fieldmaps/Fieldmap_nback'), '^se.*\.nii$');
     magnitude_file = spm_select('FPList',fullfile(data_path,'Processed/MRI_files/03_Fieldmaps/Fieldmap_nback'), '^my_fieldmap_mag.*\.nii$');
@@ -232,7 +232,6 @@ end
 
 if Coregister
     % Coregister
-    % TF: what is this doing? where does the output file go?
     %--------------------------------------------------------------------------
     mean_functional_image = (spm_file(functional_files,'prefix','meanunwarpedRealigned_'));
     mean_functional_image1 = mean_functional_image(1,1:end-4);
