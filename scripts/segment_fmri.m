@@ -5,7 +5,7 @@ spm('Defaults','fMRI');
 spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
-structural_files = spm_select('FPList', data_path, '^T1.*\.nii$');
+structural_files = spm_select('ExtFPList', data_path, '^T1.*\.nii$');
 
 %--------------------------------------------------------------------------
 matlabbatch{1}.spm.spatial.preproc.channel.vols  = cellstr(structural_files);
