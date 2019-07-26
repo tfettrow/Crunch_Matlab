@@ -5,7 +5,8 @@ spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
 functional_files = spm_select('ExtFPList', data_path, '^fMRI.*\.nii$');
-vdm_imagery_files = spm_select('FPList', data_path, '^vdm5.*\img$');
+
+vdm_imagery_files = spm_select('ExtFPList', data_path, '^vdm5.*\nii$');
 
 % check the folder name and specify the volumes accordingly
 path_components = strsplit(data_path,'/');
@@ -46,7 +47,7 @@ spm_jobman('run',matlabbatch);
 clear matlabbatch
 
 matlabbatch{1}.spm.spatial.realignunwarp.data.scans =  cellstr(functional_imagery_files1);
-matlabbatch{1}.spm.spatial.realignunwarp.data.pmscan = cellstr(strcat(vdm_imagery_files,',1'));
+matlabbatch{1}.spm.spatial.realignunwarp.data.pmscan = cellstr(vdm_imagery_files);
 matlabbatch{1}.spm.spatial.realignunwarp.eoptions.quality = 0.9;
 matlabbatch{1}.spm.spatial.realignunwarp.eoptions.sep = 4;
 matlabbatch{1}.spm.spatial.realignunwarp.eoptions.fwhm = 5;
@@ -73,7 +74,7 @@ spm_jobman('run',matlabbatch);
 clear matlabbatch
 
 matlabbatch{1}.spm.spatial.realignunwarp.data.scans =  cellstr(functional_imagery_files2)
-matlabbatch{1}.spm.spatial.realignunwarp.data.pwscan = cellstr(strcat(vdm_imagery_files,',1'));
+matlabbatch{1}.spm.spatial.realignunwarp.data.pmscan = cellstr(vdm_imagery_files);
 matlabbatch{1}.spm.spatial.realignunwarp.eoptions.quality = 0.9;
 matlabbatch{1}.spm.spatial.realignunwarp.eoptions.sep = 4;
 matlabbatch{1}.spm.spatial.realignunwarp.eoptions.fwhm = 5;
@@ -101,7 +102,7 @@ clear matlabbatch
 
 if strcmp(path_components{end},"06_Nback")
     matlabbatch{1}.spm.spatial.realignunwarp.data.scans =  cellstr(functional_imagery_files3);
-    matlabbatch{1}.spm.spatial.realignunwarp.data.pwscan = cellstr(strcat(vdm_imagery_files,',1'));
+    matlabbatch{1}.spm.spatial.realignunwarp.data.pmscan = cellstr(vdm_imagery_files);
     matlabbatch{1}.spm.spatial.realignunwarp.eoptions.quality = 0.9;
     matlabbatch{1}.spm.spatial.realignunwarp.eoptions.sep = 4;
     matlabbatch{1}.spm.spatial.realignunwarp.eoptions.fwhm = 5;
@@ -128,7 +129,7 @@ if strcmp(path_components{end},"06_Nback")
     clear matlabbatch
     
     matlabbatch{1}.spm.spatial.realignunwarp.data.scans =  cellstr(functional_imagery_files4)
-    matlabbatch{1}.spm.spatial.realignunwarp.data.pwscan = cellstr(strcat(vdm_imagery_files,',1'));
+    matlabbatch{1}.spm.spatial.realignunwarp.data.pmscan = cellstr(vdm_imagery_files);
     matlabbatch{1}.spm.spatial.realignunwarp.eoptions.quality = 0.9;
     matlabbatch{1}.spm.spatial.realignunwarp.eoptions.sep = 4;
     matlabbatch{1}.spm.spatial.realignunwarp.eoptions.fwhm = 5;
