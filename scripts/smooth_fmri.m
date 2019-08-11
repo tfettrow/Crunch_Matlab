@@ -7,7 +7,7 @@ spm('Defaults','fMRI');
 spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
-files_to_smooth = spm_select('ExtFPList', data_path, '^wslicetimed_unwarpedRealigned.*\.nii$');
+files_to_smooth = spm_select('ExtFPList', data_path, '^normalized.*\.nii$');
 
 % check the folder name and specify the volumes accordingly
 path_components = strsplit(data_path,'/');
