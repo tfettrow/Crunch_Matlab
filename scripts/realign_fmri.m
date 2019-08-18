@@ -7,6 +7,8 @@ spm_get_defaults('cmdline',true);
 functional_files = spm_select('ExtFPList', data_path, '^slicetimed.*\.nii$');
 
 vdm_imagery_files = spm_select('ExtFPList', data_path, '^vdm5.*\img$');
+vdm_imagery_files_nifti = spm_select('ExtFPList', data_path, '^vdm5.*\nii$');
+
 
 % check the folder name and specify the volumes accordingly
 path_components = strsplit(data_path,'/');
@@ -73,7 +75,7 @@ matlabbatch{1}.spm.spatial.realignunwarp.uwroptions.prefix = 'unwarpedRealigned_
 spm_jobman('run',matlabbatch);
 clear matlabbatch
 
-matlabbatch{1}.spm.spatial.realignunwarp.data.scans =  cellstr(files_to_realign2)
+matlabbatch{1}.spm.spatial.realignunwarp.data.scans =  cellstr(files_to_realign2);
 matlabbatch{1}.spm.spatial.realignunwarp.data.pmscan = cellstr(vdm_imagery_files);
 matlabbatch{1}.spm.spatial.realignunwarp.eoptions.quality = 0.9;
 matlabbatch{1}.spm.spatial.realignunwarp.eoptions.sep = 4;
@@ -128,7 +130,7 @@ if strcmp(path_components{end},"06_Nback")
     spm_jobman('run',matlabbatch);
     clear matlabbatch
     
-    matlabbatch{1}.spm.spatial.realignunwarp.data.scans =  cellstr(files_to_realign4)
+    matlabbatch{1}.spm.spatial.realignunwarp.data.scans =  cellstr(files_to_realign4);
     matlabbatch{1}.spm.spatial.realignunwarp.data.pmscan = cellstr(vdm_imagery_files);
     matlabbatch{1}.spm.spatial.realignunwarp.eoptions.quality = 0.9;
     matlabbatch{1}.spm.spatial.realignunwarp.eoptions.sep = 4;
@@ -156,3 +158,113 @@ if strcmp(path_components{end},"06_Nback")
     clear matlabbatch
 end
 
+
+matlabbatch{1}.spm.spatial.realignunwarp.data.scans =  cellstr(files_to_realign1);
+matlabbatch{1}.spm.spatial.realignunwarp.data.pmscan = cellstr(vdm_imagery_files_nifti);
+matlabbatch{1}.spm.spatial.realignunwarp.eoptions.quality = 0.9;
+matlabbatch{1}.spm.spatial.realignunwarp.eoptions.sep = 4;
+matlabbatch{1}.spm.spatial.realignunwarp.eoptions.fwhm = 5;
+matlabbatch{1}.spm.spatial.realignunwarp.eoptions.rtm = 0;
+matlabbatch{1}.spm.spatial.realignunwarp.eoptions.einterp = 2;
+matlabbatch{1}.spm.spatial.realignunwarp.eoptions.ewrap = [0 0 0];
+matlabbatch{1}.spm.spatial.realignunwarp.eoptions.weight = '';
+matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.basfcn = [12 12];
+matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.regorder = 1;
+matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.lambda = 100000;
+matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.jm = 0;
+matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.fot = [4 5];
+matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.sot = [];
+matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.uwfwhm = 4;
+matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.rem = 1;
+matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.noi = 5;
+matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.expround = 'Average';
+matlabbatch{1}.spm.spatial.realignunwarp.uwroptions.uwwhich = [2 1];
+matlabbatch{1}.spm.spatial.realignunwarp.uwroptions.rinterp = 4;
+matlabbatch{1}.spm.spatial.realignunwarp.uwroptions.wrap = [0 0 0];
+matlabbatch{1}.spm.spatial.realignunwarp.uwroptions.mask = 1;
+matlabbatch{1}.spm.spatial.realignunwarp.uwroptions.prefix = 'NIFTIunwarpedRealigned_';
+spm_jobman('run',matlabbatch);
+clear matlabbatch
+
+matlabbatch{1}.spm.spatial.realignunwarp.data.scans =  cellstr(files_to_realign2);
+matlabbatch{1}.spm.spatial.realignunwarp.data.pmscan = cellstr(vdm_imagery_files_nifti);
+matlabbatch{1}.spm.spatial.realignunwarp.eoptions.quality = 0.9;
+matlabbatch{1}.spm.spatial.realignunwarp.eoptions.sep = 4;
+matlabbatch{1}.spm.spatial.realignunwarp.eoptions.fwhm = 5;
+matlabbatch{1}.spm.spatial.realignunwarp.eoptions.rtm = 0;
+matlabbatch{1}.spm.spatial.realignunwarp.eoptions.einterp = 2;
+matlabbatch{1}.spm.spatial.realignunwarp.eoptions.ewrap = [0 0 0];
+matlabbatch{1}.spm.spatial.realignunwarp.eoptions.weight = '';
+matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.basfcn = [12 12];
+matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.regorder = 1;
+matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.lambda = 100000;
+matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.jm = 0;
+matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.fot = [4 5];
+matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.sot = [];
+matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.uwfwhm = 4;
+matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.rem = 1;
+matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.noi = 5;
+matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.expround = 'Average';
+matlabbatch{1}.spm.spatial.realignunwarp.uwroptions.uwwhich = [2 1];
+matlabbatch{1}.spm.spatial.realignunwarp.uwroptions.rinterp = 4;
+matlabbatch{1}.spm.spatial.realignunwarp.uwroptions.wrap = [0 0 0];
+matlabbatch{1}.spm.spatial.realignunwarp.uwroptions.mask = 1;
+matlabbatch{1}.spm.spatial.realignunwarp.uwroptions.prefix = 'NIFTIunwarpedRealigned_';
+spm_jobman('run',matlabbatch);
+clear matlabbatch
+
+if strcmp(path_components{end},"06_Nback")
+    matlabbatch{1}.spm.spatial.realignunwarp.data.scans =  cellstr(files_to_realign3);
+    matlabbatch{1}.spm.spatial.realignunwarp.data.pmscan = cellstr(vdm_imagery_files_nifti);
+    matlabbatch{1}.spm.spatial.realignunwarp.eoptions.quality = 0.9;
+    matlabbatch{1}.spm.spatial.realignunwarp.eoptions.sep = 4;
+    matlabbatch{1}.spm.spatial.realignunwarp.eoptions.fwhm = 5;
+    matlabbatch{1}.spm.spatial.realignunwarp.eoptions.rtm = 0;
+    matlabbatch{1}.spm.spatial.realignunwarp.eoptions.einterp = 2;
+    matlabbatch{1}.spm.spatial.realignunwarp.eoptions.ewrap = [0 0 0];
+    matlabbatch{1}.spm.spatial.realignunwarp.eoptions.weight = '';
+    matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.basfcn = [12 12];
+    matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.regorder = 1;
+    matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.lambda = 100000;
+    matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.jm = 0;
+    matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.fot = [4 5];
+    matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.sot = [];
+    matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.uwfwhm = 4;
+    matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.rem = 1;
+    matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.noi = 5;
+    matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.expround = 'Average';
+    matlabbatch{1}.spm.spatial.realignunwarp.uwroptions.uwwhich = [2 1];
+    matlabbatch{1}.spm.spatial.realignunwarp.uwroptions.rinterp = 4;
+    matlabbatch{1}.spm.spatial.realignunwarp.uwroptions.wrap = [0 0 0];
+    matlabbatch{1}.spm.spatial.realignunwarp.uwroptions.mask = 1;
+    matlabbatch{1}.spm.spatial.realignunwarp.uwroptions.prefix = 'NIFTIunwarpedRealigned_';
+    spm_jobman('run',matlabbatch);
+    clear matlabbatch
+    
+    matlabbatch{1}.spm.spatial.realignunwarp.data.scans =  cellstr(files_to_realign4);
+    matlabbatch{1}.spm.spatial.realignunwarp.data.pmscan = cellstr(vdm_imagery_files_nifti);
+    matlabbatch{1}.spm.spatial.realignunwarp.eoptions.quality = 0.9;
+    matlabbatch{1}.spm.spatial.realignunwarp.eoptions.sep = 4;
+    matlabbatch{1}.spm.spatial.realignunwarp.eoptions.fwhm = 5;
+    matlabbatch{1}.spm.spatial.realignunwarp.eoptions.rtm = 0;
+    matlabbatch{1}.spm.spatial.realignunwarp.eoptions.einterp = 2;
+    matlabbatch{1}.spm.spatial.realignunwarp.eoptions.ewrap = [0 0 0];
+    matlabbatch{1}.spm.spatial.realignunwarp.eoptions.weight = '';
+    matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.basfcn = [12 12];
+    matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.regorder = 1;
+    matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.lambda = 100000;
+    matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.jm = 0;
+    matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.fot = [4 5];
+    matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.sot = [];
+    matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.uwfwhm = 4;
+    matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.rem = 1;
+    matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.noi = 5;
+    matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.expround = 'Average';
+    matlabbatch{1}.spm.spatial.realignunwarp.uwroptions.uwwhich = [2 1];
+    matlabbatch{1}.spm.spatial.realignunwarp.uwroptions.rinterp = 4;
+    matlabbatch{1}.spm.spatial.realignunwarp.uwroptions.wrap = [0 0 0];
+    matlabbatch{1}.spm.spatial.realignunwarp.uwroptions.mask = 1;
+    matlabbatch{1}.spm.spatial.realignunwarp.uwroptions.prefix = 'NIFTIunwarpedRealigned_';
+    spm_jobman('run',matlabbatch);
+    clear matlabbatch
+end
