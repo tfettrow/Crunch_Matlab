@@ -5,16 +5,14 @@ spm('Defaults','fMRI');
 spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
-full_file_name_1 = spm_select('ExtFPList',data_path, strcat(file_to_compare_1,'.*\.nii$'))
-full_file_name_2 = spm_select('ExtFPList',data_path, strcat(file_to_compare_2,'.*\.nii$'))
+full_file_name_1 = spm_select('ExtFPList',data_path, strcat(file_to_compare_1,'.img'))
+full_file_name_2 = spm_select('ExtFPList',data_path, strcat(file_to_compare_2,'.img'))
 
 % TO DO: Automate the file grabbing...
 matlabbatch{1}.spm.util.imcalc.input = {
     full_file_name_1(volume,:)
     full_file_name_2(volume,:)
     };
-
-
 
 matlabbatch{1}.spm.util.imcalc.output = strcat(file_to_compare_1,'_minus_', file_to_compare_2);
 matlabbatch{1}.spm.util.imcalc.outdir = {pwd};

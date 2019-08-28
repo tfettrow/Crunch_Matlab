@@ -15,6 +15,7 @@ spm('Defaults','fMRI');
 spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
+json_read_name =spm_select('FPList', data_path, '^fMRI.*\.json$')
 files_to_slicetime = spm_select('ExtFPList', data_path, '^fMRI.*\.nii$');
 
 % check the folder name and specify the volumes accordingly
@@ -35,21 +36,48 @@ elseif strcmp(path_components{end},"06_Nback")
     matlabbatch{1}.spm.temporal.st.scans = {cellstr(files_to_slicetime1) cellstr(files_to_slicetime2) cellstr(files_to_slicetime3) cellstr(files_to_slicetime4)};
 end
 
+[stMsec, TRsec] = bidsSliceTiming(json_read_name(1,:));
+if isempty(stMsec) || isempty(TRsec), error('Update dcm2niix? Unable determine slice timeing or TR from BIDS file %s', BIDSname); end;
 
-matlabbatch{1}.spm.temporal.st.nslices = 66;
-matlabbatch{1}.spm.temporal.st.tr = 1500;
+unique_slicetimes = unique(stMsec);
+if length(unique_slicetimes) == length(stMsec)/3
+    % multiband by 3s (UF Siemens 3T)
+    refslice = median(stMsec);
+    if ~any(stMsec == refslice)
+        difference_from_median = (stMsec - refslice);
+        refslice = min(stMsec(difference_from_median > 0));
+    end  
+elseif length(unique_slicetimes) == length(stMsec)
+    % ascending or descending
+    refslice = max(stMsec)/2;
+    fprintf('Setting reference slice as %g ms (slice ordering assumed to be from foot to head)\n', refslice);
+else
+    error('Something is not right with slice order, check whether multiband not equal to 3')
+end
+
+timing = [0 TRsec];
+% prefix = 'slicetimedAdjustFunc_';
+
+% spm_slice_timing(fullfile(pth, [nam, ext]), stMsec, refslice, timing, prefix)
+
+
+matlabbatch{1}.spm.temporal.st.nslices = length(stMsec);
+% matlabbatch{1}.spm.temporal.st.tr = 1.5;
+matlabbatch{1}.spm.temporal.st.tr = TRsec;
 matlabbatch{1}.spm.temporal.st.ta = 0;
-matlabbatch{1}.spm.temporal.st.so = [1075;0;740;67.5;807.5;135;875;202.5; ...
-    940;267.5;1007.5;402.5;1142.5;470;1210;537.5;1277.5;605; ...
-    1345;672.5;1412.5;335;1075;0;740;67.5;807.5;135; ...
-    875;202.5;940;267.5;1007.5;402.5;1142.5;470;1210;537.5;1277.5; ...
-    605;1345;672.5;1412.5;335;1075;0;740;67.5;807.5; ...
-    135;875;202.5;940;267.5;1007.5;402.5;1142.5;470;1210;537.5; ...
-    1277.5;605;1345;672.5;1412.5;335];
-
-matlabbatch{1}.spm.temporal.st.refslice = 672.5;
+% matlabbatch{1}.spm.temporal.st.so = [1075;0;740;67.5;807.5;135;875;202.5; ...
+%     940;267.5;1007.5;402.5;1142.5;470;1210;537.5;1277.5;605; ...
+%     1345;672.5;1412.5;335;1075;0;740;67.5;807.5;135; ...
+%     875;202.5;940;267.5;1007.5;402.5;1142.5;470;1210;537.5;1277.5; ...
+%     605;1345;672.5;1412.5;335;1075;0;740;67.5;807.5; ...
+%     135;875;202.5;940;267.5;1007.5;402.5;1142.5;470;1210;537.5; ...
+%     1277.5;605;1345;672.5;1412.5;335];
+matlabbatch{1}.spm.temporal.st.so = stMsec;
+% matlabbatch{1}.spm.temporal.st.refslice = 740;
+matlabbatch{1}.spm.temporal.st.refslice = refslice;
 matlabbatch{1}.spm.temporal.st.prefix = 'slicetimed_';
 
 spm_jobman('run',matlabbatch);
 clear matlabbatch
+
 
