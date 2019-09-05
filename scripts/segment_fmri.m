@@ -1,6 +1,7 @@
 % Segment fMRI
 data_path = pwd;
 
+clear matlabbatch
 spm('Defaults','fMRI');
 spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);

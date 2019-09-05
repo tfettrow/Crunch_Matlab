@@ -38,6 +38,8 @@ pm_def.FWHM = 10;                     % FWHM of Gaussian filter used to
 pm_def.PAD = 0;                       % Size of padding kernel if required.
 pm_def.WS = 1;                        % Weighted or normal smoothing.
 
+
+
 % Flags for brain extraction
 %==========================================================================
 % Default T1 template for segmentation
@@ -49,11 +51,18 @@ pm_def.MFLAGS.THRESH = 0.5; % Intensity thresholding for filling holes
 pm_def.MFLAGS.REG = 0.02;   % A larger value helps segmentation to converge
 pm_def.MFLAGS.GRAPHICS = 0; % Don't display segmentation results
 
+
+
+
 % Defaults for converting field map to voxel displacement map.
 %==========================================================================
-pm_def.EPI_BASED_FIELDMAPS = 0;         % EPI=1, other=0.
+pm_def.EPI_BASED_FIELDMAPS = 1;         % EPI=1, other=0.
 pm_def.K_SPACE_TRAVERSAL_BLIP_DIR = 1; % +ve k-space = 1, -ve = -1.
 pm_def.TOTAL_EPI_READOUT_TIME = 20.3;   % Allegra EPI RO time (330E-6*64)
+
+
+
+
 
 % Defaults for Unwarping.
 %==========================================================================

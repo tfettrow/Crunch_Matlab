@@ -28,7 +28,7 @@ matlabbatch{1}.spm.tools.fieldmap.applyvdm.data.vdmfile = cellstr(vdm_imagery_fi
 matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.pedir = 2;
 matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.which = [2 1];
 matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.rinterp = 4;
-matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.wrap = [0 0 0];
+matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.wrap = [0 1 0];
 matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.mask = 0;
 matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.prefix = 'unwarped_';
 spm_jobman('run',matlabbatch);
@@ -39,7 +39,7 @@ matlabbatch{1}.spm.tools.fieldmap.applyvdm.data.vdmfile = cellstr(vdm_imagery_fi
 matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.pedir = 2;
 matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.which = [2 1];
 matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.rinterp = 4;
-matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.wrap = [0 0 0];
+matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.wrap = [0 1 0];
 matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.mask = 0;
 matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.prefix = 'unwarped_';
 spm_jobman('run',matlabbatch);
@@ -52,7 +52,7 @@ if strcmp(path_components{end},"06_Nback")
     matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.pedir = 2;
     matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.which = [2 1];
     matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.rinterp = 4;
-    matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.wrap = [0 0 0];
+    matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.wrap = [0 1 0];
     matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.mask = 0;
     matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.prefix = 'unwarped_';
     spm_jobman('run',matlabbatch);
@@ -64,7 +64,7 @@ if strcmp(path_components{end},"06_Nback")
     matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.pedir = 2;
     matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.which = [2 1];
     matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.rinterp = 4;
-    matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.wrap = [0 0 0];
+    matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.wrap = [0 1 0];
     matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.mask = 0;
     matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.prefix = 'unwarped_';
     spm_jobman('run',matlabbatch);

@@ -10,12 +10,12 @@
 
 
 data_path = pwd;
-
+clear matlabbatch
 spm('Defaults','fMRI');
 spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
-json_read_name =spm_select('FPList', data_path, '^fMRI.*\.json$')
+json_read_name =spm_select('FPList', data_path, '^fMRI.*\.json$');
 files_to_slicetime = spm_select('ExtFPList', data_path, '^fMRI.*\.nii$');
 
 % check the folder name and specify the volumes accordingly
@@ -23,10 +23,10 @@ path_components = strsplit(data_path,'/');
 
 if strcmp(path_components{end},"05_MotorImagery")
     files_to_slicetime1 = files_to_slicetime(1:168,:);
-    files_to_slicetime2 = files_to_slicetime(169:336,:);
+%     files_to_slicetime2 = files_to_slicetime(169:336,:);
 
-    matlabbatch{1}.spm.temporal.st.scans = {cellstr(files_to_slicetime1) cellstr(files_to_slicetime2)};
-
+%     matlabbatch{1}.spm.temporal.st.scans = {cellstr(files_to_slicetime1) cellstr(files_to_slicetime2)};
+ matlabbatch{1}.spm.temporal.st.scans = {cellstr(files_to_slicetime1)};
 elseif strcmp(path_components{end},"06_Nback")
     files_to_slicetime1 = files_to_slicetime(1:200,:);
     files_to_slicetime2 = files_to_slicetime(201:400,:);
