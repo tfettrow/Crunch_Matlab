@@ -5,7 +5,7 @@ spm('Defaults','fMRI');
 spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
-fieldmap_file = spm_select('ExtFPList',data_path, '^img_fpm.*\.img$');
+fieldmap_file = spm_select('ExtFPList',data_path, '^my_fieldmap.*\.img$');
 %epi_file = spm_select('FPList',data_path, '^se.*\.nii$');
 %magnitude_file = spm_select('FPList',data_path, '^.*\.nii$');
 matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.data.precalcfieldmap.precalcfieldmap = {fieldmap_file};
