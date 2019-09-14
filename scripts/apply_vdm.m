@@ -59,7 +59,7 @@ if strcmp(path_components{end},"06_Nback")
     clear matlabbatch
     
     
-    matlabbatch{1}.spm.tools.fieldmap.applyvdm.data.scans = cellstr(files_to_unwarp3);
+    matlabbatch{1}.spm.tools.fieldmap.applyvdm.data.scans = cellstr(files_to_unwarp4);
     matlabbatch{1}.spm.tools.fieldmap.applyvdm.data.vdmfile = cellstr(vdm_imagery_files);
     matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.pedir = 2;
     matlabbatch{1}.spm.tools.fieldmap.applyvdm.roptions.which = [2 1];
