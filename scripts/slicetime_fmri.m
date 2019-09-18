@@ -12,18 +12,13 @@ spm_get_defaults('cmdline',true);
 
 json_path_names =spm_select('FPList', data_path, '^fMRI.*\.json$');
 
-all_files_to_slicetime_volumes = spm_select('ExtFPList', data_path, '^fMRI.*\.nii$');
+all_files_to_slicetime = spm_select('FPList', data_path, '^fMRI.*\.nii$');
 
-for i_file = 1 : size(all_files_to_slicetime_volumes,1)
-    string_files_to_slicetime_volumes(i_file, :) = convertCharsToStrings(all_files_to_slicetime_volumes(i_file, :));
-    files_to_slicetime_path_components(i_file, :) = strsplit(string_files_to_slicetime_volumes(i_file, :),'/');
-    files_to_slicetime_filenames_and_volumes(i_file, :) = strsplit(files_to_slicetime_path_components(i_file,end),',');
-end
+% this_file_with_volumes = spm_select('expand', all_files_to_slicetime(1,:))
 
-files_to_slice_time_filenames = unique(files_to_slicetime_filenames_and_volumes(:, 1));
-for i_unique_filename= 1 : length(files_to_slice_time_filenames)
-   this_file_path_with_volumes = spm_select('ExtFPList', data_path, files_to_slice_time_filenames(i_unique_filename));
-   all_scans_fullpath_scan_cell{1, i_unique_filename} = cellstr(this_file_path_with_volumes);
+for i_file = 1 : size(all_files_to_slicetime,1)
+    this_file_with_volumes = spm_select('expand', all_files_to_slicetime(i_file,:));
+    all_scans_fullpath_scan_cell{1, i_file} = cellstr(this_file_with_volumes);
 end
 
 matlabbatch{1}.spm.temporal.st.scans = all_scans_fullpath_scan_cell;

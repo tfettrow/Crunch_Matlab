@@ -4,7 +4,7 @@ spm('Defaults','fMRI');
 spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
-all_files_to_realign_unwarp = spm_select('ExtFPList', data_path, '^coregistered2vdm_slicetimed.*\.nii$');
+all_files_to_realign_unwarp = spm_select('ExtFPList', data_path, '^coregistered2MeanFM_slicetimed.*\.nii$');
 
 vdm_imagery_files = spm_select('ExtFPList', data_path, '^vdm5.*\img$');
 
