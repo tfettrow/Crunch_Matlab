@@ -4,22 +4,14 @@ spm('Defaults','fMRI');
 spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
-all_files_to_realign_unwarp = spm_select('ExtFPList', data_path, '^coregistered2MeanFM_slicetimed.*\.nii$');
-
 vdm_imagery_files = spm_select('ExtFPList', data_path, '^vdm5.*\img$');
 
-for i_file = 1 : size(all_files_to_realign_unwarp,1)
-    string_files_to_realign_volumes(i_file, :) = convertCharsToStrings(all_files_to_realign_unwarp(i_file, :));
-    files_to_realign_path_components(i_file, :) = strsplit(string_files_to_realign_volumes(i_file, :),'/');
-    files_to_realign_filenames_and_volumes(i_file, :) = strsplit(files_to_realign_path_components(i_file,end),',');
-end
+all_files_to_realign_unwarp = spm_select('FPList', data_path, '^coregistered2MeanFM_slicetimed.*\.nii$');
 
-files_to_realign_time_filenames = unique(files_to_realign_filenames_and_volumes(:, 1));
-for i_unique_filename= 1 : length(files_to_realign_time_filenames)
-    
-    this_file_path_with_volumes = spm_select('ExtFPList', data_path, files_to_realign_time_filenames(i_unique_filename));
-    
-    matlabbatch{1}.spm.spatial.realignunwarp.data.scans =  cellstr(this_file_path_with_volumes);
+for i_file = 1 : size(all_files_to_realign_unwarp,1)
+    this_file_with_volumes = spm_select('expand', all_files_to_realign_unwarp(i_file,:));
+
+    matlabbatch{1}.spm.spatial.realignunwarp.data.scans =  cellstr(this_file_with_volumes);
     matlabbatch{1}.spm.spatial.realignunwarp.data.pmscan = cellstr(vdm_imagery_files);
     matlabbatch{1}.spm.spatial.realignunwarp.eoptions.quality = 0.9;
     matlabbatch{1}.spm.spatial.realignunwarp.eoptions.sep = 4;

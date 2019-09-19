@@ -1,64 +1,26 @@
 
 data_path = pwd;
 
-% check the folder name and specify the volumes accordingly
-path_components = strsplit(data_path,'/');
+clear matlabbatch
+spm('Defaults','fMRI');
+spm_jobman('initcfg');
+spm_get_defaults('cmdline',true);
 
-BATCH.New.structurals{1} = 'T1.nii';
 
-if strcmp(path_components{end},"05_MotorImagery")
-    BATCH.New.functionals{1}{1} = 'unwarpedRealigned_slicetimed_fMRI01_Run1.nii';
+all_files_to_art = spm_select('FPList', data_path, '^unwarpedRealigned_slicetimed_.*\.nii$');
+
+for i_file = 1 : size(all_files_to_art,1)
+    this_file_to_art = all_files_to_art(i_file,:);
+    
+    BATCH.New.structurals{1} = 'T1.nii';
+    
+    BATCH.New.functionals{1}{1} = this_file_to_art;
     BATCH.New.steps = {'functional_art'};
     BATCH.filename = 'Conn_Art_Folder_Stuff';
     BATCH.New.art_thresholds(1)= 9;
     BATCH.New.art_thresholds(2)= 2;
-
-    conn_batch(BATCH)
-
-   
-    BATCH.New.functionals{1}{1} = 'unwarpedRealigned_slicetimed_fMRI01_Run2.nii';
-    BATCH.New.steps = {'functional_art'};
-    BATCH.filename = 'Conn_Art_Folder_Stuff';
-    BATCH.New.art_thresholds(1)= 9;
-    BATCH.New.art_thresholds(2)= 2;
-
-    conn_batch(BATCH)
     
-elseif strcmp(path_components{end},"06_Nback")
-    BATCH.New.functionals{1}{1} = 'unwarpedRealigned_slicetimed_fMRI02_Run1.nii';
-    BATCH.New.steps = {'functional_art'};
-    BATCH.filename = 'Conn_Art_Folder_Stuff';
-    BATCH.New.art_thresholds(1)= 9;
-    BATCH.New.art_thresholds(2)= 2;
-
-    conn_batch(BATCH)
-    
-    
-    BATCH.New.functionals{1}{1} = 'unwarpedRealigned_slicetimed_fMRI02_Run2.nii';
-    BATCH.New.steps = {'functional_art'};
-    BATCH.filename = 'Conn_Art_Folder_Stuff';
-    BATCH.New.art_thresholds(1)= 9;
-    BATCH.New.art_thresholds(2)= 2;
-
-    conn_batch(BATCH)
-    
-    
-    BATCH.New.functionals{1}{1} = 'unwarpedRealigned_slicetimed_fMRI02_Run3.nii';
-    BATCH.New.steps = {'functional_art'};
-    BATCH.filename = 'Conn_Art_Folder_Stuff';
-    BATCH.New.art_thresholds(1)= 9;
-    BATCH.New.art_thresholds(2)= 2;
-
-    conn_batch(BATCH)
-    
-    
-    BATCH.New.functionals{1}{1} = 'unwarpedRealigned_slicetimed_fMRI02_Run4.nii';
-    BATCH.New.steps = {'functional_art'};
-    BATCH.filename = 'Conn_Art_Folder_Stuff';
-    BATCH.New.art_thresholds(1)= 9;
-    BATCH.New.art_thresholds(2)= 2;
-
     conn_batch(BATCH)
 end
-
+   
 

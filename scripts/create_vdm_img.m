@@ -7,7 +7,8 @@ spm_get_defaults('cmdline',true);
 
 fieldmap_file = spm_select('ExtFPList',data_path, '^my_fieldmap.*\.img$');
 epi_file = spm_select('FPList',data_path, '^se.*\.nii$');
-%magnitude_file = spm_select('FPList',data_path, '^.*\.nii$');
+% magnitude_file = spm_select('FPList',data_path, '^my_fieldmap_mag.*\.nii$');
+
 matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.data.precalcfieldmap.precalcfieldmap = {fieldmap_file};
 matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.session.epi = {epi_file};
 % does populating this remove error?
