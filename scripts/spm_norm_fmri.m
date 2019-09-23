@@ -2,173 +2,59 @@
 %--------------------------------------------------------------------------
 
 data_path = pwd;
-
+clear matlabbatch
 spm('Defaults','fMRI');
 spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
-% check the folder name and specify the volumes accordingly
-path_components = strsplit(data_path,'/');
 
-files_to_normalise = spm_select('ExtFPList', data_path, '^unwarpedRealigned.*\.nii$');
+subject_specific_template = spm_select('ExtFPList', data_path, '^mT1.*\.nii$');
+files_to_normalise = spm_select('FPList', data_path, '^unwarpedRealigned.*\.nii$');
+this_template = spm_select('ExtFPList', data_path, '^this_template.*\.nii$');
 
-if strcmp(path_components{end},"05_MotorImagery")
-    files_to_normalise1 = files_to_normalise(1:168,:);
-    files_to_normalise2 = files_to_normalise(169:336,:);
-elseif strcmp(path_components{end},"06_Nback")
-    files_to_normalise1 = files_to_normalise(1:200,:);
-    files_to_normalise2 = files_to_normalise(201:400,:);
-    files_to_normalise3 = files_to_normalise(401:602,:);
-    files_to_normalise4 = files_to_normalise(603:804,:);
+if size(subject_specific_template,1) >= 2 || size(this_template,1) >= 2  
+    error('check the images being grabbed!!')
 end
 
-
-matlabbatch{1}.spm.spatial.normalise.write.subj.def  = cellstr('y_T1.nii');
-matlabbatch{1}.spm.spatial.normalise.write.subj.resample = cellstr(files_to_normalise1);
-
-matlabbatch{1}.spm.spatial.normalise.write.woptions.vox  = [3 3 3];
-matlabbatch{1}.spm.spatial.normalise.write.woptions.prefix = 'normalized_';
-
-% This is superimposing subject's functional activations on their own
-% anatomy... how? grabbing specific files?
-% What do we actually do?
-% matlabbatch{5}.spm.spatial.normalise.write.subj.def      = cellstr(spm_file(a,'prefix','y_','ext','nii'));
-% matlabbatch{5}.spm.spatial.normalise.write.subj.resample = cellstr(spm_file(a,'prefix','m','ext','nii'));
-% matlabbatch{5}.spm.spatial.normalise.write.woptions.vox  = [1 1 3];
-
-spm_jobman('run',matlabbatch);
-clear matlabbatch
-
-
-matlabbatch{1}.spm.spatial.normalise.write.subj.def  = cellstr('y_T1.nii');
-matlabbatch{1}.spm.spatial.normalise.write.subj.resample = cellstr(files_to_normalise2);
-matlabbatch{1}.spm.spatial.normalise.write.woptions.vox  = [3 3 3];
-matlabbatch{1}.spm.spatial.normalise.write.woptions.prefix = 'normalized_';
-
-% This is superimposing subject's functional activations on their own
-% anatomy... how? grabbing specific files?
-% What do we actually do?
-% matlabbatch{5}.spm.spatial.normalise.write.subj.def      = cellstr(spm_file(a,'prefix','y_','ext','nii'));
-% matlabbatch{5}.spm.spatial.normalise.write.subj.resample = cellstr(spm_file(a,'prefix','m','ext','nii'));
-% matlabbatch{5}.spm.spatial.normalise.write.woptions.vox  = [1 1 3];
-
-spm_jobman('run',matlabbatch);
-clear matlabbatch
-
-if strcmp(path_components{end},"06_Nback")
-    matlabbatch{1}.spm.spatial.normalise.write.subj.def  = cellstr('y_T1.nii');
+for i_file = 1 : size(files_to_normalise,1)
+    this_file_with_volumes = spm_select('expand', files_to_normalise(i_file,:));
     
-    matlabbatch{1}.spm.spatial.normalise.write.subj.resample = cellstr(files_to_normalise3);
+    matlabbatch{1}.spm.spatial.normalise.estwrite.subj.vol = cellstr(subject_specific_template);
+    matlabbatch{1}.spm.spatial.normalise.estwrite.subj.resample = cellstr(this_file_with_volumes);
+    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.biasreg = 0.0001;
+    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.biasfwhm = 60;
+    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.tpm = {'TPM.nii'};
+    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.affreg = 'mni';
+    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.reg = [0 0.001 0.5 0.05 0.2];
+    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.fwhm = 0;
+    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.samp = 3;
+    matlabbatch{1}.spm.spatial.normalise.estwrite.woptions.bb = [-78 -112 -70
+        78 76 85];
+    matlabbatch{1}.spm.spatial.normalise.estwrite.woptions.vox = [2 2 2];
+    matlabbatch{1}.spm.spatial.normalise.estwrite.woptions.interp = 4;
+    matlabbatch{1}.spm.spatial.normalise.estwrite.woptions.prefix = 'normalized2t1_';
 
-    matlabbatch{1}.spm.spatial.normalise.write.woptions.vox  = [3 3 3];
-    matlabbatch{1}.spm.spatial.normalise.write.woptions.prefix = 'normalized_';
-    
-    % This is superimposing subject's functional activations on their own
-    % anatomy... how? grabbing specific files?
-    % What do we actually do?
-    % matlabbatch{5}.spm.spatial.normalise.write.subj.def      = cellstr(spm_file(a,'prefix','y_','ext','nii'));
-    % matlabbatch{5}.spm.spatial.normalise.write.subj.resample = cellstr(spm_file(a,'prefix','m','ext','nii'));
-    % matlabbatch{5}.spm.spatial.normalise.write.woptions.vox  = [1 1 3];
-    
+
     spm_jobman('run',matlabbatch);
     clear matlabbatch
+   
     
-    
-    matlabbatch{1}.spm.spatial.normalise.write.subj.def  = cellstr('y_T1.nii');
-    
-    matlabbatch{1}.spm.spatial.normalise.write.subj.resample = cellstr(files_to_normalise4);
-    
-    matlabbatch{1}.spm.spatial.normalise.write.woptions.vox  = [3 3 3];
-    matlabbatch{1}.spm.spatial.normalise.write.woptions.prefix = 'normalized_';
-    
-    % This is superimposing subject's functional activations on their own
-    % anatomy... how? grabbing specific files?
-    % What do we actually do?
-    % matlabbatch{5}.spm.spatial.normalise.write.subj.def      = cellstr(spm_file(a,'prefix','y_','ext','nii'));
-    % matlabbatch{5}.spm.spatial.normalise.write.subj.resample = cellstr(spm_file(a,'prefix','m','ext','nii'));
-    % matlabbatch{5}.spm.spatial.normalise.write.woptions.vox  = [1 1 3];
-    
-    spm_jobman('run',matlabbatch);
-    clear matlabbatch
-end
-
-files_to_normalise = spm_select('ExtFPList', data_path, '^slicetimed_realigned.*\.nii$');
-
-if strcmp(path_components{end},"05_MotorImagery")
-    files_to_normalise1 = files_to_normalise(1:168,:);
-    files_to_normalise2 = files_to_normalise(169:336,:);
-elseif strcmp(path_components{end},"06_Nback")
-    files_to_normalise1 = files_to_normalise(1:200,:);
-    files_to_normalise2 = files_to_normalise(201:400,:);
-    files_to_normalise3 = files_to_normalise(401:602,:);
-    files_to_normalise4 = files_to_normalise(603:804,:);
-end
-
-matlabbatch{1}.spm.spatial.normalise.write.subj.def  = cellstr('y_T1.nii');
-matlabbatch{1}.spm.spatial.normalise.write.subj.resample = cellstr(files_to_normalise1);
-matlabbatch{1}.spm.spatial.normalise.write.woptions.vox  = [3 3 3];
-matlabbatch{1}.spm.spatial.normalise.write.woptions.prefix = 'normalized_';
-
-% This is superimposing subject's functional activations on their own
-% anatomy... how? grabbing specific files?
-% What do we actually do?
-% matlabbatch{5}.spm.spatial.normalise.write.subj.def      = cellstr(spm_file(a,'prefix','y_','ext','nii'));
-% matlabbatch{5}.spm.spatial.normalise.write.subj.resample = cellstr(spm_file(a,'prefix','m','ext','nii'));
-% matlabbatch{5}.spm.spatial.normalise.write.woptions.vox  = [1 1 3];
-
-spm_jobman('run',matlabbatch);
-clear matlabbatch
+    matlabbatch{1}.spm.spatial.normalise.estwrite.subj.vol = cellstr(this_template);
+    matlabbatch{1}.spm.spatial.normalise.estwrite.subj.resample = cellstr(this_file_with_volumes);
+    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.biasreg = 0.0001;
+    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.biasfwhm = 60;
+    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.tpm = {'TPM.nii'};
+    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.affreg = 'mni';
+    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.reg = [0 0.001 0.5 0.05 0.2];
+    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.fwhm = 0;
+    matlabbatch{1}.spm.spatial.normalise.estwrite.eoptions.samp = 3;
+    matlabbatch{1}.spm.spatial.normalise.estwrite.woptions.bb = [-78 -112 -70
+        78 76 85];
+    matlabbatch{1}.spm.spatial.normalise.estwrite.woptions.vox = [2 2 2];
+    matlabbatch{1}.spm.spatial.normalise.estwrite.woptions.interp = 4;
+    matlabbatch{1}.spm.spatial.normalise.estwrite.woptions.prefix = 'normalized2MNI_';
 
 
-matlabbatch{1}.spm.spatial.normalise.write.subj.def  = cellstr('y_T1.nii');
-
-matlabbatch{1}.spm.spatial.normalise.write.subj.resample = cellstr(files_to_normalise2);
-
-matlabbatch{1}.spm.spatial.normalise.write.woptions.vox  = [3 3 3];
-matlabbatch{1}.spm.spatial.normalise.write.woptions.prefix = 'normalized_';
-
-% This is superimposing subject's functional activations on their own
-% anatomy... how? grabbing specific files?
-% What do we actually do?
-% matlabbatch{5}.spm.spatial.normalise.write.subj.def      = cellstr(spm_file(a,'prefix','y_','ext','nii'));
-% matlabbatch{5}.spm.spatial.normalise.write.subj.resample = cellstr(spm_file(a,'prefix','m','ext','nii'));
-% matlabbatch{5}.spm.spatial.normalise.write.woptions.vox  = [1 1 3];
-
-spm_jobman('run',matlabbatch);
-clear matlabbatch
-
-if strcmp(path_components{end},"06_Nback")
-    matlabbatch{1}.spm.spatial.normalise.write.subj.def  = cellstr('y_T1.nii');
-    
-    matlabbatch{1}.spm.spatial.normalise.write.subj.resample = cellstr(files_to_normalise3);
-    matlabbatch{1}.spm.spatial.normalise.write.woptions.vox  = [3 3 3];
-    matlabbatch{1}.spm.spatial.normalise.write.woptions.prefix = 'normalized_';
-    
-    % This is superimposing subject's functional activations on their own
-    % anatomy... how? grabbing specific files?
-    % What do we actually do?
-    % matlabbatch{5}.spm.spatial.normalise.write.subj.def      = cellstr(spm_file(a,'prefix','y_','ext','nii'));
-    % matlabbatch{5}.spm.spatial.normalise.write.subj.resample = cellstr(spm_file(a,'prefix','m','ext','nii'));
-    % matlabbatch{5}.spm.spatial.normalise.write.woptions.vox  = [1 1 3];
-    
-    spm_jobman('run',matlabbatch);
-    clear matlabbatch
-    
-    
-    matlabbatch{1}.spm.spatial.normalise.write.subj.def  = cellstr('y_T1.nii');
-    
-    matlabbatch{1}.spm.spatial.normalise.write.subj.resample = cellstr(files_to_normalise4);
-    
-    matlabbatch{1}.spm.spatial.normalise.write.woptions.vox  = [3 3 3];
-    matlabbatch{1}.spm.spatial.normalise.write.woptions.prefix = 'normalized_';
-    
-    % This is superimposing subject's functional activations on their own
-    % anatomy... how? grabbing specific files?
-    % What do we actually do?
-    % matlabbatch{5}.spm.spatial.normalise.write.subj.def      = cellstr(spm_file(a,'prefix','y_','ext','nii'));
-    % matlabbatch{5}.spm.spatial.normalise.write.subj.resample = cellstr(spm_file(a,'prefix','m','ext','nii'));
-    % matlabbatch{5}.spm.spatial.normalise.write.woptions.vox  = [1 1 3];
-    
     spm_jobman('run',matlabbatch);
     clear matlabbatch
 end
