@@ -11,9 +11,8 @@ epi_file = spm_select('FPList',data_path, '^se.*\.nii$');
 
 matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.data.precalcfieldmap.precalcfieldmap = {fieldmap_file};
 matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.session.epi = {epi_file};
-% does populating this remove error?
 matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.data.precalcfieldmap.magfieldmap ={''};
-matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.defaults.defaultsfile = {'Ugrant_defaults.m'};
+matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.defaults.defaultsfile = {'vdm_defaults.m'};
 matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.matchvdm = 0;
 matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.sessname = 'session';
 matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.anat = '';
