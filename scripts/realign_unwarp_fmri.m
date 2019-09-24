@@ -6,7 +6,7 @@ spm_get_defaults('cmdline',true);
 
 vdm_imagery_files = spm_select('ExtFPList', data_path, '^vdm5.*\img$');
 
-all_files_to_realign_unwarp = spm_select('FPList', data_path, '^coregistered2MeanFM_slicetimed.*\.nii$');
+all_files_to_realign_unwarp = spm_select('FPList', data_path, '^slicetimed.*\.nii$');
 
 for i_file = 1 : size(all_files_to_realign_unwarp,1)
     this_file_with_volumes = spm_select('expand', all_files_to_realign_unwarp(i_file,:));
@@ -29,7 +29,7 @@ for i_file = 1 : size(all_files_to_realign_unwarp,1)
     matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.uwfwhm = 4;
     matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.rem = 1;
     matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.noi = 5;
-    matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.expround = 'Average';
+    matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.expround = 'First';
     matlabbatch{1}.spm.spatial.realignunwarp.uwroptions.uwwhich = [2 1];
     matlabbatch{1}.spm.spatial.realignunwarp.uwroptions.rinterp = 4;
     matlabbatch{1}.spm.spatial.realignunwarp.uwroptions.wrap = [0 1 0];
