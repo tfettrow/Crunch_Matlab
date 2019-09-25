@@ -9,6 +9,7 @@ spm_get_defaults('cmdline',true);
 
 
 files_to_smooth = spm_select('FPList', data_path, '^normalized.*\.nii$');
+files_to_smooth_t1 = spm_select('FPList', data_path, '^normalized.*\.nii$');
 
 for i_file = 1 : size(files_to_smooth,1)
     this_file_with_volumes = spm_select('expand', files_to_smooth(i_file,:));
