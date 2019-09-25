@@ -5,7 +5,7 @@ spm('Defaults','fMRI');
 spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
-fieldmap_file = spm_select('ExtFPList',data_path, '^my_fieldmap.*\.img$');
+fieldmap_file = spm_select('ExtFPList',data_path, '^fpm_my_fieldmap.*\.img$');
 epi_file = spm_select('FPList',data_path, '^se.*\.nii$');
 % magnitude_file = spm_select('FPList',data_path, '^my_fieldmap_mag.*\.nii$');
 
