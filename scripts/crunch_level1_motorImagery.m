@@ -1,7 +1,7 @@
 
 % data_path = fileparts(mfilename('fullpath'));
 % data_path = pwd;
-data_path = '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/CRUNCH/Pilot_Study_Data/CrunchPilot01';
+data_path = pwd;
 
 % Initialise SPM
 %--------------------------------------------------------------------------
@@ -13,11 +13,12 @@ spm_get_defaults('cmdline',true);
 % GLM SPECIFICATION, ESTIMATION, INFERENCE, RESULTS
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-smooth_normalized_unwarped_functional_imagery_files = spm_select('ExtFPList', fullfile(data_path,'Processed/MRI_files/05_MotorImagery'), '^smooth_wslicetimed_unwarped.*\.nii$');
-art_regression_outlier_files  = spm_select('FPList',  fullfile(data_path,'Processed/MRI_files/05_MotorImagery'),'art_regression_outliers_and_movement.*.mat');
+% smooth_normalized_unwarped_functional_imagery_files = spm_select('ExtFPList', fullfile(data_path,'Processed/MRI_files/05_MotorImagery'), '^smooth_wslicetimed_unwarped.*\.nii$');
+    files_to_test = spm_select('FPList', data_path, '^smoothed.*\.nii$');
+    art_regression_outlier_files  = spm_select('FPList',  data_path,'^art_regression_outliers_and_movement.*.mat');
 
-smooth_normalized_unwarped_functional_imagery_files1 = smooth_normalized_unwarped_functional_imagery_files(1:168,:);
-smooth_normalized_unwarped_functional_imagery_files2 = smooth_normalized_unwarped_functional_imagery_files(169:336,:);
+smooth_normalized_unwarped_functional_imagery_files1 = spm_select('expand', files_to_test(1,:));
+smooth_normalized_unwarped_functional_imagery_files2 = spm_select('expand', files_to_test(2,:));
 
 art_regression_outlier_files1 = art_regression_outlier_files(1,:);
 art_regression_outlier_files2 = art_regression_outlier_files(2,:);
@@ -30,7 +31,7 @@ art_regression_outlier_files2 = art_regression_outlier_files(2,:);
 % Model Specification
 %--------------------------------------------------------------------------
 % TO DO: specify proper directory
-matlabbatch{1}.spm.stats.fmri_spec.dir = cellstr(fullfile(data_path,'Processed/MRI_files/05_MotorImagery'));
+matlabbatch{1}.spm.stats.fmri_spec.dir = cellstr(data_path);
 matlabbatch{1}.spm.stats.fmri_spec.timing.units = 'secs';
 matlabbatch{1}.spm.stats.fmri_spec.timing.RT = 1.5;
 
