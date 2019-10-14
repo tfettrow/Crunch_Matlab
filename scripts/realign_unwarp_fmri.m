@@ -18,7 +18,7 @@ for i_file = 1 : size(all_files_to_realign_unwarp,1)
     matlabbatch{1}.spm.spatial.realignunwarp.eoptions.fwhm = 5;
     matlabbatch{1}.spm.spatial.realignunwarp.eoptions.rtm = 0;
     matlabbatch{1}.spm.spatial.realignunwarp.eoptions.einterp = 2;
-    matlabbatch{1}.spm.spatial.realignunwarp.eoptions.ewrap = [0 0 0];
+    matlabbatch{1}.spm.spatial.realignunwarp.eoptions.ewrap = [0 1 0];
     matlabbatch{1}.spm.spatial.realignunwarp.eoptions.weight = '';
     matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.basfcn = [12 12];
     matlabbatch{1}.spm.spatial.realignunwarp.uweoptions.regorder = 1;
@@ -37,5 +37,5 @@ for i_file = 1 : size(all_files_to_realign_unwarp,1)
     matlabbatch{1}.spm.spatial.realignunwarp.uwroptions.prefix = 'unwarpedRealigned_';
     spm_jobman('run',matlabbatch);
     clear matlabbatch
-end
 
+end
