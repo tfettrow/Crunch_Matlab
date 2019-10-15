@@ -4,8 +4,15 @@ function level_one_stats(TR_from_json)
     % 1) Need to ensure the duration and onset times end/start on a TR
 %     2) need to adjust condition onsets in case of outlier removals (these
 %     are with respect to first volume acquired (1 volume or 0sec)
-    % i_file is used way too many times !!!!
+    % 3) i_file is used way too many times !!!!
     
+%    outlier removal automation
+%  1) determine which indices were removed for this run (have bash pass it)
+%  2) determine the time to be removed (TR * volumes)
+%  3) subtract all onset times by time to be removed if at beginning of run
+%  3a) first condition will be negative (start at 0 and duration should be
+%  taken care of (see line 59ish))
+%  4) when is duration too short to include in analysis?? 
     
 % 
     data_path = pwd;
