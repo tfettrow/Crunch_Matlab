@@ -1,5 +1,5 @@
 function level_one_stats(TR_from_json)
-    
+    TR_from_json = str2num(TR_from_json);
     data_path = pwd;
     clear matlabbatch
     spm('Defaults','fMRI');
@@ -10,7 +10,7 @@ function level_one_stats(TR_from_json)
     art_regression_outlier_files  = spm_select('FPList',  data_path,'^art_regression_outliers_and_movement.*.mat');
     condition_onset_files = spm_select('FPList', data_path, '^Condition_Onsets_.*.csv');
     
-    directory_pieces = regexp(data_path,'\','split');
+    directory_pieces = regexp(data_path,'/','split');
     subject_level_directory = getfield( directory_pieces, {1:length(directory_pieces)-3} );
     for i_path_element = 1:size(subject_level_directory,2);
         subject_level_directory{i_path_element}(end+1) = '/';
@@ -68,7 +68,8 @@ function level_one_stats(TR_from_json)
         error('Need the same # of Onset Files as Functional Runs')
     end
 %     
-    matlabbatch{1}.spm.stats.fmri_spec.dir = cellstr(data_path);
+    level1_results_dir = fullfile(data_path,"Level1_Results");
+    matlabbatch{1}.spm.stats.fmri_spec.dir = cellstr(level1_results_dir);
     matlabbatch{1}.spm.stats.fmri_spec.timing.units = 'secs';
     matlabbatch{1}.spm.stats.fmri_spec.timing.RT = TR_from_json;
 
@@ -78,23 +79,26 @@ function level_one_stats(TR_from_json)
         
         % check to see if there were any outlier removals for this run
         % remove lines that do not match this processed folder
-        for this_line = 1:size(outlier_removal_cell,2)
-             line_pieces_per_run = strsplit(outlier_removal_cell{this_line}, ',');
-             this_line_run_matches(this_line) =  str2num(line_pieces_per_run{2}) ==  i_run;
-        end
-
-        if sum(this_line_run_matches > 1)
-            error 'Should not have more than one line for each run in same processed folder in otlier_removal_settings.txt'
+        this_line_run_matches = [];
+        if ~isempty(outlier_removal_cell)
+            for this_line = 1:size(outlier_removal_cell,2)
+                line_pieces_per_run = strsplit(outlier_removal_cell{this_line}, ',');
+                this_line_run_matches(this_line) =  str2num(line_pieces_per_run{2}) ==  i_run;
+            end
+            
+            if sum(this_line_run_matches > 1)
+                error 'Should not have more than one line for each run in same processed folder in otlier_removal_settings.txt'
+            end
         end
         
         this_line_match_index = find(this_line_run_matches);
-       
-        this_line = outlier_removal_cell{this_line_match_index};
+        if any(this_line_match_index)
+            this_line = outlier_removal_cell{this_line_match_index};
+            this_line_pieces = strsplit(this_line, ',');
+        end
         
-        this_line_pieces = strsplit(this_line, ',');
-       
         
-        if (i_run == str2num(this_line_pieces{2}))
+        if (any(this_line_match_index) && i_run == str2num(this_line_pieces{2}))
             this_run_start_volume = this_line_pieces{3};
             this_run_time_correction = TR_from_json * str2double(this_run_start_volume);
         else
@@ -137,7 +141,7 @@ function level_one_stats(TR_from_json)
             
             % check to see if the onset and duration are divisible by TR..
             % if not, increase onset time and decrease duration
-            while (mod(this_cond_onset_times_corrected, 1.5) ~= 0)
+            while (mod(this_cond_onset_times_corrected, TR_from_json) ~= 0)
                 this_cond_onset_times_corrected = round(this_cond_onset_times_corrected, 1) + 0.1;
             end
             
@@ -147,7 +151,6 @@ function level_one_stats(TR_from_json)
                 this_cond_durations = round(this_cond_durations, 1) - 0.1;
             end
      
-            
             matlabbatch{1}.spm.stats.fmri_spec.sess(i_run).scans = cellstr(this_file_with_volumes);
             matlabbatch{1}.spm.stats.fmri_spec.sess(i_run).cond(i_cond).name = char(unique_condition_names(i_cond));
             matlabbatch{1}.spm.stats.fmri_spec.sess(i_run).cond(i_cond).onset = this_cond_onset_times_corrected;
@@ -169,23 +172,23 @@ function level_one_stats(TR_from_json)
     matlabbatch{1}.spm.stats.fmri_spec.bases.hrf.derivs = [1 0];
     matlabbatch{1}.spm.stats.fmri_spec.volt = 1;
     matlabbatch{1}.spm.stats.fmri_spec.global = 'None';
-    matlabbatch{1}.spm.stats.fmri_spec.mthresh = -inf;  % check for issues (-inf removes "holes")
-    matlabbatch{1}.spm.stats.fmri_spec.mask = {''};  % why do we need a mask here?
+    matlabbatch{1}.spm.stats.fmri_spec.mthresh = .8;  % ..8 is default .... can also change -inf
+    matlabbatch{1}.spm.stats.fmri_spec.mask = {''};  %  gets rid of errors outside of brain but should only be run if mthresh is -inf
     matlabbatch{1}.spm.stats.fmri_spec.cvi = 'AR(1)';
     
-%     spm_jobman('run',matlabbatch);
+     spm_jobman('run',matlabbatch);
     clear matlabbatch
 
     
     % Model Estimation  ( does this need to be run??)
     %--------------------------------------------------------------------------
     
-    design_matrix_file = spm_select('FPList', data_path, 'SPM.mat'); % design matrix    
+    design_matrix_file = spm_select('FPList', level1_results_dir, 'SPM.mat'); % design matrix    
     matlabbatch{1}.spm.stats.fmri_est.spmmat = cellstr(design_matrix_file);
     matlabbatch{1}.spm.stats.fmri_est.write_residuals = 0;
     matlabbatch{1}.spm.stats.fmri_est.method.Classical = 1;
     
-%     spm_jobman('run',matlabbatch);
+     spm_jobman('run',matlabbatch);
     clear matlabbatch
 
         % Contrasts
@@ -198,7 +201,7 @@ function level_one_stats(TR_from_json)
     % the indices associated with that contrast
     % 3) if this condition name on the greater side then assign -1
     
-    load('SPM.mat')       
+    load(fullfile(level1_results_dir,'SPM.mat'))       
     all_unique_condition_names = unique(all_condition_names);
     
     for i_reg_file = 1:size(art_regression_outlier_files,1)
@@ -219,50 +222,50 @@ function level_one_stats(TR_from_json)
         end
     end
     
-        % go through all perumations of condition comparisons to create
-        % contrasts
-           number_of_contrasts = 1;
-%            contrast_array = [];
-this_contrast_array = {};
-        for i = 1:size(all_unique_condition_names,1)
-            for j = 1:size(all_unique_condition_names,1)
-                  this_contrast_cond_left = all_unique_condition_names(i);
-                  this_contrast_cond_right = all_unique_condition_names(j);
-                  if ~contains(this_contrast_cond_left, this_contrast_cond_right)
-                      
-                      for i_run = 1:number_of_runs
-                          this_contrast_cond_left_SPMindex_this_run = find(contains(condition_names_array(:,i_run), this_contrast_cond_left));
-                          this_contrast_cond_right_Run1_SPMindex_this_run = find(contains(condition_names_array(:,i_run), this_contrast_cond_right));
-                         
-                          contrast_zero_padded = [zeros(length(condition_names_array) * 2,1) ]'; %two betas per condition
-                          contrast_zero_padded(this_contrast_cond_left_SPMindex_this_run * 2 - 1) = 1;
-                          contrast_zero_padded(this_contrast_cond_right_Run1_SPMindex_this_run * 2 - 1) = -1;
-                          
-               
-                          % matlab does not like this ...
-                          if i_run < number_of_runs
-                              if ~isempty(this_contrast_array)
-                                  this_contrast_array = [contrast_array_previousRun{1} contrast_zero_padded regressor_array{:,i_run}];
-                              else
-                                  this_contrast_array = [contrast_zero_padded regressor_array{:,i_run}];
-                              end
-                          else
-                              final_contrast_array(number_of_contrasts,:) = [contrast_array_previousRun contrast_zero_padded];
-                          end
-                          
-                          contrast_array_previousRun = this_contrast_array;
-                          this_contrast_array = [];
-                          
-                          this_contrast_greaterthan_name{number_of_contrasts,i_run} = [char(this_contrast_cond_left) '>' char(this_contrast_cond_right)];
-                      
-                      end
-%                       final_contrast_cell_array{number_of_contrasts} = this_final_contrast_array;    
-                      number_of_contrasts = number_of_contrasts + 1;
-                  end
+    % go through all perumations of condition comparisons to create
+    % contrasts
+    number_of_contrasts = 1;
+    %            contrast_array = [];
+    contrast_array_previousRun = [];
+    this_contrast_array = [];
+    for i = 1:size(all_unique_condition_names,1)
+        for j = 1:size(all_unique_condition_names,1)
+            this_contrast_cond_left = all_unique_condition_names(i);
+            this_contrast_cond_right = all_unique_condition_names(j);
+            if ~contains(this_contrast_cond_left, this_contrast_cond_right)
+                
+                for i_run = 1:number_of_runs
+                    this_contrast_cond_left_SPMindex_this_run = find(contains(condition_names_array(:,i_run), this_contrast_cond_left));
+                    this_contrast_cond_right_Run1_SPMindex_this_run = find(contains(condition_names_array(:,i_run), this_contrast_cond_right));
+                    
+                    contrast_zero_padded = [zeros(length(condition_names_array) * 2,1) ]'; %two betas per condition
+                    contrast_zero_padded(this_contrast_cond_left_SPMindex_this_run * 2 - 1) = 1;
+                    contrast_zero_padded(this_contrast_cond_right_Run1_SPMindex_this_run * 2 - 1) = -1;
+                    
+                    % matlab does not like this ...
+                    if i_run < number_of_runs
+                        if ~isempty(contrast_array_previousRun)
+                            this_contrast_array = [contrast_array_previousRun contrast_zero_padded regressor_array{:,i_run}];
+                        else
+                            this_contrast_array = [contrast_zero_padded regressor_array{:,i_run}];
+                        end
+                    else
+                        final_contrast_array(number_of_contrasts,:) = [contrast_array_previousRun contrast_zero_padded];
+                    end
+                    
+                    contrast_array_previousRun = this_contrast_array;
+                    this_contrast_array = [];
+                    
+                    this_contrast_greaterthan_name{number_of_contrasts,i_run} = [char(this_contrast_cond_left) '>' char(this_contrast_cond_right)];
+                    
+                end
+                %                       final_contrast_cell_array{number_of_contrasts} = this_final_contrast_array;
+                number_of_contrasts = number_of_contrasts + 1;
             end
         end
+    end
     
-    design_matrix_file = spm_select('FPList', data_path,'SPM.mat'); 
+    design_matrix_file = spm_select('FPList', level1_results_dir,'SPM.mat'); 
     matlabbatch{1}.spm.stats.con.spmmat = cellstr(design_matrix_file);
     
     for this_contrast = 1:size(this_contrast_greaterthan_name,1)
