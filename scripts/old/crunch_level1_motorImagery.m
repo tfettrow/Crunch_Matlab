@@ -159,7 +159,6 @@ matlabbatch{1}.spm.stats.con.consess{3}.tcon.sessrep = 'none';
 
 matlabbatch{1}.spm.stats.con.delete = 0; %this deletes the previously exisiting contrasts; set to 0 if you do not want to delete previous contrasts! 
 
-
 % 
 % % Inference Results
 % %--------------------------------------------------------------------------
