@@ -25,7 +25,7 @@ subject_level_directory = getfield( directory_pieces, {1:length(directory_pieces
 %     end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-data = readtable('1002_roi_results.txt');
+data = readtable('roi_results.txt');
 
 roi_condition_name = data.Var1;
 roi_beta_value = data.Var2;
@@ -64,51 +64,14 @@ for this_unique_roi_index = 1 : length(unique_rois)
     end
 end
 
+x=readtable
+
 
 
 % save condition_order and ordered_roi_beta_value to results.mat
+figure; plot();
 
-%LDLPFC
-figure; plot(roi_beta_value(1:8))
-title('LDLPFC')
-ylabel('Beta Weight')
-xlabel('Nback')
-xticklabels({'Long One','Long Three','Long Two','Long Zero','Short One','Short Three','Short two','Short Zero'})
-xtickangle(45)
 
-%LIPS
-figure; plot(roi_beta_value(9:16))
-title('LIPS')
-ylabel('Beta Weight')
-xlabel('Nback')
-xticklabels({'Long One','Long Three','Long Two','Long Zero','Short One','Short Three','Short two','Short Zero'})
-xtickangle(45)
-%LM1
-figure; plot(roi_beta_value(17:24))
-title('LM1')
-ylabel('Beta Weight')
-xlabel('Nback')
-xticklabels({'Long One','Long Three','Long Two','Long Zero','Short One','Short Three','Short two','Short Zero'})
-xtickangle(45)
-%RDLPFC
-figure; plot(roi_beta_value(25:32))
-title('RDLPFC')
-ylabel('Beta Weight')
-xlabel('Nback')
-xticklabels({'Long One','Long Three','Long Two','Long Zero','Short One','Short Three','Short two','Short Zero'})
-xtickangle(45)
-%RIPS
-figure; plot(roi_beta_value(33:40))
-title('RIPS')
-ylabel('Beta Weight')
-xlabel('Nback')
-xticklabels({'Long One','Long Three','Long Two','Long Zero','Short One','Short Three','Short two','Short Zero'})
-xtickangle(45)
-%RM1
-figure; plot(roi_beta_value(41:48))
-title('RM1')
-ylabel('Beta Weight')
-xlabel('Nback')
-xticklabels({'Long One','Long Three','Long Two','Long Zero','Short One','Short Three','Short two','Short Zero'})
-xtickangle(45)
+
+
     
