@@ -102,15 +102,14 @@ for this_roi = 1 : length(unique_rois)
            set(gca,'xticklabel',x_label.')
            this_figure_number = this_figure_number + 1;
            
-           % Line of best fit, but for each
-          coeffs=polyfit(x_num, y, 1);
+           
+           coeffs=polyfit(x_num, y, 1);
            fittedX=linspace(min(x_num), max(x_num), 200);
            fittedY=polyval(coeffs, fittedX);
            hold on;
-           plot(fittedX, fittedY, 'r-','LineWidth',3);
+           plot(fittedX, fittedY, 'r-',
         end
     end
-       
 end
-  
+    
 end
