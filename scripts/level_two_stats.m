@@ -9,13 +9,22 @@
 % You should have received a copy of the GNU General Public License
 % along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-addpath /ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/spm12
+
+function level_two_stats(task_folder, subject_codes)
+task_folder = '06_Nback';
+subject_codes = {'1002', '1004'}; % need to figure out how to pass cell from shell
+
+data_path = pwd; % assuming shell script places wd as study level folder
+clear matlabbatch
 spm('Defaults','fMRI');
-spm_jobman('initcfg')
+spm_jobman('initcfg');
+spm_get_defaults('cmdline',true);
 
+level2_results_dir = fullfile(data_path, 'Level2_Results', task_folder);
 
-matlabbatch{1}.spm.stats.factorial_design.dir = {'/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/SWM_AS/Second_level'};
-matlabbatch{1}.spm.stats.factorial_design.des.fblock.fac(1).name = 'Subject';
+% Ana is using a factor of repitition due to multiple time points??
+matlabbatch{1}.spm.stats.factorial_design.dir = {level2_results_dir};
+matlabbatch{1}.spm.stats.factorial_design.des.fblock.fac(1).name = 'subject';
 matlabbatch{1}.spm.stats.factorial_design.des.fblock.fac(1).dept = 0;
 matlabbatch{1}.spm.stats.factorial_design.des.fblock.fac(1).variance = 0;
 matlabbatch{1}.spm.stats.factorial_design.des.fblock.fac(1).gmsca = 0;
@@ -25,243 +34,132 @@ matlabbatch{1}.spm.stats.factorial_design.des.fblock.fac(2).dept = 1;
 matlabbatch{1}.spm.stats.factorial_design.des.fblock.fac(2).variance = 0;
 matlabbatch{1}.spm.stats.factorial_design.des.fblock.fac(2).gmsca = 0;
 matlabbatch{1}.spm.stats.factorial_design.des.fblock.fac(2).ancova = 0;
-matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(1).scans = {
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/A/01/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/A/02/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/A/03/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/A/04/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/A/05/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/A/06/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  };
-matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(1).conds = [1 2 3 4 5 6];
-matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(2).scans = {
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/B/01/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/B/02/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/B/03/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/B/04/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/B/05/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/B/06/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  };
-matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(2).conds = [1 2 3 4 5 6];
-matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(3).scans = {
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/C/02/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/C/03/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/C/04/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/C/05/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/C/06/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  };
-matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(3).conds = [2 3 4 5 6];
-matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(4).scans = {
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/D/01/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/D/02/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/D/03/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/D/04/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/D/05/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/D/06/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  };
-matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(4).conds = [1 2 3 4 5 6];
-matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(5).scans = {
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/E/01/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/E/02/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/E/03/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/E/04/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/E/05/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/E/06/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  };
-matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(5).conds = [1 2 3 4 5 6];
-matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(6).scans = {
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/G/01/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/G/02/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/G/03/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/G/04/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/G/05/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/G/06/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  };
-matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(6).conds = [1 2 3 4 5 6];
-matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(7).scans = {
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/H/01/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/H/02/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/H/03/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/H/04/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/H/05/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/H/06/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  };
-matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(7).conds = [1 2 3 4 5 6];
-matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(8).scans = {
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/J/01/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/J/02/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/J/03/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/J/04/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/J/05/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/J/06/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  };
-matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(8).conds = [1 2 3 4 5 6];
-matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(9).scans = {
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/K/01/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/K/02/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/K/03/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/K/04/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/K/05/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/K/06/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                  };
-matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(9).conds = [1 2 3 4 5 6];
-matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(10).scans = {
-                                                                                   '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/L/02/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                   '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/L/03/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                   '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/L/04/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                   '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/L/05/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                   '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/L/06/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                   };
-matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(10).conds = [2 3 4 5 6];
-matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(11).scans = {
-                                                                                   '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/M/01/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                   '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/M/02/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                   '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/M/03/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                   '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/M/04/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                   '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/M/05/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                   '/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/Nifti/M/06/06_SWM/FirstLevel_2/con_0001.nii,1'
-                                                                                   };
-matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(11).conds = [1 2 3 4 5 6];
-matlabbatch{1}.spm.stats.factorial_design.des.fblock.maininters{1}.fmain.fnum = 2;
-matlabbatch{1}.spm.stats.factorial_design.des.fblock.maininters{2}.fmain.fnum = 1;
+% seems a bit redundant but lets go with it for now
+if strcmp(task_folder, '05_MotorImagery')
+    for this_subject_index = 1 : length(subject_codes)
+        this_subject_SPM_path = fullfile(data_path, subject_codes(this_subject_index), 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_Results', 'SPM.mat');
+        this_subject_info_path = fullfile(data_path, subject_codes(this_subject_index), 'subject_info.csv');
+        
+        this_subject_info = readtable(char(this_subject_info_path));
+        
+        all_subjects_gender(this_subject_index) = this_subject_info.gender;
+        all_subjects_age(this_subject_index) = this_subject_info.age;
+
+        load(char(this_subject_SPM_path))
+        for this_contrast_index = 1:length(SPM.xCon)
+            contrasts{this_contrast_index} = SPM.xCon(this_contrast_index).name;
+        end
+        
+        Flat_greaterthan_Rest_contrast_index = find(contains(contrasts, 'flat>Rest'));
+        Low_greaterthan_Rest_contrast_index = find(contains(contrasts, 'low>Rest'));
+        Moderate_greaterthan_Rest_contrast_index = find(contains(contrasts, 'medium>Rest'));
+        High_greaterthan_Rest_index = find(contains(contrasts, 'hard>Rest'));
+        
+        number_of_conditions = length([Flat_greaterthan_Rest_contrast_index Low_greaterthan_Rest_contrast_index Moderate_greaterthan_Rest_contrast_index High_greaterthan_Rest_index]);
+        
+        this_subject_conn_images = dir(char(fullfile(data_path, subject_codes(this_subject_index), 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_Results', 'con*')));
+        
+        matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(this_subject_index).scans = {
+            fullfile(this_subject_conn_images(Flat_greaterthan_Rest_contrast_index).folder, this_subject_conn_images(Flat_greaterthan_Rest_contrast_index).name)
+            fullfile(this_subject_conn_images(Low_greaterthan_Rest_contrast_index).folder, this_subject_conn_images(Low_greaterthan_Rest_contrast_index).name)
+            fullfile(this_subject_conn_images(Moderate_greaterthan_Rest_contrast_index).folder, this_subject_conn_images(Moderate_greaterthan_Rest_contrast_index).name)
+            fullfile(this_subject_conn_images(High_greaterthan_Rest_index).folder, this_subject_conn_images(High_greaterthan_Rest_index).name)
+            };
+        matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(this_subject_index).conds = [1:number_of_conditions];
+    end
+    
+elseif strcmp(task_folder, '06_Nback')
+     for this_subject_index = 1 : length(subject_codes)
+        this_subject_SPM_path = fullfile(data_path, subject_codes(this_subject_index), 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_Results', 'SPM.mat')
+        this_subject_info_path = fullfile(data_path, subject_codes(this_subject_index), 'subject_info.csv');
+        
+        this_subject_info = readtable(char(this_subject_info_path));
+        
+        all_subjects_gender(this_subject_index) = this_subject_info.gender;
+        all_subjects_age(this_subject_index) = this_subject_info.age;
+        
+        load(char(this_subject_SPM_path))
+        
+        for this_contrast_index = 1:length(SPM.xCon)
+            contrasts{this_contrast_index} = SPM.xCon(this_contrast_index).name;
+        end
+        
+         shortZero_greaterthan_Rest_contrast_index = find(contains(contrasts, 'short_zero>Rest'));
+         longZero_greaterthan_Rest_contrast_index = find(contains(contrasts, 'long_zero>Rest'));
+         shortOne_greaterthan_Rest_contrast_index = find(contains(contrasts, 'short_one>Rest'));
+         longOne_greaterthan_Rest_index = find(contains(contrasts, 'long_one>Rest'));
+         shortTwo_greaterthan_Rest_index = find(contains(contrasts, 'short_two>Rest'));
+         longTwo_greaterthan_Rest_index = find(contains(contrasts, 'long_two>Rest'));
+         shortThree_greaterthan_Rest_index = find(contains(contrasts, 'short_three>Rest'));
+         longThree_greaterthan_Rest_index = find(contains(contrasts, 'long_three>Rest'));
+%         
+        number_of_conditions = length([shortZero_greaterthan_Rest_contrast_index longZero_greaterthan_Rest_contrast_index shortOne_greaterthan_Rest_contrast_index longOne_greaterthan_Rest_index ...
+            shortTwo_greaterthan_Rest_index longTwo_greaterthan_Rest_index shortThree_greaterthan_Rest_index longThree_greaterthan_Rest_index]);
+        
+        this_subject_conn_images = dir(char(fullfile(data_path, subject_codes(this_subject_index), 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_Results', 'con*')));
+        
+         matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(this_subject_index).scans = {
+            fullfile(this_subject_conn_images(shortZero_greaterthan_Rest_contrast_index).folder, this_subject_conn_images(shortZero_greaterthan_Rest_contrast_index).name)
+            fullfile(this_subject_conn_images(longZero_greaterthan_Rest_contrast_index).folder, this_subject_conn_images(longZero_greaterthan_Rest_contrast_index).name)
+            fullfile(this_subject_conn_images(shortOne_greaterthan_Rest_contrast_index).folder, this_subject_conn_images(shortOne_greaterthan_Rest_contrast_index).name)
+            fullfile(this_subject_conn_images(longOne_greaterthan_Rest_index).folder, this_subject_conn_images(longOne_greaterthan_Rest_index).name)
+            fullfile(this_subject_conn_images(shortTwo_greaterthan_Rest_index).folder, this_subject_conn_images(shortTwo_greaterthan_Rest_index).name)
+            fullfile(this_subject_conn_images(longTwo_greaterthan_Rest_index).folder, this_subject_conn_images(longTwo_greaterthan_Rest_index).name)
+            fullfile(this_subject_conn_images(shortThree_greaterthan_Rest_index).folder, this_subject_conn_images(shortThree_greaterthan_Rest_index).name)
+            fullfile(this_subject_conn_images(longThree_greaterthan_Rest_index).folder, this_subject_conn_images(longThree_greaterthan_Rest_index).name)
+            };
+        matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(this_subject_index).conds = [1:number_of_conditions];
+    end
+else
+    disp('task folder specified does not exist!!')
+end
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+matlabbatch{1}.spm.stats.factorial_design.des.fblock.maininters{1}.fmain.fnum = 2; % what is this??
+matlabbatch{1}.spm.stats.factorial_design.des.fblock.maininters{2}.fmain.fnum = 1; % what is this??
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
-matlabbatch{1}.spm.stats.factorial_design.cov(1).c = [35.08
-                                                      35.08
-                                                      35.08
-                                                      35.08
-                                                      35.08
-                                                      35.08
-                                                      33.27
-                                                      33.27
-                                                      33.27
-                                                      33.27
-                                                      33.27
-                                                      33.27
-                                                      44.89
-                                                      44.89
-                                                      44.89
-                                                      44.89
-                                                      44.89
-                                                      26.04
-                                                      26.04
-                                                      26.04
-                                                      26.04
-                                                      26.04
-                                                      26.04
-                                                      38.61
-                                                      38.61
-                                                      38.61
-                                                      38.61
-                                                      38.61
-                                                      38.61
-                                                      25.33
-                                                      25.33
-                                                      25.33
-                                                      25.33
-                                                      25.33
-                                                      25.33
-                                                      50.28
-                                                      50.28
-                                                      50.28
-                                                      50.28
-                                                      50.28
-                                                      50.28
-                                                      27.1
-                                                      27.1
-                                                      27.1
-                                                      27.1
-                                                      27.1
-                                                      27.1
-                                                      27.46
-                                                      27.46
-                                                      27.46
-                                                      27.46
-                                                      27.46
-                                                      27.46
-                                                      30.83
-                                                      30.83
-                                                      30.83
-                                                      30.83
-                                                      30.83
-                                                      34.07
-                                                      34.07
-                                                      34.07
-                                                      34.07
-                                                      34.07
-                                                      34.07];
+
+% place the age of each subject for each condition
+age_covariate_matrix = [];
+for i_subject = 1 : length(subject_codes)
+    age_covariate_matrix = [age_covariate_matrix; ones(number_of_conditions,1) * all_subjects_age(i_subject)];
+end
+
+matlabbatch{1}.spm.stats.factorial_design.cov(1).c = [age_covariate_matrix];
 %%
 matlabbatch{1}.spm.stats.factorial_design.cov(1).cname = 'age';
-matlabbatch{1}.spm.stats.factorial_design.cov(1).iCFI = 1;
-matlabbatch{1}.spm.stats.factorial_design.cov(1).iCC = 1;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+matlabbatch{1}.spm.stats.factorial_design.cov(1).iCFI = 1; % what is this??
+matlabbatch{1}.spm.stats.factorial_design.cov(1).iCC = 1; % what is this??
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
-matlabbatch{1}.spm.stats.factorial_design.cov(2).c = [0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      1
-                                                      1
-                                                      1
-                                                      1
-                                                      1
-                                                      1
-                                                      1
-                                                      1
-                                                      1
-                                                      1
-                                                      1
-                                                      1
-                                                      1
-                                                      1
-                                                      1
-                                                      1
-                                                      1
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      0
-                                                      1
-                                                      1
-                                                      1
-                                                      1
-                                                      1
-                                                      1
-                                                      1
-                                                      1
-                                                      1
-                                                      1
-                                                      1];
+
+% place the age of each subject for each condition
+gender_covariate_matrix = [];
+for i_subject = 1 : length(subject_codes)
+    if strcmp(all_subjects_gender(i_subject),'M')
+        all_subjects_gender_coded = 1;
+    elseif strcmp(all_subjects_gender(i_subject),'F')
+        all_subjects_gender_coded = 0;
+    else
+        disp('gender not identified as M or F')
+    end
+    gender_covariate_matrix = [gender_covariate_matrix; ones(number_of_conditions,1) * all_subjects_gender_coded];
+end
+
+
+
+matlabbatch{1}.spm.stats.factorial_design.cov(2).c = [gender_covariate_matrix];
 
 matlabbatch{1}.spm.stats.factorial_design.cov(2).cname = 'sex';
-matlabbatch{1}.spm.stats.factorial_design.cov(2).iCFI = 1;
-matlabbatch{1}.spm.stats.factorial_design.cov(2).iCC = 1;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+matlabbatch{1}.spm.stats.factorial_design.cov(2).iCFI = 1; % what is this??
+matlabbatch{1}.spm.stats.factorial_design.cov(2).iCC = 1; % what is this??
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 matlabbatch{1}.spm.stats.factorial_design.multi_cov = struct('files', {}, 'iCFI', {}, 'iCC', {});
 matlabbatch{1}.spm.stats.factorial_design.masking.tm.tm_none = 1;
 matlabbatch{1}.spm.stats.factorial_design.masking.im = 1;
@@ -270,7 +168,7 @@ matlabbatch{1}.spm.stats.factorial_design.globalc.g_mean = 1;
 matlabbatch{1}.spm.stats.factorial_design.globalm.gmsca.gmsca_no = 1;
 matlabbatch{1}.spm.stats.factorial_design.globalm.glonorm = 1;
 
-spm_jobman('run',matlabbatch);
+% spm_jobman('run',matlabbatch);
 clear matlabbatch
 
 
@@ -278,51 +176,92 @@ clear matlabbatch
 
 %%
 
-data_path = ['/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/SWM_AS/Second_level'];
-a = spm_select('FPList', data_path,'SPM.mat');%SPM.mat file 
+a = spm_select('FPList', level2_results_dir,'SPM.mat');%SPM.mat file
 matlabbatch{1}.spm.stats.fmri_est.spmmat = cellstr(a);
 matlabbatch{1}.spm.stats.fmri_est.write_residuals = 0;
 matlabbatch{1}.spm.stats.fmri_est.method.Classical = 1;
-
-spm_jobman('run',matlabbatch);
+% 
+% spm_jobman('run',matlabbatch);
 clear matlabbatch
 
 %%
 
-data_path = ['/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/SWM_AS/Second_level'];
-b = spm_select('FPList', data_path,'SPM.mat');%SPM.mat file 
+load(fullfile(level2_results_dir,'SPM.mat'))
+
+b = spm_select('FPList', level2_results_dir,'SPM.mat');%SPM.mat file
 matlabbatch{1}.spm.stats.con.spmmat = cellstr(b);
 
-%001 = SWM>SWMc 
-matlabbatch{1}.spm.stats.con.consess{1}.tcon.name = 'Baseline->Increase->Recover';
-matlabbatch{1}.spm.stats.con.consess{1}.tcon.weights = [-0.33 -0.33 0.08 0.72 0.2 -0.34];
-matlabbatch{1}.spm.stats.con.consess{1}.tcon.sessrep = 'none';
+if strcmp(task_folder, '05_MotorImagery')  
+%     Flat_greaterthan_Rest_contrast_index = find(contains(contrasts, 'flat>Rest'));
+%     Low_greaterthan_Rest_contrast_index = find(contains(contrasts, 'low>Rest'));
+%     Moderate_greaterthan_Rest_contrast_index = find(contains(contrasts, 'medium>Rest'));
+%     High_greaterthan_Rest_index = find(contains(contrasts, 'hard>Rest'));
+    
 
-%002 = SWM>SWMc
-matlabbatch{1}.spm.stats.con.consess{2}.tcon.name = 'Baseline->Decrease->Recover';
-matlabbatch{1}.spm.stats.con.consess{2}.tcon.weights = [0.33 0.33 -0.08 -0.72 -.2 0.34];
-matlabbatch{1}.spm.stats.con.consess{2}.tcon.sessrep = 'none';
+    matlabbatch{1}.spm.stats.con.consess{1}.tcon.name = 'Main effect activation';
+    matlabbatch{1}.spm.stats.con.consess{1}.tcon.weights = [1 1 1 1];
+    matlabbatch{1}.spm.stats.con.consess{1}.tcon.sessrep = 'none';
+    
+%     matlabbatch{1}.spm.stats.con.consess{2}.tcon.name = 'low>Rest';
+%     matlabbatch{1}.spm.stats.con.consess{2}.tcon.weights = [0 1 0 0];
+%     matlabbatch{1}.spm.stats.con.consess{2}.tcon.sessrep = 'none';
+%     
+%     matlabbatch{1}.spm.stats.con.consess{3}.tcon.name =  'medium>Rest';
+%     matlabbatch{1}.spm.stats.con.consess{3}.tcon.weights = [0 0 1 0];
+%     matlabbatch{1}.spm.stats.con.consess{3}.tcon.sessrep = 'none';
+%     
+%     matlabbatch{1}.spm.stats.con.consess{4}.tcon.name =  'hard>Rest';
+%     matlabbatch{1}.spm.stats.con.consess{4}.tcon.weights = [0 0 0 1];
+%     matlabbatch{1}.spm.stats.con.consess{4}.tcon.sessrep = 'none';
+end
 
-matlabbatch{1}.spm.stats.con.delete = 1; %this deletes the previously existing contrasts; set to 0 if you do not want to delete previous contrasts! 
+if strcmp(task_folder, '06_Nback')  
+%     Flat_greaterthan_Rest_contrast_index = find(contains(contrasts, 'flat>Rest'));
+%     Low_greaterthan_Rest_contrast_index = find(contains(contrasts, 'low>Rest'));
+%     Moderate_greaterthan_Rest_contrast_index = find(contains(contrasts, 'medium>Rest'));
+%     High_greaterthan_Rest_index = find(contains(contrasts, 'hard>Rest'));
+    
+
+    matlabbatch{1}.spm.stats.con.consess{1}.tcon.name = 'Main effect activation';
+    matlabbatch{1}.spm.stats.con.consess{1}.tcon.weights = [1 1 1 1 1 1 1 1];
+    matlabbatch{1}.spm.stats.con.consess{1}.tcon.sessrep = 'none';
+    
+%     matlabbatch{1}.spm.stats.con.consess{2}.tcon.name = 'low>Rest';
+%     matlabbatch{1}.spm.stats.con.consess{2}.tcon.weights = [0 1 0 0];
+%     matlabbatch{1}.spm.stats.con.consess{2}.tcon.sessrep = 'none';
+%     
+%     matlabbatch{1}.spm.stats.con.consess{3}.tcon.name =  'medium>Rest';
+%     matlabbatch{1}.spm.stats.con.consess{3}.tcon.weights = [0 0 1 0];
+%     matlabbatch{1}.spm.stats.con.consess{3}.tcon.sessrep = 'none';
+%     
+%     matlabbatch{1}.spm.stats.con.consess{4}.tcon.name =  'hard>Rest';
+%     matlabbatch{1}.spm.stats.con.consess{4}.tcon.weights = [0 0 0 1];
+%     matlabbatch{1}.spm.stats.con.consess{4}.tcon.sessrep = 'none';
+end
+
+
+matlabbatch{1}.spm.stats.con.delete = 1; %this deletes the previously existing contrasts; set to 0 if you do not want to delete previous contrasts!
 
 spm_jobman('run',matlabbatch);
 clear matlabbatch
 
 %v%%%%%%% Main Effect
 % data_path = ['/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/SWM_AS/Cerebellum/CB/maineffect'];
-% b = spm_select('FPList', data_path,'SPM.mat');%SPM.mat file 
+% b = spm_select('FPList', data_path,'SPM.mat');%SPM.mat file
 % matlabbatch{1}.spm.stats.con.spmmat = cellstr(b);
-% 
-% %001 = ACTIVATION  
+%
+% %001 = ACTIVATION
 % matlabbatch{1}.spm.stats.con.consess{1}.tcon.name = 'Main effect activation';
 % matlabbatch{1}.spm.stats.con.consess{1}.tcon.weights = [1 1 1 1 1 1];
 % matlabbatch{1}.spm.stats.con.consess{1}.tcon.sessrep = 'none';
-% 
+%
 % %002 = DEACTIVATION
 % matlabbatch{1}.spm.stats.con.consess{2}.tcon.name = 'Main effect deactivation';
 % matlabbatch{1}.spm.stats.con.consess{2}.tcon.weights = [-1 -1 -1 -1 -1 -1];
 % matlabbatch{1}.spm.stats.con.consess{2}.tcon.sessrep = 'none';
-% 
-% matlabbatch{1}.spm.stats.con.delete = 1; %this deletes the previously existing contrasts; set to 0 if you do not want to delete previous contrasts! 
-% 
+%
+% matlabbatch{1}.spm.stats.con.delete = 1; %this deletes the previously existing contrasts; set to 0 if you do not want to delete previous contrasts!
+%
 % spm_jobman('run',matlabbatch);
+end
+

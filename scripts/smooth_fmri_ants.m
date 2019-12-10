@@ -16,7 +16,7 @@ spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
 
-files_to_smooth = spm_select('FPList', data_path, '^warpedToMNInoC_unwarpedRealigned.*\.nii$');
+files_to_smooth = spm_select('FPList', data_path, '^warpedToMNI_unwarped.*\.nii$');
 
 for i_file = 1 : size(files_to_smooth,1)
     this_file_with_volumes = spm_select('expand', files_to_smooth(i_file,:));

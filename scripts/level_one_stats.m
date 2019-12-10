@@ -9,26 +9,30 @@
 % You should have received a copy of the GNU General Public License
 % along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function level_one_stats(TR_from_json)
-     TR_from_json = str2num(TR_from_json);
-%      TR_from_json=1.5;
+function level_one_stats(create_model_and_estimate, TR_from_json)
+%      TR_from_json = str2num(TR_from_json);
+%       TR_from_json=1.5;
     data_path = pwd;
     clear matlabbatch
     spm('Defaults','fMRI');
     spm_jobman('initcfg');
     spm_get_defaults('cmdline',true);
 
-    files_to_test = spm_select('FPList', data_path, '^smoothed_warpedToMNI_.*\.nii$');
+    % TO DO: need more specific prefix check to decipher between ANTS and
+    % SPM norm files (need to be able to exclude smothed T1)
+    files_to_test = spm_select('FPList', data_path, '^smoothed.*\.nii$');
     art_regression_outlier_files  = spm_select('FPList',  data_path,'^art_regression_outliers_and_movement.*.mat');
     condition_onset_files = spm_select('FPList', data_path, '^Condition_Onsets_.*.csv');
     
-    directory_pieces = regexp(data_path,'/','split');
-    levels_back = 3; % standard number of folders from data to subject level
+    directory_pieces = regexp(data_path,filesep,'split');
+    levels_back_subject = 3; % standard number of folders from data to subject level
+    levels_back_task = 0;
     fileID=-1;
     while fileID == -1
-        subject_level_directory = getfield( directory_pieces, {1:length(directory_pieces)-levels_back} );
+        subject_level_directory = getfield( directory_pieces, {1:length(directory_pieces)-levels_back_subject} );
+        task_level_directory = getfield( directory_pieces, {1:length(directory_pieces)-levels_back_task} );
         for i_path_element = 1:size(subject_level_directory,2)
-            subject_level_directory{i_path_element}(end+1) = '/';
+            subject_level_directory{i_path_element}(end+1) = filesep;
         end
         subject_level_directory_string = cellfun(@string,subject_level_directory);
         subject_level_directory_full = join(subject_level_directory_string,'');
@@ -36,7 +40,9 @@ function level_one_stats(TR_from_json)
         outlier_settings_file_path = fullfile(subject_level_directory_full, 'outlier_removal_settings.txt');
           
         fileID = fopen(outlier_settings_file_path, 'r');
-        levels_back = levels_back + 1;
+        levels_back_subject = levels_back_subject + 1;
+        levels_back_task = levels_back_task + 1;
+        disp('searching for outlier_removal_settings...')
     end
     
     % read text to cell
@@ -192,7 +198,9 @@ function level_one_stats(TR_from_json)
     matlabbatch{1}.spm.stats.fmri_spec.mask = {''};  %  gets rid of errors outside of brain but should only be run if mthresh is -inf
     matlabbatch{1}.spm.stats.fmri_spec.cvi = 'AR(1)';
     
-     spm_jobman('run',matlabbatch);
+    if create_model_and_estimate
+        spm_jobman('run',matlabbatch);
+    end
     clear matlabbatch
 
     
@@ -204,7 +212,9 @@ function level_one_stats(TR_from_json)
     matlabbatch{1}.spm.stats.fmri_est.write_residuals = 0;
     matlabbatch{1}.spm.stats.fmri_est.method.Classical = 1;
     
-     spm_jobman('run',matlabbatch);
+    if create_model_and_estimate
+        spm_jobman('run',matlabbatch);
+    end
     clear matlabbatch
 
         % Contrasts
@@ -221,7 +231,6 @@ function level_one_stats(TR_from_json)
     all_unique_condition_names = unique(all_condition_names);
     
     for i_reg_file = 1:size(art_regression_outlier_files,1)
-%         art_regressor_files(i_reg_file,:) = fullfile(art_regression_outlier_files(i_reg_file).folder, art_regression_outlier_files(i_reg_file).name);
         load(art_regression_outlier_files(i_reg_file,:))
         number_of_regressors = size(R,2);
         regressor_array{:,i_reg_file} = zeros(1,number_of_regressors);
@@ -238,15 +247,20 @@ function level_one_stats(TR_from_json)
         end
     end
     
+    % TO DO: need to check whether conditions names are different by run.. if so
+    % throw and error
+    
+    
+    
     % go through all perumations of condition comparisons to create
     % contrasts
     number_of_contrasts = 1;
-    previousRun_greaterthanCond_contrast_array = [];
-    this_greaterthanCond_contrast_array = [];
-    previousRun_greaterthanRest_contrast_array = [];
-    this_greaterthanRest_contrast_array = [];
-    previousRun_lessthanRest_contrast_array = [];
-    this_lessthanRest_contrast_array = [];
+    previousRun_greaterthan_Cond_contrast_array = [];
+    this_greaterthan_Cond_contrast_array = [];
+    previousRun_greaterthan_Rest_contrast_array = [];
+    this_greaterthan_Rest_contrast_array = [];
+    previousRun_lessthan_Rest_contrast_array = [];
+    this_lessthan_Rest_contrast_array = [];
     
     for i = 1:size(all_unique_condition_names,1)
         for j = 1:size(all_unique_condition_names,1)
@@ -258,56 +272,125 @@ function level_one_stats(TR_from_json)
                     this_contrast_cond_right_Run1_SPMindex_this_run = find(contains(condition_names_array(:,i_run), this_contrast_cond_right));
                     
                     % create this run's greaterthanCond array
-                    thisRun_greaterthanCond_contrast_array = [zeros(length(condition_names_array) * 2,1) ]'; % two betas per condition if time derivative (how can we check this?)
-                    thisRun_greaterthanCond_contrast_array(this_contrast_cond_left_SPMindex_this_run * 2 - 1)  = 1;
-                    thisRun_greaterthanCond_contrast_array(this_contrast_cond_right_Run1_SPMindex_this_run * 2 - 1) =  -1;
+                    thisRun_greaterthan_Cond_contrast_array = [zeros(length(condition_names_array) * 2,1) ]'; % two betas per condition if time derivative (how can we check this?)
+                    thisRun_greaterthan_Cond_contrast_array(this_contrast_cond_left_SPMindex_this_run * 2 - 1)  = 1;
+                    thisRun_greaterthan_Cond_contrast_array(this_contrast_cond_right_Run1_SPMindex_this_run * 2 - 1) =  -1;
                    
                      % create this run's greaterthanRest array
-                    thisRun_greaterthanRest_contrast_array = [zeros(length(condition_names_array) * 2,1) ]'; % two betas per condition if time derivative (how can we check this?)
-                    thisRun_greaterthanRest_contrast_array(this_contrast_cond_left_SPMindex_this_run * 2 - 1) = 1;
+                    thisRun_greaterthan_Rest_contrast_array = [zeros(length(condition_names_array) * 2,1) ]'; % two betas per condition if time derivative (how can we check this?)
+                    thisRun_greaterthan_Rest_contrast_array(this_contrast_cond_left_SPMindex_this_run * 2 - 1) = 1;
                     
                      % create this run's lessthanRest array
-                    thisRun_lessthanRest_contrast_array = [zeros(length(condition_names_array) * 2,1) ]'; % two betas per condition if time derivative (how can we check this?)
-                    thisRun_lessthanRest_contrast_array(this_contrast_cond_left_SPMindex_this_run * 2 - 1) = -1;
+                    thisRun_lessthan_Rest_contrast_array = [zeros(length(condition_names_array) * 2,1) ]'; % two betas per condition if time derivative (how can we check this?)
+                    thisRun_lessthan_Rest_contrast_array(this_contrast_cond_left_SPMindex_this_run * 2 - 1) = -1;
                     
                     if i_run < number_of_runs
-                        if ~isempty(previousRun_greaterthanCond_contrast_array)
-                            this_greaterthanCond_contrast_array = [previousRun_greaterthanCond_contrast_array thisRun_greaterthanCond_contrast_array regressor_array{:,i_run}];
-                            thisRun_greaterthanRest_contrast_array = [previousRun_greaterthanRest_contrast_array thisRun_greaterthanRest_contrast_array regressor_array{:,i_run}];
-                            thisRun_lessthanRest_contrast_array = [previousRun_greaterthanRest_contrast_array thisRun_greaterthanRest_contrast_array regressor_array{:,i_run}];
+                        if ~isempty(previousRun_greaterthan_Cond_contrast_array)
+                            this_greaterthan_Cond_contrast_array = [previousRun_greaterthan_Cond_contrast_array thisRun_greaterthan_Cond_contrast_array regressor_array{:,i_run}];
+                            this_greaterthan_Rest_contrast_array = [previousRun_greaterthan_Rest_contrast_array thisRun_greaterthan_Rest_contrast_array regressor_array{:,i_run}];
+                            this_lessthan_Rest_contrast_array = [previousRun_lessthan_Rest_contrast_array thisRun_lessthan_Rest_contrast_array regressor_array{:,i_run}];
                         else
-                            this_greaterthanCond_contrast_array = [thisRun_greaterthanCond_contrast_array regressor_array{:,i_run}];
-                            this_greaterthanRest_contrast_array = [thisRun_greaterthanRest_contrast_array regressor_array{:,i_run}];
-                            this_lessthanRest_contrast_array = [thisRun_lessthanRest_contrast_array regressor_array{:,i_run}];
+                            this_greaterthan_Cond_contrast_array = [thisRun_greaterthan_Cond_contrast_array regressor_array{:,i_run}];
+                            this_greaterthan_Rest_contrast_array = [thisRun_greaterthan_Rest_contrast_array regressor_array{:,i_run}];
+                            this_lessthan_Rest_contrast_array = [thisRun_lessthan_Rest_contrast_array regressor_array{:,i_run}];
                         end
                     else
-                        greaterthanCond_contrast_array(number_of_contrasts,:) = [previousRun_greaterthanCond_contrast_array thisRun_greaterthanCond_contrast_array];
-                        greaterthanRest_contrast_array(i,:) = [previousRun_greaterthanRest_contrast_array thisRun_greaterthanRest_contrast_array];
-                        lessthanRest_contrast_array(i,:) = [previousRun_lessthanRest_contrast_array thisRun_lessthanRest_contrast_array];
+                        greaterthan_Cond_contrast_array(number_of_contrasts,:) = [previousRun_greaterthan_Cond_contrast_array thisRun_greaterthan_Cond_contrast_array];
+                        greaterthan_Rest_contrast_array(i,:) = [previousRun_greaterthan_Rest_contrast_array thisRun_greaterthan_Rest_contrast_array];
+                        lessthan_Rest_contrast_array(i,:) = [previousRun_lessthan_Rest_contrast_array thisRun_lessthan_Rest_contrast_array];
                     end
                     
-                    previousRun_greaterthanCond_contrast_array = this_greaterthanCond_contrast_array;
-                    this_greaterthanCond_contrast_array = [];
+                    previousRun_greaterthan_Cond_contrast_array = this_greaterthan_Cond_contrast_array;
+                    this_greaterthan_Cond_contrast_array = [];
                     
-                    previousRun_greaterthanRest_contrast_array = this_greaterthanRest_contrast_array;
-                    this_greaterthanRest_contrast_array = [];
+                    previousRun_greaterthan_Rest_contrast_array = this_greaterthan_Rest_contrast_array;
+                    this_greaterthan_Rest_contrast_array = [];
                     
-                    previousRun_lessthanRest_contrast_array = this_lessthanRest_contrast_array;
-                    this_lessthanRest_contrast_array = [];
+                    previousRun_lessthan_Rest_contrast_array = this_lessthan_Rest_contrast_array;
+                    this_lessthan_Rest_contrast_array = [];
                     
-                    greaterthanCond_contrast_name{number_of_contrasts,i_run} = [char(this_contrast_cond_left) '>' char(this_contrast_cond_right)];
-                    greaterthanRest_contrast_name{number_of_contrasts,i_run} = [char(this_contrast_cond_left) '>Rest' ];
-                    lessthanRest_contrast_name{number_of_contrasts,i_run} = [char(this_contrast_cond_left) '<Rest' ];
                 end
+                
+                greaterthan_Cond_contrast_name{number_of_contrasts} = [char(this_contrast_cond_left) '>' char(this_contrast_cond_right)];
+                greaterthan_Rest_contrast_name{i} = [char(this_contrast_cond_left) '>Rest' ];
+                lessthan_Rest_contrast_name{i} = [char(this_contrast_cond_left) '<Rest' ];
                 number_of_contrasts = number_of_contrasts + 1;
             end
         end
     end
+       
     
-    final_contrast_array_matrix = [greaterthanCond_contrast_array; greaterthanRest_contrast_array; lessthanRest_contrast_array];
-    final_contrast_name_matrix = [greaterthanCond_contrast_name; greaterthanRest_contrast_name; lessthanRest_contrast_name];
+%     previousRun_AllgreaterthanCond_contrast_array = [];
+%     
+%     thisRun_All_greaterthan_Rest_contrast_array = [zeros(length(condition_names_array) * 2,1) ]'; % two betas per condition if time derivative (how can we check this?)
+%     thisRun_All_greaterthan_Rest_contrast_array(1:2:length(condition_names_array) * 2 - 1)  = 1;
+%     
+%     thisRun_All_lessthan_Rest_contrast_array = [zeros(length(condition_names_array) * 2,1) ]'; % two betas per condition if time derivative (how can we check this?)
+%     thisRun_All_lessthan_Rest_contrast_array(1:2:length(condition_names_array) * 2 - 1)  = -1;
+%     
+%     thisRun_linearZero_contrast_array = [zeros(length(condition_names_array) * 2,1)];
     
-    design_matrix_file = spm_select('FPList', level1_results_dir,'SPM.mat'); 
+%     if strcmp(task_level_directory{end}, '06_Nback')
+%         for this_condition_index = 1 : length(thisRun_linearZero_contrast_array)
+%             if  strcmp(condition_names_array(this_condition_index, 1), 'long_zero') || strcmp(condition_names_array(this_condition_index, 1), 'short_zero')
+%                 this_contrast_value = -3;
+%             end
+%             
+%             if  strcmp(condition_names_array(this_condition_index, 1), 'long_one') || strcmp(condition_names_array(this_condition_index, 1), 'short_one')
+%                 this_contrast_value = -1;
+%             end
+%             
+%             if  strcmp(condition_names_array(this_condition_index, 1), 'long_two') || strcmp(condition_names_array(this_condition_index, 1), 'short_two')
+%                 this_contrast_value = 1;
+%             end
+%             
+%             if  strcmp(condition_names_array(this_condition_index, 1), 'long_three') || strcmp(condition_names_array(this_condition_index, 1), 'short_three')
+%                 this_contrast_value = 3;
+%             end
+%             
+%             thisRun_linearZero_contrast_array(this_condition_index * 2 - 1) = this_contrast_value;
+%         end     
+%     elseif strcmp(task_level_directory{end}, '05_MotorImagery')
+%          for this_condition_index = 1 : length(thisRun_linearZero_contrast_array)
+%              disp "Not Ready Yet"
+%          end
+%     else
+%         disp "Need to code contrasts for this task!!!"
+%     end
+    
+%     for i_run = 1:number_of_runs
+%         
+%         if i_run < number_of_runs
+%             if ~isempty(previousRun_AllgreaterthanCond_contrast_array)
+%                 this_AllgreaterthanRest_contrast_array = [previousRun_AllgreaterthanCond_contrast_array thisRun_All_greaterthan_Rest_contrast_array regressor_array{:,i_run}];
+%                 this_AlllessthanRest_contrast_array = [previousRun_AlllessthanCond_contrast_array thisRun_All_lessthan_Rest_contrast_array regressor_array{:,i_run}]; 
+%                 this_XX_contrast_array = [previousRun_XX_contrast_array thisRun_XX_contrast_array regressor_array{:,i_run}]; 
+%             else
+%                 this_AllgreaterthanRest_contrast_array = [thisRun_All_greaterthan_Rest_contrast_array regressor_array{:,i_run}];
+%                 this_AlllessthanRest_contrast_array = [thisRun_All_lessthan_Rest_contrast_array regressor_array{:,i_run}];
+%                   this_XX_contrast_array = [thisRun_XX_contrast_array regressor_array{:,i_run}];
+%             end
+%         else
+%             AllgreaterthanRest_contrast_array(1,:) = [previousRun_AllgreaterthanCond_contrast_array thisRun_All_greaterthan_Rest_contrast_array];
+%             AlllessthanRest_contrast_array(1,:) = [previousRun_AlllessthanCond_contrast_array thisRun_All_lessthan_Rest_contrast_array];
+%             XX_contrast_array(1,:) = [previousRun_XX_contrast_array thisRun_XX_contrast_array];
+%         end
+%         
+%         previousRun_AllgreaterthanCond_contrast_array = this_AllgreaterthanRest_contrast_array;
+%         this_AllgreaterthanRest_contrast_array = [];
+%         
+%         previousRun_AlllessthanCond_contrast_array = this_AlllessthanRest_contrast_array;
+%         this_AlllessthanRest_contrast_array = [];
+%         
+%     end
+%     
+%     AllgreaterthanRest_contrast_name = {'All>Rest'};
+%     AlllessthanRest_contrast_name = {'All<Rest'};
+    
+    final_contrast_array_matrix = [greaterthan_Cond_contrast_array; greaterthan_Rest_contrast_array; lessthan_Rest_contrast_array];
+    final_contrast_name_matrix = [greaterthan_Cond_contrast_name'; greaterthan_Rest_contrast_name'; lessthan_Rest_contrast_name'];
+    
+    design_matrix_file = spm_select('FPList', level1_results_dir,'SPM.mat');
     matlabbatch{1}.spm.stats.con.spmmat = cellstr(design_matrix_file);
     
     for this_contrast = 1:size(final_contrast_array_matrix,1)
