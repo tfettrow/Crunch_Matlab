@@ -10,7 +10,8 @@
 % along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 function level_one_stats(create_model_and_estimate, TR_from_json)
-%      TR_from_json = str2num(TR_from_json);
+     TR_from_json = str2num(TR_from_json);
+% create_model_and_estimate=1;
 %       TR_from_json=1.5;
     data_path = pwd;
     clear matlabbatch
@@ -106,7 +107,9 @@ function level_one_stats(create_model_and_estimate, TR_from_json)
         if ~isempty(outlier_removal_cell)
             for this_line = 1:size(outlier_removal_cell,2)
                 line_pieces_per_run = strsplit(outlier_removal_cell{this_line}, ',');
-                this_line_run_matches(this_line) =  str2num(line_pieces_per_run{2}) ==  i_run;
+                if strcmp(task_level_directory{end}, line_pieces_per_run{1})
+                    this_line_run_matches(this_line) =  str2num(line_pieces_per_run{2}) ==  i_run;
+                end
             end
             
             if sum(this_line_run_matches > 1)
@@ -120,7 +123,7 @@ function level_one_stats(create_model_and_estimate, TR_from_json)
             this_line_pieces = strsplit(this_line, ',');
         end
         
-        if (any(this_line_match_index) && i_run == str2num(this_line_pieces{2}))
+        if (any(this_line_match_index) && i_run == str2num(this_line_pieces{2})) && ~strcmp(this_line_pieces{3}, 'NA')
             this_run_start_volume = this_line_pieces{3};
             this_run_time_correction = TR_from_json * str2double(this_run_start_volume);
         else
@@ -248,10 +251,8 @@ function level_one_stats(create_model_and_estimate, TR_from_json)
     end
     
     % TO DO: need to check whether conditions names are different by run.. if so
-    % throw and error
-    
-    
-    
+    % throw error
+       
     % go through all perumations of condition comparisons to create
     % contrasts
     number_of_contrasts = 1;
@@ -401,7 +402,6 @@ function level_one_stats(create_model_and_estimate, TR_from_json)
         matlabbatch{1}.spm.stats.con.consess{this_contrast}.tcon.weights = final_contrast_array_matrix(this_contrast,:);
         matlabbatch{1}.spm.stats.con.consess{this_contrast}.tcon.sessrep = 'none';
         matlabbatch{1}.spm.stats.con.delete = 1; %this deletes the previously exisiting contrasts; set to 0 if you do not want to delete previous contrasts! 
-
     end
 
     % % Inference Results
