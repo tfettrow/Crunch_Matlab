@@ -10,10 +10,20 @@
 % along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-function level_two_stats_maineffect(create_model_and_estimate, task_folder, subject_codes, group_name)
+function level_two_stats_withinGroup(create_model_and_estimate, task_folder, subject_codes, group_name)
+
+% RUN THIS FUNCTION ONCE PER GROUP (youngAdult, oldAdult) AND TASK (Motor Imagery, Nback)
+
+create_model_and_estimate=0;
+task_folder='05_MotorImagery';
 % task_folder = '06_Nback';
-% subject_codes = {'1002', '1004'}; % need to figure out how to pass cell from shell
-% group_name='youngAdult'
+
+subject_codes = {'1002', '1004', '1010', '1011'};  % need to write script to pass cell from shell
+group_name='youngAdult';
+
+% subject_codes = {'2002' , '2015', '2018', '2021'};
+% group_name='oldAdult';
+
 subject_codes = split(subject_codes,",");
 
 data_path = pwd; % assuming shell script places wd as study level folder
@@ -22,8 +32,9 @@ spm('Defaults','fMRI');
 spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
-level2_results_dir = fullfile(data_path, 'Group_Results', 'MRI_files', task_folder, group_name);
-% 
+level2_results_dir = fullfile(data_path, 'withinGroup_Results', 'MRI_files', task_folder, group_name);
+
+
 matlabbatch{1}.spm.stats.factorial_design.dir = {level2_results_dir};
 % matlabbatch{1}.spm.stats.factorial_design.des.fblock.fac(1).name = 'subject';
 % matlabbatch{1}.spm.stats.factorial_design.des.fblock.fac(1).dept = 0;
@@ -56,7 +67,7 @@ if strcmp(task_folder, '05_MotorImagery')
         Flat_greaterthan_Rest_contrast_index = find(contains(contrasts, 'flat>Rest'));
         Low_greaterthan_Rest_contrast_index = find(contains(contrasts, 'low>Rest'));
         Moderate_greaterthan_Rest_contrast_index = find(contains(contrasts, 'medium>Rest'));
-        High_greaterthan_Rest_index = find(contains(contrasts, 'hard>Rest'));
+        High_greaterthan_Rest_index = find(contains(contrasts, 'high>Rest'));
         
         number_of_conditions = length([Flat_greaterthan_Rest_contrast_index Low_greaterthan_Rest_contrast_index Moderate_greaterthan_Rest_contrast_index High_greaterthan_Rest_index]);
         
@@ -119,8 +130,8 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-matlabbatch{1}.spm.stats.factorial_design.des.fblock.maininters{1}.fmain.fnum = 1; % what is this??
-% matlabbatch{1}.spm.stats.factorial_design.des.fblock.maininters{2}.fmain.fnum = 1; % what is this??
+matlabbatch{1}.spm.stats.factorial_design.des.fblock.maininters{1}.fmain.fnum = 1; % factors to include
+% matlabbatch{1}.spm.stats.factorial_design.des.fblock.maininters{2}.fmain.fnum = 1;
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%
 
@@ -137,7 +148,6 @@ matlabbatch{1}.spm.stats.factorial_design.cov(1).cname = 'age';
 matlabbatch{1}.spm.stats.factorial_design.cov(1).iCFI = 1; % what is this??
 matlabbatch{1}.spm.stats.factorial_design.cov(1).iCC = 1; % what is this??
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%
 
 % place the age of each subject for each condition
 gender_covariate_matrix = [];
@@ -201,37 +211,30 @@ b = spm_select('FPList', level2_results_dir,'SPM.mat');%SPM.mat file
 matlabbatch{1}.spm.stats.con.spmmat = cellstr(b);
 
 if strcmp(task_folder, '05_MotorImagery')  
-%     Flat_greaterthan_Rest_contrast_index = find(contains(contrasts, 'flat>Rest'));
-%     Low_greaterthan_Rest_contrast_index = find(contains(contrasts, 'low>Rest'));
-%     Moderate_greaterthan_Rest_contrast_index = find(contains(contrasts, 'medium>Rest'));
-%     High_greaterthan_Rest_index = find(contains(contrasts, 'hard>Rest'));
-    
 
     matlabbatch{1}.spm.stats.con.consess{1}.tcon.name = 'Main effect activation';
     matlabbatch{1}.spm.stats.con.consess{1}.tcon.weights = [1 1 1 1];
     matlabbatch{1}.spm.stats.con.consess{1}.tcon.sessrep = 'none';
-    
 
-%     matlabbatch{1}.spm.stats.con.consess{2}.tcon.name = 'low>Rest';
-%     matlabbatch{1}.spm.stats.con.consess{2}.tcon.weights = [0 1 0 0];
-%     matlabbatch{1}.spm.stats.con.consess{2}.tcon.sessrep = 'none';
-%     
-%     matlabbatch{1}.spm.stats.con.consess{3}.tcon.name =  'medium>Rest';
-%     matlabbatch{1}.spm.stats.con.consess{3}.tcon.weights = [0 0 1 0];
-%     matlabbatch{1}.spm.stats.con.consess{3}.tcon.sessrep = 'none';
-%     
-%     matlabbatch{1}.spm.stats.con.consess{4}.tcon.name =  'hard>Rest';
-%     matlabbatch{1}.spm.stats.con.consess{4}.tcon.weights = [0 0 0 1];
-%     matlabbatch{1}.spm.stats.con.consess{4}.tcon.sessrep = 'none';
+    matlabbatch{1}.spm.stats.con.consess{2}.tcon.name = 'flat>Rest';
+    matlabbatch{1}.spm.stats.con.consess{2}.tcon.weights = [1 0 0 0];
+    matlabbatch{1}.spm.stats.con.consess{2}.tcon.sessrep = 'none';
+    
+    matlabbatch{1}.spm.stats.con.consess{3}.tcon.name = 'low>Rest';
+    matlabbatch{1}.spm.stats.con.consess{3}.tcon.weights = [0 1 0 0];
+    matlabbatch{1}.spm.stats.con.consess{3}.tcon.sessrep = 'none';
+    
+    matlabbatch{1}.spm.stats.con.consess{4}.tcon.name =  'medium>Rest';
+    matlabbatch{1}.spm.stats.con.consess{4}.tcon.weights = [0 0 1 0];
+    matlabbatch{1}.spm.stats.con.consess{4}.tcon.sessrep = 'none';
+    
+    matlabbatch{1}.spm.stats.con.consess{5}.tcon.name =  'hard>Rest';
+    matlabbatch{1}.spm.stats.con.consess{5}.tcon.weights = [0 0 0 1];
+    matlabbatch{1}.spm.stats.con.consess{5}.tcon.sessrep = 'none';
 end
 
 if strcmp(task_folder, '06_Nback')  
-%     Flat_greaterthan_Rest_contrast_index = find(contains(contrasts, 'flat>Rest'));
-%     Low_greaterthan_Rest_contrast_index = find(contains(contrasts, 'low>Rest'));
-%     Moderate_greaterthan_Rest_contrast_index = find(contains(contrasts, 'medium>Rest'));
-%     High_greaterthan_Rest_index = find(contains(contrasts, 'hard>Rest'));
     
-
     matlabbatch{1}.spm.stats.con.consess{1}.tcon.name = 'Main effect activation';
     matlabbatch{1}.spm.stats.con.consess{1}.tcon.weights = [1 1 1 1 1 1 1 1];
     matlabbatch{1}.spm.stats.con.consess{1}.tcon.sessrep = 'none';
@@ -275,24 +278,5 @@ matlabbatch{1}.spm.stats.con.delete = 1; %this deletes the previously existing c
 % 
 spm_jobman('run',matlabbatch);
 clear matlabbatch
-
-%v%%%%%%% Main Effect
-% data_path = ['/ufrc/rachaelseidler/share/FromExternal/Research_Projects_UF/NASA_Vaper/SWM_AS/Cerebellum/CB/maineffect'];
-% b = spm_select('FPList', data_path,'SPM.mat');%SPM.mat file
-% matlabbatch{1}.spm.stats.con.spmmat = cellstr(b);
-%
-% %001 = ACTIVATION
-% matlabbatch{1}.spm.stats.con.consess{1}.tcon.name = 'Main effect activation';
-% matlabbatch{1}.spm.stats.con.consess{1}.tcon.weights = [1 1 1 1 1 1];
-% matlabbatch{1}.spm.stats.con.consess{1}.tcon.sessrep = 'none';
-%
-% %002 = DEACTIVATION
-% matlabbatch{1}.spm.stats.con.consess{2}.tcon.name = 'Main effect deactivation';
-% matlabbatch{1}.spm.stats.con.consess{2}.tcon.weights = [-1 -1 -1 -1 -1 -1];
-% matlabbatch{1}.spm.stats.con.consess{2}.tcon.sessrep = 'none';
-%
-% matlabbatch{1}.spm.stats.con.delete = 1; %this deletes the previously existing contrasts; set to 0 if you do not want to delete previous contrasts!
-%
-% spm_jobman('run',matlabbatch);
 end
 
