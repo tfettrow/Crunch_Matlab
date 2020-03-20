@@ -14,15 +14,19 @@ function level_two_stats_withinGroup(create_model_and_estimate, task_folder, sub
 
 % RUN THIS FUNCTION ONCE PER GROUP (youngAdult, oldAdult) AND TASK (Motor Imagery, Nback)
 
-create_model_and_estimate=0;
-task_folder='05_MotorImagery';
-% task_folder = '06_Nback';
+create_model_and_estimate=1;
+% task_folder='05_MotorImagery';
+task_folder = '06_Nback';
+%  subject_codes = {'1002','1004','1010','1011','1013'};
+%subject_codes = {'2002','2015','2018','2012','2025','2020'};
+subject_codes = {'2002','2007','2008','2012','2013','2015','2018','2020','2021','2022','2023','2025','2026'}; % need to write script to pass cell from shell
+% group_name='youngAdult';
+group_name='oldAdult';
 
-subject_codes = {'1002', '1004', '1010', '1011'};  % need to write script to pass cell from shell
-group_name='youngAdult';
-
-% subject_codes = {'2002' , '2015', '2018', '2021'};
-% group_name='oldAdult';
+cd 'spreadsheet_data'
+headers={'subject_id', 'flat', 'low', 'medium', 'high'};
+imageryvividness_data = xlsread('imageryvividness_data.xlsx');
+cd ..
 
 subject_codes = split(subject_codes,",");
 
@@ -33,7 +37,6 @@ spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
 level2_results_dir = fullfile(data_path, 'withinGroup_Results', 'MRI_files', task_folder, group_name);
-
 
 matlabbatch{1}.spm.stats.factorial_design.dir = {level2_results_dir};
 % matlabbatch{1}.spm.stats.factorial_design.des.fblock.fac(1).name = 'subject';
@@ -71,7 +74,7 @@ if strcmp(task_folder, '05_MotorImagery')
         
         number_of_conditions = length([Flat_greaterthan_Rest_contrast_index Low_greaterthan_Rest_contrast_index Moderate_greaterthan_Rest_contrast_index High_greaterthan_Rest_index]);
         
-        this_subject_conn_images = dir(char(fullfile(data_path, subject_codes(this_subject_index), 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_Results', 'con*')));
+        this_subject_conn_images = dir(char(fullfile(data_path, subject_codes(this_subject_index), 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_Results', 'con_*')));
         
         matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(this_subject_index).scans = {
             fullfile(this_subject_conn_images(Flat_greaterthan_Rest_contrast_index).folder, this_subject_conn_images(Flat_greaterthan_Rest_contrast_index).name)
@@ -84,7 +87,7 @@ if strcmp(task_folder, '05_MotorImagery')
     
 elseif strcmp(task_folder, '06_Nback')
      for this_subject_index = 1 : length(subject_codes)
-        this_subject_SPM_path = fullfile(data_path, subject_codes(this_subject_index), 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_Results', 'SPM.mat')
+        this_subject_SPM_path = fullfile(data_path, subject_codes(this_subject_index), 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_Results', 'SPM.mat');
         this_subject_info_path = fullfile(data_path, subject_codes(this_subject_index), 'subject_info.csv');
         
         this_subject_info = readtable(char(this_subject_info_path));
@@ -162,8 +165,6 @@ for i_subject = 1 : length(subject_codes)
     gender_covariate_matrix = [gender_covariate_matrix; ones(number_of_conditions,1) * all_subjects_gender_coded];
 end
 
-
-
 matlabbatch{1}.spm.stats.factorial_design.cov(2).c = [gender_covariate_matrix];
 
 matlabbatch{1}.spm.stats.factorial_design.cov(2).cname = 'sex';
@@ -172,6 +173,23 @@ matlabbatch{1}.spm.stats.factorial_design.cov(2).cname = 'sex';
 matlabbatch{1}.spm.stats.factorial_design.cov(2).iCFI = 1; % what is this??
 matlabbatch{1}.spm.stats.factorial_design.cov(2).iCC = 1; % what is this??
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+imageryscores = [];
+if strcmp(task_folder, '05_MotorImagery')
+    for this_subject_index = 1 : length(subject_codes)
+        this_subject_index_row = find(strcmp(subject_codes(this_subject_index), string(imageryvividness_data(:,1))));
+        imageryscores = [imageryscores; imageryvividness_data(this_subject_index_row,2); imageryvividness_data(this_subject_index_row,3); imageryvividness_data(this_subject_index_row,4); imageryvividness_data(this_subject_index_row,5)] ; 
+    end
+    matlabbatch{1}.spm.stats.factorial_design.cov(3).c = imageryscores;
+    matlabbatch{1}.spm.stats.factorial_design.cov(3).cname = 'imagery';
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+matlabbatch{1}.spm.stats.factorial_design.cov(3).iCFI = 1; % what is this??
+matlabbatch{1}.spm.stats.factorial_design.cov(3).iCC = 1; % what is this??
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 
 matlabbatch{1}.spm.stats.factorial_design.multi_cov = struct('files', {}, 'iCFI', {}, 'iCC', {});
 matlabbatch{1}.spm.stats.factorial_design.masking.tm.tm_none = 1;
@@ -183,6 +201,9 @@ matlabbatch{1}.spm.stats.factorial_design.globalm.glonorm = 1;
 
 
 if create_model_and_estimate
+    if exist(fullfile(level2_results_dir,'SPM.mat'),'file')
+        rmdir(level2_results_dir, 's')
+    end    
     spm_jobman('run',matlabbatch);
 end
 clear matlabbatch
@@ -239,37 +260,55 @@ if strcmp(task_folder, '06_Nback')
     matlabbatch{1}.spm.stats.con.consess{1}.tcon.weights = [1 1 1 1 1 1 1 1];
     matlabbatch{1}.spm.stats.con.consess{1}.tcon.sessrep = 'none';
     
-    matlabbatch{1}.spm.stats.con.consess{2}.tcon.name = 'short_zero>Rest';
-    matlabbatch{1}.spm.stats.con.consess{2}.tcon.weights = [1 0 0 0 0 0 0 0];
+    matlabbatch{1}.spm.stats.con.consess{2}.tcon.name = 'zero>Rest';
+    matlabbatch{1}.spm.stats.con.consess{2}.tcon.weights = [1 1 0 0 0 0 0 0];
     matlabbatch{1}.spm.stats.con.consess{2}.tcon.sessrep = 'none';
-        
-    matlabbatch{1}.spm.stats.con.consess{3}.tcon.name = 'long_zero>Rest';
-    matlabbatch{1}.spm.stats.con.consess{3}.tcon.weights = [0 1 0 0 0 0 0 0];
+    
+    matlabbatch{1}.spm.stats.con.consess{3}.tcon.name = 'one>Rest';
+    matlabbatch{1}.spm.stats.con.consess{3}.tcon.weights = [0 0 1 1 0 0 0 0];
     matlabbatch{1}.spm.stats.con.consess{3}.tcon.sessrep = 'none';
     
-    matlabbatch{1}.spm.stats.con.consess{4}.tcon.name = 'short_one>Rest';
-    matlabbatch{1}.spm.stats.con.consess{4}.tcon.weights = [0 0 1 0 0 0 0 0];
+    matlabbatch{1}.spm.stats.con.consess{4}.tcon.name = 'two>Rest';
+    matlabbatch{1}.spm.stats.con.consess{4}.tcon.weights = [0 0 0 0 1 1 0 0];
     matlabbatch{1}.spm.stats.con.consess{4}.tcon.sessrep = 'none';
     
-    matlabbatch{1}.spm.stats.con.consess{5}.tcon.name = 'long_one>Rest';
-    matlabbatch{1}.spm.stats.con.consess{5}.tcon.weights = [0 0 0 1 0 0 0 0];
+    matlabbatch{1}.spm.stats.con.consess{5}.tcon.name = 'three>Rest';
+    matlabbatch{1}.spm.stats.con.consess{5}.tcon.weights = [0 0 0 0 0 0 1 1];
     matlabbatch{1}.spm.stats.con.consess{5}.tcon.sessrep = 'none';
- 
-    matlabbatch{1}.spm.stats.con.consess{6}.tcon.name = 'short_two>Rest';
-    matlabbatch{1}.spm.stats.con.consess{6}.tcon.weights = [0 0 0 0 1 0 0 0];
-    matlabbatch{1}.spm.stats.con.consess{6}.tcon.sessrep = 'none';
- 
-    matlabbatch{1}.spm.stats.con.consess{7}.tcon.name = 'long_two>Rest';
-    matlabbatch{1}.spm.stats.con.consess{7}.tcon.weights = [0 0 0 0 0 1 0 0];
-    matlabbatch{1}.spm.stats.con.consess{7}.tcon.sessrep = 'none';
+
+%     matlabbatch{1}.spm.stats.con.consess{2}.tcon.name = 'short_zero>Rest';
+%     matlabbatch{1}.spm.stats.con.consess{2}.tcon.weights = [1 0 0 0 0 0 0 0];
+%     matlabbatch{1}.spm.stats.con.consess{2}.tcon.sessrep = 'none';
+%         
+%     matlabbatch{1}.spm.stats.con.consess{3}.tcon.name = 'long_zero>Rest';
+%     matlabbatch{1}.spm.stats.con.consess{3}.tcon.weights = [0 1 0 0 0 0 0 0];
+%     matlabbatch{1}.spm.stats.con.consess{3}.tcon.sessrep = 'none';
+%     
+%     matlabbatch{1}.spm.stats.con.consess{4}.tcon.name = 'short_one>Rest';
+%     matlabbatch{1}.spm.stats.con.consess{4}.tcon.weights = [0 0 1 0 0 0 0 0];
+%     matlabbatch{1}.spm.stats.con.consess{4}.tcon.sessrep = 'none';
+%     
+%     matlabbatch{1}.spm.stats.con.consess{5}.tcon.name = 'long_one>Rest';
+%     matlabbatch{1}.spm.stats.con.consess{5}.tcon.weights = [0 0 0 1 0 0 0 0];
+%     matlabbatch{1}.spm.stats.con.consess{5}.tcon.sessrep = 'none';
+%  
+%     matlabbatch{1}.spm.stats.con.consess{6}.tcon.name = 'short_two>Rest';
+%     matlabbatch{1}.spm.stats.con.consess{6}.tcon.weights = [0 0 0 0 1 0 0 0];
+%     matlabbatch{1}.spm.stats.con.consess{6}.tcon.sessrep = 'none';
+%  
+%     matlabbatch{1}.spm.stats.con.consess{7}.tcon.name = 'long_two>Rest';
+%     matlabbatch{1}.spm.stats.con.consess{7}.tcon.weights = [0 0 0 0 0 1 0 0];
+%     matlabbatch{1}.spm.stats.con.consess{7}.tcon.sessrep = 'none';
+%     
+%     matlabbatch{1}.spm.stats.con.consess{8}.tcon.name = 'short_three>Rest';
+%     matlabbatch{1}.spm.stats.con.consess{8}.tcon.weights = [0 0 0 0 0 0 1 0];
+%     matlabbatch{1}.spm.stats.con.consess{8}.tcon.sessrep = 'none';
+%     
+%     matlabbatch{1}.spm.stats.con.consess{9}.tcon.name = 'long_three>Rest';
+%     matlabbatch{1}.spm.stats.con.consess{9}.tcon.weights = [0 0 0 0 0 0 0 1];
+%     matlabbatch{1}.spm.stats.con.consess{9}.tcon.sessrep = 'none';
+%     
     
-    matlabbatch{1}.spm.stats.con.consess{8}.tcon.name = 'short_three>Rest';
-    matlabbatch{1}.spm.stats.con.consess{8}.tcon.weights = [0 0 0 0 0 0 1 0];
-    matlabbatch{1}.spm.stats.con.consess{8}.tcon.sessrep = 'none';
-    
-    matlabbatch{1}.spm.stats.con.consess{9}.tcon.name = 'long_three>Rest';
-    matlabbatch{1}.spm.stats.con.consess{9}.tcon.weights = [0 0 0 0 0 0 0 1];
-    matlabbatch{1}.spm.stats.con.consess{9}.tcon.sessrep = 'none';
 end
 
 % 
