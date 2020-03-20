@@ -1,9 +1,9 @@
 function convert_to_mni_coordinates(roi_name, roi_x, roi_y, roi_z)
-roi_name = 'roi2';
+% roi_name = 'roi2';
 % roi_mni_coord = [-34 -32 66];
-roi_x = '69';
-roi_y = '-2'; 
-roi_z = '46';
+% roi_x = '69';
+% roi_y = '-2'; 
+% roi_z = '46';
 
 roi_x = str2num(roi_x);
 roi_y = str2num(roi_y);
@@ -33,6 +33,7 @@ fclose(fileID);
          if strcmp(split_line{1}, roi_name)
              replace_line = 1;
              line_to_write = i_line;
+             break
          else
              replace_line = 0;
              line_to_write = i_line + 1;
