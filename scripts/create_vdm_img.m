@@ -23,7 +23,7 @@ matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.data.precalcfieldmap.precalc
 matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.session.epi = {epi_file};
 matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.data.precalcfieldmap.magfieldmap ={''};
 matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.defaults.defaultsfile = {'vdm_defaults.m'};
-matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.matchvdm = 0;
+matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.matchvdm = 1;
 matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.sessname = 'session';
 matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.anat = '';
 matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.matchanat = 0;
