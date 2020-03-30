@@ -27,7 +27,7 @@ end
 for i_file = 1 : size(all_files_to_coregister,1)
     this_file_path_with_volumes = spm_select('expand', all_files_to_coregister(i_file,:));
 
-    matlabbatch{1}.spm.spatial.coreg.estimate.ref =cellstr(merged_distortion_map);
+    matlabbatch{1}.spm.spatial.coreg.estimate.ref = cellstr(merged_distortion_map);
     matlabbatch{1}.spm.spatial.coreg.estimate.source = cellstr(this_file_path_with_volumes(1,:)); % take the first volume
     matlabbatch{1}.spm.spatial.coreg.estimate.other = cellstr(this_file_path_with_volumes);
     matlabbatch{1}.spm.spatial.coreg.estimate.eoptions.cost_fun = 'nmi';
