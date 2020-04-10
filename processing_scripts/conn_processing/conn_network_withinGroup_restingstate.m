@@ -9,64 +9,86 @@
 % You should have received a copy of the GNU General Public License
 % along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function conn_network(varargin)
+function conn_network_withinGroup_restingstate(varargin)
+parser = inputParser;
+parser.KeepUnmatched = true;
+% setup defaults in case no arguments specified
+addParameter(parser, 'project_name', 'conn_project')
+addParameter(parser, 'primary', 'smoothed_warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii')
+addParameter(parser, 'secondary', ' ')
+addParameter(parser, 'structural', 'warpedToMNI_biascorrected_SkullStripped_T1.nii')
+addParameter(parser, 'roi_templates', ' ')
+addParameter(parser, 'TR', 1.5)
+addParameter(parser, 'subjects', ' ')
+parse(parser, varargin{:})
+TR = parser.Results.TR;
+subjects = parser.Results.subjects;
+primary = parser.Results.primary;
+structural = parser.Results.structural;
+secondary = parser.Results.secondary;
+roi_templates = parser.Results.roi_templates;
+
+
+disp(strcat(['Primary: ', primary, ' Structural: ', structural, ' Secondary: ', secondary]));
+
+
 clear matlabbatch
 spm('Defaults','fMRI');
 spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
-functional_file_name = 'smoothed_warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii';
-structural_file_name = 'warpedToMNI_biascorrected_SkullStripped_T1.nii';
-
-    
-for this_subject_index = 1:length(varargin)
-    this_subject = varargin(this_subject_index);
-    cd(strcat([this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep '04_rsfMRI' filesep 'ANTS_Normalization']))    
+for this_subject_index = 1:length(subjects)
+    this_subject = subjects(this_subject_index);
+    cd(strcat([this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep '04_rsfMRI' filesep 'ANTS_Normalization']))
     data_path = pwd;
-    this_restingstate_functional = spm_select('FPList', data_path, strcat('^',functional_file_name,'$'));
-    this_structural = spm_select('FPList', data_path, strcat('^',structural_file_name,'$'));
     
-    BATCH.Setup.nsubjects=length(varargin);
+    primary_path = spm_select('FPList', data_path, strcat('^',primary,'$'));
+    structural_path = spm_select('FPList', data_path, strcat('^',structural,'$'));
     
-    BATCH.Setup.structurals{this_subject_index} = this_structural;
+    BATCH.Setup.nsubjects=length(subjects);
+    BATCH.Setup.structurals{this_subject_index} = structural_path;
+    BATCH.Setup.functionals{this_subject_index}{1} = primary_path;
     
-    BATCH.Setup.functionals{this_subject_index}{1} = this_restingstate_functional;
+    BATCH.Setup.secondarydatasets{this_subject_index}{1} = secondary;
     
     cd('..')
     
     data_path = pwd;
     BATCH.Setup.covariates.names = {'head_movement'};
     
-    this_outlier_and_movement_file = spm_select('FPList', data_path, strcat('^','art_regression_outliers_and_movement_unwarpedRealigned_slicetimed_RestingState.mat','$'))
+    this_outlier_and_movement_file = spm_select('FPList', data_path, strcat('^','art_regression_outliers_and_movement_unwarpedRealigned_slicetimed_RestingState.mat','$'));
   
     BATCH.Setup.covariates.files{1}{this_subject_index}{1} = this_outlier_and_movement_file;
-     
-%  BATCH.Setup.subjects.effect_names
-%  BATCH.Setup.subjects.group_names
     
     cd(strcat(['..' filesep '..' filesep '..' filesep '..' ]))    
 end
 
-
-% BATCH.New.steps = {'initialization'};
-BATCH.filename = 'conn_project_Ugrant';
+BATCH.filename = 'conn_roi_test';
 BATCH.Setup.isnew=1;
 BATCH.Setup.done=1;
 BATCH.Setup.overwrite=1;
-BATCH.Setup.RT=1.5;
-BATCH.Setup.acquisitiontype=1
- 
- BATCH.Setup.analyses=[1,2,3];
- BATCH.Setup.outputfiles=[0,0,0,0,0,0];
- 
+BATCH.Setup.RT=TR;
+BATCH.Setup.acquisitiontype=1;
+    
+for this_roi_index = 1:length(roi_templates)
+    roi_path_split = strsplit(roi_templates{this_roi_index},filesep);
+    roi_name = roi_path_split{end};
+    roi_core_name = strsplit(roi_name, '.')
+    roi_final_name = strrep(roi_core_name{1},'-', '_');
+    BATCH.Setup.rois.names{this_roi_index} = roi_final_name;
+    BATCH.Setup.rois.files{this_roi_index} = roi_templates{this_roi_index};
+    BATCH.Setup.rois.multiplelabels(1) = 1;
+    BATCH.Setup.rois.add = 1;
+end
+
+BATCH.Setup.analyses=[1,2,3];
+BATCH.Setup.outputfiles=[0,0,0,0,0,0];
+
 BATCH.Denoising.done=1;
 
-% BATCH.Analysis.measure = 1; % 1 = 'correlation (bivariate)', 2 = 'correlation (semipartial)', 3 = 'regression (bivariate)', 4 = 'regression (multivariate)'; [1]
-% BATCH.Analysis.type = 3;
-% 
-% BATCH.vvAnalysis.done=1;
-% 
-% BATCH.dynAnalysis.done=1;
+BATCH.Analysis.done =1;
+BATCH.Analysis.measure = 1; % 1 = 'correlation (bivariate)', 2 = 'correlation (semipartial)', 3 = 'regression (bivariate)', 4 = 'regression (multivariate)'; [1]
+BATCH.Analysis.type = 3;
 
 conn_batch(BATCH)
 end
