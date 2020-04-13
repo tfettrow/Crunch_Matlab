@@ -16,6 +16,7 @@ parser.KeepUnmatched = true;
 addParameter(parser, 'project_name', 'conn_project')
 addParameter(parser, 'primary', 'smoothed_warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii')
 addParameter(parser, 'secondary', ' ')
+addParameter(parser, 'roi_dataset', 0)
 addParameter(parser, 'structural', 'warpedToMNI_biascorrected_SkullStripped_T1.nii')
 addParameter(parser, 'roi_templates', ' ')
 addParameter(parser, 'TR', 1.5)
@@ -28,6 +29,7 @@ structural = parser.Results.structural;
 secondary = parser.Results.secondary;
 roi_templates = parser.Results.roi_templates;
 project_name = parser.Results.project_name;
+roi_dataset = parser.Results.roi_dataset;
 
 disp(strcat(['Primary: ', primary, ' Structural: ', structural, ' Secondary: ', secondary]));
 
@@ -77,7 +79,7 @@ for this_roi_index = 1:length(roi_templates)
     BATCH.Setup.rois.names{this_roi_index} = roi_final_name;
     BATCH.Setup.rois.files{this_roi_index} = roi_templates{this_roi_index};
     BATCH.Setup.rois.multiplelabels(1) = 1;
-    BATCH.Setup.rois.dataset(this_roi_index) = 1;
+    BATCH.Setup.rois.dataset(this_roi_index) = roi_dataset;
     BATCH.Setup.rois.add = 1;
 end
 
