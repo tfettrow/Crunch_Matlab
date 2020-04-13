@@ -15,12 +15,12 @@ parser.KeepUnmatched = true;
 % setup defaults in case no arguments specified
 addParameter(parser, 'project_name', 'conn_project')
 addParameter(parser, 'primary', 'smoothed_warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii')
-addParameter(parser, 'secondary', ' ')
-addParameter(parser, 'roi_dataset', 0)
+addParameter(parser, 'secondary', '')
 addParameter(parser, 'structural', 'warpedToMNI_biascorrected_SkullStripped_T1.nii')
-addParameter(parser, 'roi_templates', ' ')
+addParameter(parser, 'roi_templates', '')
+addParameter(parser, 'roi_dataset', 0) % 0 = primary; 1 = first primary and so on...
 addParameter(parser, 'TR', 1.5)
-addParameter(parser, 'subjects', ' ')
+addParameter(parser, 'subjects', '')
 parse(parser, varargin{:})
 TR = parser.Results.TR;
 subjects = parser.Results.subjects;
