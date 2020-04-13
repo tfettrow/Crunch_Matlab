@@ -10,39 +10,56 @@
 % along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 function conn_network_withinGroup_taskbased(varargin)
+parser = inputParser;
+parser.KeepUnmatched = true;
+% setup defaults in case no arguments specified
+addParameter(parser, 'project_name', 'conn_project')
+addParameter(parser, 'primary', 'smoothed_warpedToMNI_unwarpedRealigned_slicetimed_')
+addParameter(parser, 'secondary', ' ')
+addParameter(parser, 'structural', 'warpedToMNI_biascorrected_SkullStripped_T1.nii')
+addParameter(parser, 'roi_templates', '')
+addParameter(parser, 'TR', 1.5)
+addParameter(parser, 'subjects', '')
+addParameter(parser, 'task_folder', '')
+parse(parser, varargin{:})
+TR = parser.Results.TR;
+subjects = parser.Results.subjects;
+primary = parser.Results.primary;
+structural = parser.Results.structural;
+secondary = parser.Results.secondary;
+roi_templates = parser.Results.roi_templates;
+project_name = parser.Results.project_name;
+task_folder = parser.Results.task_folder;
+
+disp(strcat(['Primary: ', primary, ' Structural: ', structural, ' Secondary: ', secondary]));
+
 clear matlabbatch
 spm('Defaults','fMRI');
 spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
-% functional_file_name = 'smoothed_warpedToMNI_unwarpedRealigned_slicetimed_RestingState.*\.nii$';
-structural_file_name = 'warpedToMNI_biascorrected_SkullStripped_T1.nii';
+if isempty(task_folder) || isempty(subjects)
+    error('need to specify input for arguments "task_folder" and "subjects" ')
+end
 
-TR_from_json = varargin{1};
-
-for this_subject_index = 1:length(varargin)-1 % already took the first index of varagin
-    this_subject = varargin(1+this_subject_index);
-    cd(strcat([this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep '05_MotorImagery' filesep 'ANTS_Normalization']))
+for this_subject_index = 1:length(subjects)
+    this_subject = subjects(this_subject_index);
+    cd(strcat([this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep task_folder filesep 'ANTS_Normalization']))
     data_path = pwd;
     
-    BATCH.Setup.nsubjects=length(varargin)-1;
+    primary_files = spm_select('FPList', data_path, strcat('^', primary, '.*\.nii$'));
+    secondary_path = spm_select('FPList', data_path, strcat('^',secondary,'.*\.nii$'));
+    structural_path = spm_select('FPList', data_path, strcat('^',structural,'$'));
     
     
-    files_to_test = spm_select('FPList', data_path, '^smoothed_warpedToMNI_unwarpedRealigned_slicetimed_.*\.nii$');
-    this_structural = spm_select('FPList', data_path, strcat('^',structural_file_name,'$'));
+    BATCH.Setup.nsubjects=length(subjects);
+    BATCH.Setup.structurals{this_subject_index} = structural_path;
+    
     this_outlier_and_movement_file = spm_select('FPList', data_path, '^art_regression_outliers_and_movement_unwarpedRealigned_slicetimed_.*\.mat$');
     
     condition_onset_files = spm_select('FPList', data_path, '^Condition_Onsets_.*.csv');
-    
-    BATCH.Setup.structurals{this_subject_index} = this_structural;
-    
-%     cd('..')
-    
-%     data_path = pwd;
-    
-    
-   
-    
+        
+    %%  this just reads outlier removal settings ... try to package as a stand alone function .. needs implemented in all fmri processing
     % Find outlier removal settings
     directory_pieces = regexp(data_path,filesep,'split');
     levels_back_subject = 2; % standard number of folders from data to subject level
@@ -62,7 +79,7 @@ for this_subject_index = 1:length(varargin)-1 % already took the first index of 
         fileID = fopen(outlier_settings_file_path, 'r');
         levels_back_subject = levels_back_subject + 1;
         levels_back_task = levels_back_task + 1;
-        disp('searching for outlier_removal_settings...')
+        disp(strcat('searching for outlier_removal_settings for ', this_subject, '...'))
     end
     
     % read text to cell
@@ -105,14 +122,15 @@ for this_subject_index = 1:length(varargin)-1 % already took the first index of 
      outlier_removal_cell(lines_to_prune) = [];
      
      
-    
-    
-    if size(condition_onset_files,1) ~= size(files_to_test,1)
+     %% identify onset and duration of tasks and correct for outliers
+     
+    if size(condition_onset_files,1) ~= size(primary_files,1)
         error('Need the same # of Onset Files as Functional Runs')
     end
     
-    for i_run = 1:size(files_to_test,1)
-        this_file_with_volumes = spm_select('expand', files_to_test(i_run,:));
+    for i_run = 1:size(primary_files,1)
+        this_primary_file_with_volumes = spm_select('expand', primary_files(i_run,:));
+%         this_secondary_file_with_volumes = spm_select('expand', secondary_path(i_run,:));
         
         % check to see if there were any outlier removals for this run
         % remove lines that do not match this processed folder
@@ -189,7 +207,7 @@ for this_subject_index = 1:length(varargin)-1 % already took the first index of 
             
             % check to see if the onset and duration are divisible by TR..
             % if not, increase onset time and decrease duration
-            while (mod(this_cond_onset_times_corrected, TR_from_json) ~= 0)
+            while (mod(this_cond_onset_times_corrected, TR) ~= 0)
                 this_cond_onset_times_corrected = round(this_cond_onset_times_corrected, 1) + 0.1;
             end
             
@@ -199,7 +217,8 @@ for this_subject_index = 1:length(varargin)-1 % already took the first index of 
                 this_cond_durations = round(this_cond_durations, 1) - 0.1;
             end
             
-            BATCH.Setup.functionals{this_subject_index}{i_run} = this_file_with_volumes;
+            BATCH.Setup.functionals{this_subject_index}{i_run} = this_primary_file_with_volumes;
+%             BATCH.Setup.functionals{this_subject_index}{i_run} = this_secondary_file_with_volumes;
             
             BATCH.Setup.covariates.names = {'head_movement'};
             BATCH.Setup.covariates.files{1}{this_subject_index}{i_run} = this_outlier_and_movement_file(i_run,:);
@@ -213,19 +232,28 @@ for this_subject_index = 1:length(varargin)-1 % already took the first index of 
     cd(strcat(['..' filesep '..' filesep '..' filesep '..'  filesep '..' ]))    
 end
 
-% BATCH.New.steps = {'initialization'};
-BATCH.filename = 'conn_project_F32';
+BATCH.filename = project_name;
 BATCH.Setup.isnew=1;
 BATCH.Setup.done=1;
 BATCH.Setup.overwrite=1;
-BATCH.Setup.RT=1.5;
+BATCH.Setup.RT=TR;
 BATCH.Setup.acquisitiontype=1;
- 
- BATCH.Setup.analyses=[1,2,3];
- BATCH.Setup.outputfiles=[0,0,0,0,0,0];
- 
-BATCH.Denoising.done=1;
 
+for this_roi_index = 1:length(roi_templates)
+    roi_path_split = strsplit(roi_templates{this_roi_index},filesep);
+    roi_name = roi_path_split{end};
+    roi_core_name = strsplit(roi_name, '.');
+    roi_final_name = strrep(roi_core_name{1},'-', '_');
+    BATCH.Setup.rois.names{this_roi_index} = roi_final_name;
+    BATCH.Setup.rois.files{this_roi_index} = roi_templates{this_roi_index};
+    BATCH.Setup.rois.multiplelabels(1) = 1;
+    BATCH.Setup.rois.add = 1;
+end
+
+BATCH.Setup.analyses=[1,2,3];
+BATCH.Setup.outputfiles=[0,0,0,0,0,0];
+
+BATCH.Denoising.done=1;
 
 BATCH.Analysis.done =1;
 BATCH.Analysis.measure = 1; % 1 = 'correlation (bivariate)', 2 = 'correlation (semipartial)', 3 = 'regression (bivariate)', 4 = 'regression (multivariate)'; [1]
@@ -234,7 +262,5 @@ BATCH.Analysis.type = 3;
 BATCH.vvAnalysis.done=1;
 BATCH.vvAnalysis.measures = 'MCOR';
 
-
 conn_batch(BATCH)
-
 end
