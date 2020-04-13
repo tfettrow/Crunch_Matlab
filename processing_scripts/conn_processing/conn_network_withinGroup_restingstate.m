@@ -77,6 +77,7 @@ for this_roi_index = 1:length(roi_templates)
     BATCH.Setup.rois.names{this_roi_index} = roi_final_name;
     BATCH.Setup.rois.files{this_roi_index} = roi_templates{this_roi_index};
     BATCH.Setup.rois.multiplelabels(1) = 1;
+    BATCH.Setup.rois.dataset(this_roi_index) = 1;
     BATCH.Setup.rois.add = 1;
 end
 
