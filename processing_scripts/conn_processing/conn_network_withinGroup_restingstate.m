@@ -27,10 +27,9 @@ primary = parser.Results.primary;
 structural = parser.Results.structural;
 secondary = parser.Results.secondary;
 roi_templates = parser.Results.roi_templates;
-
+project_name = parser.Results.project_name;
 
 disp(strcat(['Primary: ', primary, ' Structural: ', structural, ' Secondary: ', secondary]));
-
 
 clear matlabbatch
 spm('Defaults','fMRI');
@@ -44,12 +43,12 @@ for this_subject_index = 1:length(subjects)
     
     primary_path = spm_select('FPList', data_path, strcat('^',primary,'$'));
     structural_path = spm_select('FPList', data_path, strcat('^',structural,'$'));
+    secondary_path = spm_select('FPList', data_path, strcat('^',secondary,'$'));
     
     BATCH.Setup.nsubjects=length(subjects);
     BATCH.Setup.structurals{this_subject_index} = structural_path;
     BATCH.Setup.functionals{this_subject_index}{1} = primary_path;
-    
-    BATCH.Setup.secondarydatasets{this_subject_index}{1} = secondary;
+    BATCH.Setup.secondarydatasets{this_subject_index}{1} = secondary_path;
     
     cd('..')
     
@@ -63,7 +62,7 @@ for this_subject_index = 1:length(subjects)
     cd(strcat(['..' filesep '..' filesep '..' filesep '..' ]))    
 end
 
-BATCH.filename = 'conn_roi_test';
+BATCH.filename = project_name;
 BATCH.Setup.isnew=1;
 BATCH.Setup.done=1;
 BATCH.Setup.overwrite=1;
