@@ -50,7 +50,9 @@ for this_subject_index = 1:length(subjects)
     BATCH.Setup.nsubjects=length(subjects);
     BATCH.Setup.structurals{this_subject_index} = structural_path;
     BATCH.Setup.functionals{this_subject_index}{1} = primary_path;
-    BATCH.Setup.secondarydatasets{this_subject_index}{1} = secondary_path;
+    BATCH.Setup.secondarydatasets{this_subject_index}{1}.functionals_type = 4;
+    BATCH.Setup.secondarydatasets{this_subject_index}{1}.functionals_label = 'secondary';    
+    BATCH.Setup.secondarydatasets{this_subject_index}{1}.functionals_explicit = secondary_path;
     
     cd('..')
     
@@ -74,13 +76,13 @@ BATCH.Setup.acquisitiontype=1;
 for this_roi_index = 1:length(roi_templates)
     roi_path_split = strsplit(roi_templates{this_roi_index},filesep);
     roi_name = roi_path_split{end};
-    roi_core_name = strsplit(roi_name, '.')
+    roi_core_name = strsplit(roi_name, '.');
     roi_final_name = strrep(roi_core_name{1},'-', '_');
     BATCH.Setup.rois.names{this_roi_index} = roi_final_name;
     BATCH.Setup.rois.files{this_roi_index} = roi_templates{this_roi_index};
     BATCH.Setup.rois.multiplelabels(1) = 1;
     BATCH.Setup.rois.dataset(this_roi_index) = roi_dataset;
-    BATCH.Setup.rois.add = 1;
+    BATCH.Setup.rois.add = 0;
 end
 
 BATCH.Setup.analyses=[1,2,3];
