@@ -18,9 +18,11 @@ addParameter(parser, 'primary', 'smoothed_warpedToMNI_unwarpedRealigned_slicetim
 addParameter(parser, 'secondary', '')
 addParameter(parser, 'structural', 'warpedToMNI_biascorrected_SkullStripped_T1.nii')
 addParameter(parser, 'roi_templates', '')
-addParameter(parser, 'roi_dataset', 0) % 0 = primary; 1 = first primary and so on...
+addParameter(parser, 'roi_dataset', 0) % 0 = primary; 1 = first secondary and so on...
 addParameter(parser, 'TR', 1.5)
 addParameter(parser, 'subjects', '')
+addParameter(parser, 'group_names', '')
+addParameter(parser, 'group_ids', '')
 parse(parser, varargin{:})
 TR = parser.Results.TR;
 subjects = parser.Results.subjects;
@@ -30,6 +32,8 @@ secondary = parser.Results.secondary;
 roi_templates = parser.Results.roi_templates;
 project_name = parser.Results.project_name;
 roi_dataset = parser.Results.roi_dataset;
+group_names = parser.Results.group_names;
+group_ids = parser.Results.group_ids;
 
 disp(strcat(['Primary: ', primary, ' Structural: ', structural, ' Secondary: ', secondary]));
 
@@ -37,6 +41,11 @@ clear matlabbatch
 spm('Defaults','fMRI');
 spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
+
+if isempty(subjects)
+    error('need to specify input for arguments "task_folder" and "subjects" ')
+end
+
 
 for this_subject_index = 1:length(subjects)
     this_subject = subjects(this_subject_index);
@@ -48,15 +57,6 @@ for this_subject_index = 1:length(subjects)
     secondary_path = spm_select('ExtFPList', data_path, strcat('^',secondary,'$'));
     
     BATCH.Setup.nsubjects=length(subjects);
-    
-%      Setup.subjects
-%        Setup.subjects.group_names   : subjects.group_names{ngroup} char array of second-level group name
-%        Setup.subjects.groups        : subjects.group vector of size [nsubjects,1] (with values from 1 to ngroup) defining subject groups
-%        Setup.subjects.descrip       : (optional) subjects.descrip{neffect} char array of group description (long name; for display 
-%                         purposes only)
-%        Setup.subjects.add           : 1/0; use 0 (default) to define the full set of covariates to be used in your analyses; use 1 to 
-%                         define an additional set of covariates (to be added to any already-existing covariates in your 
-%                         project) [0]
     
     BATCH.Setup.structurals{this_subject_index} = structural_path;
     BATCH.Setup.functionals{this_subject_index}{1} = primary_path;
@@ -77,6 +77,17 @@ for this_subject_index = 1:length(subjects)
     BATCH.Setup.covariates.files{1}{this_subject_index}{1} = this_outlier_and_movement_file;
     
     cd(strcat(['..' filesep '..' filesep '..' filesep '..' ]))    
+end
+
+if ~isempty(group_names)
+    if length(group_ids) ~= length(subjects) || length(unique(group_ids)) ~= length(group_names)
+        error('Something wrong with "group_names" or "group_ids"...')
+    end
+    for this_group_name = 1:length(group_names)
+        BATCH.Setup.subjects.group_names{this_group_name} = group_names{this_group_name};
+    end
+    BATCH.Setup.subjects.groups = group_ids;
+    BATCH.Setup.subjects.add = 0;
 end
 
 BATCH.filename = project_name;
