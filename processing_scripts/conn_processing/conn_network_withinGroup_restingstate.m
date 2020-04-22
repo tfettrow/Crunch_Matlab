@@ -45,14 +45,27 @@ for this_subject_index = 1:length(subjects)
     
     primary_path = spm_select('FPList', data_path, strcat('^',primary,'$'));
     structural_path = spm_select('FPList', data_path, strcat('^',structural,'$'));
-    secondary_path = spm_select('FPList', data_path, strcat('^',secondary,'$'));
+    secondary_path = spm_select('ExtFPList', data_path, strcat('^',secondary,'$'));
     
     BATCH.Setup.nsubjects=length(subjects);
+    
+%      Setup.subjects
+%        Setup.subjects.group_names   : subjects.group_names{ngroup} char array of second-level group name
+%        Setup.subjects.groups        : subjects.group vector of size [nsubjects,1] (with values from 1 to ngroup) defining subject groups
+%        Setup.subjects.descrip       : (optional) subjects.descrip{neffect} char array of group description (long name; for display 
+%                         purposes only)
+%        Setup.subjects.add           : 1/0; use 0 (default) to define the full set of covariates to be used in your analyses; use 1 to 
+%                         define an additional set of covariates (to be added to any already-existing covariates in your 
+%                         project) [0]
+    
     BATCH.Setup.structurals{this_subject_index} = structural_path;
     BATCH.Setup.functionals{this_subject_index}{1} = primary_path;
-    BATCH.Setup.secondarydatasets{this_subject_index}{1}.functionals_type = 4;
-    BATCH.Setup.secondarydatasets{this_subject_index}{1}.functionals_label = 'secondary';    
-    BATCH.Setup.secondarydatasets{this_subject_index}{1}.functionals_explicit = secondary_path;
+    
+    %     BATCH.Setup.localcopy = 1;
+    %     BATCH.Setup.secondarydatasets(1).label ='ceres';
+    BATCH.Setup.secondarydatasets(1).functionals_type = 4;
+    BATCH.Setup.secondarydatasets(1).functionals_label = 'secondary';
+    BATCH.Setup.secondarydatasets(1).functionals_explicit{this_subject_index}{1} = secondary_path;
     
     cd('..')
     
@@ -82,7 +95,7 @@ for this_roi_index = 1:length(roi_templates)
     BATCH.Setup.rois.files{this_roi_index} = roi_templates{this_roi_index};
     BATCH.Setup.rois.multiplelabels(1) = 1;
     BATCH.Setup.rois.dataset(this_roi_index) = roi_dataset;
-    BATCH.Setup.rois.add = 0;
+    BATCH.Setup.rois.add = 1;
 end
 
 BATCH.Setup.analyses=[1,2,3];
