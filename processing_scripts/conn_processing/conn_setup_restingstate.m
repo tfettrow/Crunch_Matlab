@@ -9,7 +9,11 @@
 % You should have received a copy of the GNU General Public License
 % along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function conn_network_withinGroup_restingstate(varargin)
+% TO DO:
+% grab % variance removed after denoising
+% dataset_roi vector
+
+function conn_setup_restingstate(varargin)
 parser = inputParser;
 parser.KeepUnmatched = true;
 % setup defaults in case no arguments specified
@@ -17,9 +21,9 @@ addParameter(parser, 'project_name', 'conn_project')
 addParameter(parser, 'primary', 'smoothed_warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii')
 addParameter(parser, 'secondary', '')
 addParameter(parser, 'structural', 'warpedToMNI_biascorrected_SkullStripped_T1.nii')
-addParameter(parser, 'roi_templates', '')
-addParameter(parser, 'roi_dataset', 0) % 0 = primary; 1 = first secondary and so on...
-addParameter(parser, 'TR', 1.5)
+addParameter(parser, 'roi_settings', '')
+addParameter(parser, 'primary_dataset', 0) % 0 = whole brain primary ... currently assuming only other dataset is cerebellum % should probably allow for nonsmoothed images of both..
+addParameter(parser, 'TR', 1.5) % assuming default is UF sequence
 addParameter(parser, 'subjects', '')
 addParameter(parser, 'group_names', '')
 addParameter(parser, 'group_ids', '')
@@ -29,9 +33,9 @@ subjects = parser.Results.subjects;
 primary = parser.Results.primary;
 structural = parser.Results.structural;
 secondary = parser.Results.secondary;
-roi_templates = parser.Results.roi_templates;
 project_name = parser.Results.project_name;
-roi_dataset = parser.Results.roi_dataset;
+roi_settings = parser.Results.roi_settings;
+primary_dataset = parser.Results.primary_dataset;
 group_names = parser.Results.group_names;
 group_ids = parser.Results.group_ids;
 
@@ -96,17 +100,70 @@ BATCH.Setup.done=1;
 BATCH.Setup.overwrite=1;
 BATCH.Setup.RT=TR;
 BATCH.Setup.acquisitiontype=1;
+
+%% read roi settings file
+
+if ~isempty(roi_settings)
+    file_name = roi_settings;
     
-for this_roi_index = 1:length(roi_templates)
-    roi_path_split = strsplit(roi_templates{this_roi_index},filesep);
-    roi_name = roi_path_split{end};
-    roi_core_name = strsplit(roi_name, '.');
-    roi_final_name = strrep(roi_core_name{1},'-', '_');
-    BATCH.Setup.rois.names{this_roi_index} = roi_final_name;
-    BATCH.Setup.rois.files{this_roi_index} = roi_templates{this_roi_index};
-    BATCH.Setup.rois.multiplelabels(1) = 1;
-    BATCH.Setup.rois.dataset(this_roi_index) = roi_dataset;
-    BATCH.Setup.rois.add = 1;
+    fileID = fopen(file_name, 'r');
+    
+    % read text to cell
+    text_line = fgetl(fileID);
+    text_cell = {};
+    while ischar(text_line)
+        text_cell = [text_cell; text_line]; %#ok<AGROW>
+        text_line = fgetl(fileID);
+    end
+    fclose(fileID);
+    
+    % prune lines
+    lines_to_prune = false(size(text_cell, 1), 1);
+    for i_line = 1 : size(text_cell, 1)
+        this_line = text_cell{i_line};
+        
+        % remove initial white space
+        while ~isempty(this_line) && (this_line(1) == ' ' || double(this_line(1)) == 9)
+            this_line(1) = [];
+        end
+        settings_cell{i_line} = this_line; %#ok<AGROW>
+        
+        % remove comments
+        if length(this_line) > 1 && any(ismember(this_line, '#'))
+            lines_to_prune(i_line) = true;
+        end
+        
+        % flag lines consisting only of white space
+        if all(ismember(this_line, ' ') | double(this_line) == 9)
+            lines_to_prune(i_line) = true;
+        end
+        
+    end
+    settings_cell(lines_to_prune) = [];
+    
+    roi_dir = dir([strcat('rois', filesep,'*.nii')]);
+    clear roi_file_name_list;
+    [available_roi_file_name_list{1:length(roi_dir)}] = deal(roi_dir.name);
+    
+    for this_roi_index = 1:length(settings_cell)
+        this_roi_settings_line = strsplit(settings_cell{this_roi_index}, ',');
+        this_roi_core_name = this_roi_settings_line{1};
+        this_roi_dataset = this_roi_settings_line{5};
+        
+        % find the file that matches roi_core_name
+        this_roi_index_in_available_files = contains(available_roi_file_name_list, this_roi_core_name);
+        BATCH.Setup.rois.names{this_roi_index} = this_roi_core_name;
+        BATCH.Setup.rois.files{this_roi_index} = strcat('rois', filesep, available_roi_file_name_list{this_roi_index_in_available_files});
+        BATCH.Setup.rois.multiplelabels(1) = 1;
+        
+        if primary_dataset == 0
+            BATCH.Setup.rois.dataset(this_roi_index) = str2num(this_roi_dataset);
+        else
+            BATCH.Setup.rois.dataset(this_roi_index) = abs(str2num(this_roi_dataset) - 1); % assumming only two datasets
+        end
+        
+        BATCH.Setup.rois.add = 0;
+    end
 end
 
 BATCH.Setup.analyses=[1,2,3];
@@ -117,6 +174,18 @@ BATCH.Denoising.done=1;
 BATCH.Analysis.done =1;
 BATCH.Analysis.measure = 1; % 1 = 'correlation (bivariate)', 2 = 'correlation (semipartial)', 3 = 'regression (bivariate)', 4 = 'regression (multivariate)'; [1]
 BATCH.Analysis.type = 3;
+
+BATCH.vvAnalysis.done=1;
+BATCH.wAnalysis.overwite=1;
+
+%% supposed to but does not seem to run... have to go in and manually run.. obviously
+%BATCH.Results PERFORMS SECOND-LEVEL ANALYSES (ROI-to-ROI and Seed-to-Voxel analyses) %!
+BATCH.Results.done=1;
+BATCH.Results.overwrite=1;
+
+%BATCH.vvResults PERFORMS SECOND-LEVEL ANALYSES (Voxel-to-Voxel analyses) %!
+BATCH.wResults.done=1;
+BATCH.wResults.overwrite=1;
 
 conn_batch(BATCH)
 end
