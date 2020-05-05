@@ -64,24 +64,24 @@ for this_subject_index = 1:length(subjects)
     BATCH.Setup.structurals{this_subject_index} = structural_path;
     BATCH.Setup.functionals{this_subject_index}{1} = primary_path;
     
-    gray_matter_path = spm_select('ExtFPList', data_path, 'ec1warpedToMNI*')
-    white_matter_path = spm_select('ExtFPList', data_path, 'ec2warpedToMNI*')
-    csf_matter_path = spm_select('ExtFPList', data_path, 'ec3warpedToMNI*')
-        
-    BATCH.Setup.masks.Grey.files{this_subject_index} = gray_matter_path;
-    BATCH.Setup.masks.White.files{this_subject_index} = white_matter_path;
-    BATCH.Setup.masks.CSF.files{this_subject_index} = csf_matter_path;
+%     gray_matter_path = spm_select('FPList', data_path, '^ec1warpedToMNI*');
+%     white_matter_path = spm_select('FPList', data_path, '^ec2warpedToMNI*');
+%     csf_matter_path = spm_select('FPList', data_path, '^ec3warpedToMNI*');
+% %         
+%     BATCH.Setup.masks.Grey.files{this_subject_index} = gray_matter_path;
+%     BATCH.Setup.masks.White.files{this_subject_index} = white_matter_path;
+%     BATCH.Setup.masks.CSF.files{this_subject_index} = csf_matter_path;
     
     % set the target dataset to whole brain
-    if primary_dataset == 0
-        BATCH.Setup.masks.Grey.dataset = 0;
-        BATCH.Setup.masks.White.dataset = 0;
-        BATCH.Setup.masks.CSF.dataset = 0;
-    else
-        BATCH.Setup.masks.Grey.dataset = 1;
-        BATCH.Setup.masks.White.dataset = 1;
-        BATCH.Setup.masks.CSF.dataset = 1;
-    end
+%     if primary_dataset == 0
+%         BATCH.Setup.masks.Grey.dataset = 0;
+%         BATCH.Setup.masks.White.dataset = 0;
+%         BATCH.Setup.masks.CSF.dataset = 0;
+%     else
+%         BATCH.Setup.masks.Grey.dataset = 1;
+%         BATCH.Setup.masks.White.dataset = 1;
+%         BATCH.Setup.masks.CSF.dataset = 1;
+%     end
     
     %     BATCH.Setup.localcopy = 1;
     %     BATCH.Setup.secondarydatasets(1).label ='ceres';
