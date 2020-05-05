@@ -50,7 +50,6 @@ if isempty(subjects)
     error('need to specify input for arguments "task_folder" and "subjects" ')
 end
 
-
 for this_subject_index = 1:length(subjects)
     this_subject = subjects(this_subject_index);
     cd(strcat([this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep '04_rsfMRI' filesep 'ANTS_Normalization']))
@@ -64,6 +63,25 @@ for this_subject_index = 1:length(subjects)
     
     BATCH.Setup.structurals{this_subject_index} = structural_path;
     BATCH.Setup.functionals{this_subject_index}{1} = primary_path;
+    
+    gray_matter_path = spm_select('ExtFPList', data_path, 'ec1warpedToMNI*')
+    white_matter_path = spm_select('ExtFPList', data_path, 'ec2warpedToMNI*')
+    csf_matter_path = spm_select('ExtFPList', data_path, 'ec3warpedToMNI*')
+        
+    BATCH.Setup.masks.Grey.files{this_subject_index} = gray_matter_path;
+    BATCH.Setup.masks.White.files{this_subject_index} = white_matter_path;
+    BATCH.Setup.masks.CSF.files{this_subject_index} = csf_matter_path;
+    
+    % set the target dataset to whole brain
+    if primary_dataset == 0
+        BATCH.Setup.masks.Grey.dataset = 0;
+        BATCH.Setup.masks.White.dataset = 0;
+        BATCH.Setup.masks.CSF.dataset = 0;
+    else
+        BATCH.Setup.masks.Grey.dataset = 1;
+        BATCH.Setup.masks.White.dataset = 1;
+        BATCH.Setup.masks.CSF.dataset = 1;
+    end
     
     %     BATCH.Setup.localcopy = 1;
     %     BATCH.Setup.secondarydatasets(1).label ='ceres';
@@ -102,7 +120,7 @@ BATCH.Setup.RT=TR;
 BATCH.Setup.acquisitiontype=1;
 
 %% read roi settings file
-
+ 
 if ~isempty(roi_settings)
     file_name = roi_settings;
     
@@ -166,6 +184,7 @@ if ~isempty(roi_settings)
     end
 end
 
+% 
 BATCH.Setup.analyses=[1,2,3];
 BATCH.Setup.outputfiles=[0,0,0,0,0,0];
 
@@ -188,4 +207,7 @@ BATCH.wResults.done=1;
 BATCH.wResults.overwrite=1;
 
 conn_batch(BATCH)
+
+save([project_name filesep 'subject_ids'], 'subjects')
+
 end
