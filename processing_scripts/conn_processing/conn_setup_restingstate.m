@@ -21,7 +21,7 @@ addParameter(parser, 'project_name', 'conn_project')
 addParameter(parser, 'primary', 'smoothed_warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii')
 addParameter(parser, 'secondary', '')
 addParameter(parser, 'structural', 'warpedToMNI_biascorrected_SkullStripped_T1.nii')
-addParameter(parser, 'roi_settings', '')
+addParameter(parser, 'roi_settings_filename', '')
 addParameter(parser, 'primary_dataset', 0) % 0 = whole brain primary ... currently assuming only other dataset is cerebellum % should probably allow for nonsmoothed images of both..
 addParameter(parser, 'TR', 1.5) % assuming default is UF sequence
 addParameter(parser, 'subjects', '')
@@ -34,7 +34,7 @@ primary = parser.Results.primary;
 structural = parser.Results.structural;
 secondary = parser.Results.secondary;
 project_name = parser.Results.project_name;
-roi_settings = parser.Results.roi_settings;
+roi_settings_filename = parser.Results.roi_settings_filename;
 primary_dataset = parser.Results.primary_dataset;
 group_names = parser.Results.group_names;
 group_ids = parser.Results.group_ids;
@@ -64,27 +64,29 @@ for this_subject_index = 1:length(subjects)
     BATCH.Setup.structurals{this_subject_index} = structural_path;
     BATCH.Setup.functionals{this_subject_index}{1} = primary_path;
     
-%     gray_matter_path = spm_select('FPList', data_path, '^ec1warpedToMNI*');
-%     white_matter_path = spm_select('FPList', data_path, '^ec2warpedToMNI*');
-%     csf_matter_path = spm_select('FPList', data_path, '^ec3warpedToMNI*');
-% %         
-%     BATCH.Setup.masks.Grey.files{this_subject_index} = gray_matter_path;
-%     BATCH.Setup.masks.White.files{this_subject_index} = white_matter_path;
-%     BATCH.Setup.masks.CSF.files{this_subject_index} = csf_matter_path;
+    gray_matter_path = spm_select('FPList', data_path, '^c1warpedToMNI*');
+    white_matter_path = spm_select('FPList', data_path, '^c2warpedToMNI*');
+    csf_matter_path = spm_select('FPList', data_path, '^c3warpedToMNI*');
+%         
+    BATCH.Setup.masks.Grey.files{this_subject_index} = gray_matter_path;
+    BATCH.Setup.masks.White.files{this_subject_index} = white_matter_path;
+    BATCH.Setup.masks.CSF.files{this_subject_index} = csf_matter_path;
     
-    % set the target dataset to whole brain
-%     if primary_dataset == 0
-%         BATCH.Setup.masks.Grey.dataset = 0;
-%         BATCH.Setup.masks.White.dataset = 0;
-%         BATCH.Setup.masks.CSF.dataset = 0;
-%     else
-%         BATCH.Setup.masks.Grey.dataset = 1;
-%         BATCH.Setup.masks.White.dataset = 1;
-%         BATCH.Setup.masks.CSF.dataset = 1;
-%     end
+    if primary_dataset == 0
+        BATCH.Setup.masks.Grey.dataset = 0;
+        BATCH.Setup.masks.White.dataset = 0;
+        BATCH.Setup.masks.CSF.dataset = 0;
+    else
+        BATCH.Setup.masks.Grey.dataset = 1;
+        BATCH.Setup.masks.White.dataset = 1;
+        BATCH.Setup.masks.CSF.dataset = 1;
+    end
     
-    %     BATCH.Setup.localcopy = 1;
+    %     BATCH.Setup.localcopy = 1;   % not really sure what this does but
+    %     is not necessary
     %     BATCH.Setup.secondarydatasets(1).label ='ceres';
+    % may need to allow for more than two datasets if loading unsmoothed
+    % runs
     BATCH.Setup.secondarydatasets(1).functionals_type = 4;
     BATCH.Setup.secondarydatasets(1).functionals_label = 'secondary';
     BATCH.Setup.secondarydatasets(1).functionals_explicit{this_subject_index}{1} = secondary_path;
@@ -121,11 +123,9 @@ BATCH.Setup.acquisitiontype=1;
 
 %% read roi settings file
  
-if ~isempty(roi_settings)
-    file_name = roi_settings;
-    
+if ~isempty(roi_settings_filename)
+    file_name = roi_settings_filename;
     fileID = fopen(file_name, 'r');
-    
     % read text to cell
     text_line = fgetl(fileID);
     text_cell = {};
@@ -134,28 +134,23 @@ if ~isempty(roi_settings)
         text_line = fgetl(fileID);
     end
     fclose(fileID);
-    
     % prune lines
     lines_to_prune = false(size(text_cell, 1), 1);
     for i_line = 1 : size(text_cell, 1)
         this_line = text_cell{i_line};
-        
         % remove initial white space
         while ~isempty(this_line) && (this_line(1) == ' ' || double(this_line(1)) == 9)
             this_line(1) = [];
         end
         settings_cell{i_line} = this_line; %#ok<AGROW>
-        
         % remove comments
         if length(this_line) > 1 && any(ismember(this_line, '#'))
             lines_to_prune(i_line) = true;
         end
-        
         % flag lines consisting only of white space
         if all(ismember(this_line, ' ') | double(this_line) == 9)
             lines_to_prune(i_line) = true;
         end
-        
     end
     settings_cell(lines_to_prune) = [];
     
