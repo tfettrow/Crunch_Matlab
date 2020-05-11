@@ -9,20 +9,21 @@
 % You should have received a copy of the GNU General Public License
 % along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-% TO DO:
-% grab % variance removed after denoising
-% dataset_roi vector
-
+% WARNING: This assumes there is always a smoothed and nonsmoothed dataset also does not take into account multiple secondary
+  % datasets
+  
 function conn_setup_restingstate(varargin)
 parser = inputParser;
 parser.KeepUnmatched = true;
 % setup defaults in case no arguments specified
 addParameter(parser, 'project_name', 'conn_project')
-addParameter(parser, 'primary', 'smoothed_warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii')
-addParameter(parser, 'secondary', '')
+addParameter(parser, 'primary_smoothed', 'smoothed_warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii')
+addParameter(parser, 'primary_unsmoothed', 'warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii')
+addParameter(parser, 'secondary_smoothed', '')
+addParameter(parser, 'secondary_unsmoothed', '')
 addParameter(parser, 'structural', 'warpedToMNI_biascorrected_SkullStripped_T1.nii')
 addParameter(parser, 'roi_settings_filename', '')
-addParameter(parser, 'primary_dataset', 0) % 0 = whole brain primary ... currently assuming only other dataset is cerebellum % should probably allow for nonsmoothed images of both..
+addParameter(parser, 'primary_dataset', 'whole_brain')  % 'whole_brain' or 'cerebellum'
 addParameter(parser, 'TR', 1.5) % assuming default is UF sequence
 addParameter(parser, 'subjects', '')
 addParameter(parser, 'group_names', '')
@@ -30,16 +31,18 @@ addParameter(parser, 'group_ids', '')
 parse(parser, varargin{:})
 TR = parser.Results.TR;
 subjects = parser.Results.subjects;
-primary = parser.Results.primary;
+primary_smoothed = parser.Results.primary_smoothed;
+primary_unsmoothed = parser.Results.primary_unsmoothed;
 structural = parser.Results.structural;
-secondary = parser.Results.secondary;
+secondary_smoothed = parser.Results.secondary_smoothed;
+secondary_unsmoothed = parser.Results.secondary_unsmoothed;
 project_name = parser.Results.project_name;
 roi_settings_filename = parser.Results.roi_settings_filename;
 primary_dataset = parser.Results.primary_dataset;
 group_names = parser.Results.group_names;
 group_ids = parser.Results.group_ids;
 
-disp(strcat(['Primary: ', primary, ' Structural: ', structural, ' Secondary: ', secondary]));
+disp(strcat(['Primary: ', primary_smoothed, ' Structural: ', structural, ' Secondary: ', secondary_smoothed]));
 
 clear matlabbatch
 spm('Defaults','fMRI');
@@ -55,42 +58,70 @@ for this_subject_index = 1:length(subjects)
     cd(strcat([this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep '04_rsfMRI' filesep 'ANTS_Normalization']))
     data_path = pwd;
     
-    primary_path = spm_select('FPList', data_path, strcat('^',primary,'$'));
+    primary_smoothed_path = spm_select('FPList', data_path, strcat('^',primary_smoothed,'$'));
     structural_path = spm_select('FPList', data_path, strcat('^',structural,'$'));
-    secondary_path = spm_select('ExtFPList', data_path, strcat('^',secondary,'$'));
     
+    primary_unsmoothed_path = spm_select('FPList', data_path, strcat('^',primary_unsmoothed,'$'));
+    if ~isempty(secondary_smoothed)
+        secondary_smoothed_path = spm_select('ExtFPList', data_path, strcat('^',secondary_smoothed,'$'));
+    end
+    if ~isempty(secondary_unsmoothed)
+        secondary_unsmoothed_path = spm_select('ExtFPList', data_path, strcat('^',secondary_unsmoothed,'$'));
+    end
+    if ~isempty(secondary_smoothed) && isempty(secondary_unsmoothed)
+        error('need to specify unsmoothed secondary file name ')
+    end
+     
     BATCH.Setup.nsubjects=length(subjects);
     
     BATCH.Setup.structurals{this_subject_index} = structural_path;
-    BATCH.Setup.functionals{this_subject_index}{1} = primary_path;
+    BATCH.Setup.functionals{this_subject_index}{1} = primary_smoothed_path;
     
     gray_matter_path = spm_select('FPList', data_path, '^c1warpedToMNI*');
     white_matter_path = spm_select('FPList', data_path, '^c2warpedToMNI*');
     csf_matter_path = spm_select('FPList', data_path, '^c3warpedToMNI*');
-%         
+         
     BATCH.Setup.masks.Grey.files{this_subject_index} = gray_matter_path;
     BATCH.Setup.masks.White.files{this_subject_index} = white_matter_path;
     BATCH.Setup.masks.CSF.files{this_subject_index} = csf_matter_path;
-    
+
+    % WARNING: This always set target dataset to smoothed whole-brain
     if primary_dataset == 0
         BATCH.Setup.masks.Grey.dataset = 0;
         BATCH.Setup.masks.White.dataset = 0;
         BATCH.Setup.masks.CSF.dataset = 0;
     else
-        BATCH.Setup.masks.Grey.dataset = 1;
-        BATCH.Setup.masks.White.dataset = 1;
-        BATCH.Setup.masks.CSF.dataset = 1;
+        if ~isempty(primary_unsmoothed_path)
+            BATCH.Setup.masks.Grey.dataset = 2;
+            BATCH.Setup.masks.White.dataset = 2;
+            BATCH.Setup.masks.CSF.dataset = 2;
+        else
+            BATCH.Setup.masks.Grey.dataset = 1;
+            BATCH.Setup.masks.White.dataset = 1;
+            BATCH.Setup.masks.CSF.dataset = 1;
+        end
     end
     
-    %     BATCH.Setup.localcopy = 1;   % not really sure what this does but
-    %     is not necessary
-    %     BATCH.Setup.secondarydatasets(1).label ='ceres';
-    % may need to allow for more than two datasets if loading unsmoothed
-    % runs
-    BATCH.Setup.secondarydatasets(1).functionals_type = 4;
-    BATCH.Setup.secondarydatasets(1).functionals_label = 'secondary';
-    BATCH.Setup.secondarydatasets(1).functionals_explicit{this_subject_index}{1} = secondary_path;
-    
+    % Preallocating and add as we check for number of datasets
+    number_of_secondary_datasets = 1;
+    if ~isempty(primary_unsmoothed)
+        BATCH.Setup.secondarydatasets(number_of_secondary_datasets).functionals_type = 4;
+        BATCH.Setup.secondarydatasets(number_of_secondary_datasets).functionals_label = 'primary_unsmoothed';
+        BATCH.Setup.secondarydatasets(number_of_secondary_datasets).functionals_explicit{this_subject_index}{1} = primary_unsmoothed_path;
+        number_of_secondary_datasets = number_of_secondary_datasets + 1;
+    end
+    if ~isempty(secondary_smoothed)
+        BATCH.Setup.secondarydatasets(number_of_secondary_datasets).functionals_type = 4;
+        BATCH.Setup.secondarydatasets(number_of_secondary_datasets).functionals_label = 'secondary_smoothed';
+        BATCH.Setup.secondarydatasets(number_of_secondary_datasets).functionals_explicit{this_subject_index}{1} = secondary_smoothed_path;
+        number_of_secondary_datasets = number_of_secondary_datasets + 1;
+    end
+    if ~isempty(secondary_unsmoothed)
+        BATCH.Setup.secondarydatasets(number_of_secondary_datasets).functionals_type = 4;
+        BATCH.Setup.secondarydatasets(number_of_secondary_datasets).functionals_label = 'secondary_unsmoothed';
+        BATCH.Setup.secondarydatasets(number_of_secondary_datasets).functionals_explicit{this_subject_index}{1} = secondary_unsmoothed_path;
+        number_of_secondary_datasets = number_of_secondary_datasets + 1;
+    end
     cd('..')
     
     data_path = pwd;
@@ -161,7 +192,7 @@ if ~isempty(roi_settings_filename)
     for this_roi_index = 1:length(settings_cell)
         this_roi_settings_line = strsplit(settings_cell{this_roi_index}, ',');
         this_roi_core_name = this_roi_settings_line{1};
-        this_roi_dataset = this_roi_settings_line{5};
+        this_roi_dataset_target = this_roi_settings_line{6};
         
         % find the file that matches roi_core_name
         this_roi_index_in_available_files = contains(available_roi_file_name_list, this_roi_core_name);
@@ -169,12 +200,31 @@ if ~isempty(roi_settings_filename)
         BATCH.Setup.rois.files{this_roi_index} = strcat('rois', filesep, available_roi_file_name_list{this_roi_index_in_available_files});
         BATCH.Setup.rois.multiplelabels(1) = 1;
         
-        if primary_dataset == 0
-            BATCH.Setup.rois.dataset(this_roi_index) = str2num(this_roi_dataset);
-        else
-            BATCH.Setup.rois.dataset(this_roi_index) = abs(str2num(this_roi_dataset) - 1); % assumming only two datasets
+        if strcmp(primary_dataset, 'whole_brain')
+            if strcmp(this_roi_dataset_target, ' whole_brain_smoothed')
+                BATCH.Setup.rois.dataset(this_roi_index) = 0;
+            elseif strcmp(this_roi_dataset_target, ' whole_brain_unsmoothed')
+                BATCH.Setup.rois.dataset(this_roi_index) = 1;
+            elseif strcmp(this_roi_dataset_target, ' cerebellum_smoothed')
+                BATCH.Setup.rois.dataset(this_roi_index) = 2;
+            elseif strcmp(this_roi_dataset_target, ' cerebellum_unsmoothed')
+                BATCH.Setup.rois.dataset(this_roi_index) = 3;
+            else
+                error('something wrong with target dataset label in roi_settings file')
+            end
+        elseif strcmp(primary_dataset, 'cerebellum')
+             if strcmp(this_roi_dataset_target, ' cerebellum_smoothed')
+                 BATCH.Setup.rois.dataset(this_roi_index) = 0; % assumming only two datasets
+             elseif strcmp(this_roi_dataset_target, ' cerebellum_unsmoothed')
+                 BATCH.Setup.rois.dataset(this_roi_index) = 1;
+             elseif strcmp(this_roi_dataset_target, ' whole_brain_smoothed')
+                 BATCH.Setup.rois.dataset(this_roi_index) = 2;
+             elseif strcmp(this_roi_dataset_target, ' whole_brain_unsmoothed')
+                 BATCH.Setup.rois.dataset(this_roi_index) = 3;
+             else
+                error('something wrong with target dataset label in roi_settings file')
+             end
         end
-        
         BATCH.Setup.rois.add = 0;
     end
 end
