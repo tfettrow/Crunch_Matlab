@@ -192,10 +192,11 @@ if ~isempty(roi_settings_filename)
     for this_roi_index = 1:length(settings_cell)
         this_roi_settings_line = strsplit(settings_cell{this_roi_index}, ',');
         this_roi_core_name = this_roi_settings_line{1};
+        this_roi_file_name = strcat(this_roi_core_name, '.nii')
         this_roi_dataset_target = this_roi_settings_line{6};
         
         % find the file that matches roi_core_name
-        this_roi_index_in_available_files = contains(available_roi_file_name_list, this_roi_core_name);
+        [fda, this_roi_index_in_available_files, asdf] = intersect(available_roi_file_name_list, this_roi_file_name);
         BATCH.Setup.rois.names{this_roi_index} = this_roi_core_name;
         BATCH.Setup.rois.files{this_roi_index} = strcat('rois', filesep, available_roi_file_name_list{this_roi_index_in_available_files});
         BATCH.Setup.rois.multiplelabels(1) = 1;
