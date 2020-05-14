@@ -23,11 +23,11 @@ data_path = pwd;
 %--------------------------------------------------------------------------
 % Select which files you want to smooth. 
 
-conImages = spm_select('FPList', fullfile(CB_path),'^warpedToSUIT.*\.nii$');
+all_files_to_coregister = spm_select('FPList', fullfile(data_path),'^warpedToSUIT.*\.nii$');
 
 for i_file = 1 : size(all_files_to_coregister,1)
     %All of the con images (8 images)
-    this_file_path_with_volumes = spm_select('expand', conImages(i_file,:));
+    this_file_path_with_volumes = spm_select('expand', all_files_to_coregister(i_file,:));
     
     
     clear matlabbatch
