@@ -30,6 +30,9 @@ for i_subject = 1 : length(available_subject_file_name_list)
 
     average_total_conn(i_subject) = mean(nanmean(this_subject_data.Z));
 end
+%for i_subject = 1 : length(avail_subject_file_name_list)
+    
+    
 
 figure;
 bar(1:length(subjects), average_total_conn)
@@ -83,7 +86,7 @@ if ~isempty(roi_settings)
     for this_roi_index = 1:length(settings_cell)
         this_roi_settings_line = strsplit(settings_cell{this_roi_index}, ',');
         this_roi_core_name = this_roi_settings_line{1};
-        this_roi_network = this_roi_settings_line{6};
+        this_roi_network = this_roi_settings_line{5};
         
         % TO DO: 
         % 1) determine the number of unique networks
@@ -91,6 +94,17 @@ if ~isempty(roi_settings)
         % 3) Eq: (AvgWithinNetworkCorr - AvgBetweenNetworkCorr) /
         % AvgWithinNetworkCorr (see Cassady2020)
     end
+    %identifying the networks within the subject data below -
+    %troubleshooting best way to do that
+%     for this_subject_index = 1:length(this_subject_data.Z)
+%        sensorimotor_hand_connectivity = this_roi_core_name(1:30);
+%        visual_connectivity = this_roi_core_name(31:61);
+%        sensorimotor_mouth_connectivity = this_roi_core_name(62:66);
+%        auditory_connectivity = this_roi_core_name(67:79);
+%        default_mode_connectivity = this_roi_core_name(
+       
+        
+            
 end
 
 end
