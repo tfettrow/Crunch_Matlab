@@ -134,6 +134,8 @@ for this_subject_index = 1:length(subjects)
     cd(strcat(['..' filesep '..' filesep '..' filesep '..' ]))    
 end
 
+disp('gathered all subject data...')
+
 if ~isempty(group_names)
     if length(group_ids) ~= length(subjects) || length(unique(group_ids)) ~= length(group_names)
         error('Something wrong with "group_names" or "group_ids"...')
@@ -185,22 +187,21 @@ if ~isempty(roi_settings_filename)
     end
     settings_cell(lines_to_prune) = [];
     
-    roi_dir = dir([strcat('rois', filesep,'*.nii')]);
+    roi_dir = dir([strcat('ROIs', filesep,'*.nii')]);
     clear roi_file_name_list;
     [available_roi_file_name_list{1:length(roi_dir)}] = deal(roi_dir.name);
     
     for this_roi_index = 1:length(settings_cell)
         this_roi_settings_line = strsplit(settings_cell{this_roi_index}, ',');
         this_roi_core_name = this_roi_settings_line{1};
-        this_roi_file_name = strcat(this_roi_core_name, '.nii')
+        this_roi_file_name = strcat(this_roi_core_name, '.nii');
         this_roi_dataset_target = this_roi_settings_line{6};
         
         % find the file that matches roi_core_name
         [fda, this_roi_index_in_available_files, asdf] = intersect(available_roi_file_name_list, this_roi_file_name);
         BATCH.Setup.rois.names{this_roi_index} = this_roi_core_name;
-        BATCH.Setup.rois.files{this_roi_index} = strcat('rois', filesep, available_roi_file_name_list{this_roi_index_in_available_files});
+        BATCH.Setup.rois.files{this_roi_index} = strcat('ROIs', filesep, available_roi_file_name_list{this_roi_index_in_available_files});
         BATCH.Setup.rois.multiplelabels(1) = 1;
-        
         if strcmp(primary_dataset, 'whole_brain')
             if strcmp(this_roi_dataset_target, ' whole_brain_smoothed')
                 BATCH.Setup.rois.dataset(this_roi_index) = 0;
@@ -252,8 +253,11 @@ BATCH.Results.overwrite=1;
 BATCH.wResults.done=1;
 BATCH.wResults.overwrite=1;
 
+disp('starting conn...')
+ 
 conn_batch(BATCH)
 
+disp('saving subject ids for later use...')
 save([project_name filesep 'subject_ids'], 'subjects')
 
 end
