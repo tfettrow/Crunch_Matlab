@@ -96,12 +96,42 @@ if ~isempty(roi_settings)
     end
     %identifying the networks within the subject data below -
     %troubleshooting best way to do that
-%     for this_subject_index = 1:length(this_subject_data.Z)
-%        sensorimotor_hand_connectivity = this_roi_core_name(1:30);
-%        visual_connectivity = this_roi_core_name(31:61);
-%        sensorimotor_mouth_connectivity = this_roi_core_name(62:66);
-%        auditory_connectivity = this_roi_core_name(67:79);
-%        default_mode_connectivity = this_roi_core_name(
+    for this_subject_index = 1:length(this_subject_data.Z)
+       sensorimotor_hand = this_subject_data.Z(1:30);
+       visual = this_subject_data.Z(31:61);
+       sensorimotor_mouth = this_subject_data.Z(62:66);
+       auditory = this_subject_data.Z(67:79);
+       default_mode = this_subject_data.Z(80:135);
+       front_parietal_task_control = this_subject_data.Z(148:162);
+       ventral_attention = this_subject_data.Z(163:171);
+       cingulo_opercular_control = this_subject_data.Z(172:185);
+       dorsal_attention = this_subject_data.Z(186:196);
+       salience = this_subject_data.Z(197:212);
+    end
+    sensorimotor_hand1 = sensorimotor_hand(~isnan(sensorimotor_hand_connectivity));
+    visual1 = visual(~isnan(visual_connectivity));
+    sensorimotor_mouth1 = sensorimotor_mouth(~isnan(sensorimotor_mouth_connectivity));
+    auditory1 = auditory(~isnan(auditory_connectivity));
+    default_mode1 = default_mode(~isnan(default_mode_connectivity));
+    fronto_parietal_task_control1 = fronto_parietal_task_control(~isnan(fronto_parietal_task_control));
+    ventral_attention1 = ventral_attention(~isnan(ventral_attention));
+    cingulo_opercular_control1 = cingulo-opercular_control(~isnan(cingulo-opercular_control));
+    dorsal_attention1 = dorsal_attention(~isnan(dorsal_attention));
+    salience1 = salience(~isnan(salience));
+    
+    mean_sensorimotor_hand_conn = mean(sensorimotor_hand_connectivity)
+    mean_visual_conn = mean(visual_connectivity)
+    mean_sensorimotor_mouth_conn = mean(sensorimotor_mouth_connectivity)
+    mean_auditory_conn = mean(auditory_connectivity)
+    mean_default_mode_conn = mean(default_mode_connectivity)
+    mean_fronto_parietal_task_control_conn = mean(fronto_parietal_task_control)
+    mean_ventral_attention_conn = mean(ventral_attention)
+    mean_cingulo_opercular_control_conn = mean(cingulo_opercular_control)
+    mean_dorsal_attention_conn = mean(dorsal_attention)
+    mean_salience = mean(salience)   
+       
+       
+
        
         
             
