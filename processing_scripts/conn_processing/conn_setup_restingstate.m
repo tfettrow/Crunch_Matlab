@@ -86,7 +86,7 @@ for this_subject_index = 1:length(subjects)
     BATCH.Setup.masks.CSF.files{this_subject_index} = csf_matter_path;
 
     % WARNING: This always set target dataset to smoothed whole-brain
-    if primary_dataset == 0
+    if strcmp(primary_dataset, 'whole_brain')
         BATCH.Setup.masks.Grey.dataset = 0;
         BATCH.Setup.masks.White.dataset = 0;
         BATCH.Setup.masks.CSF.dataset = 0;

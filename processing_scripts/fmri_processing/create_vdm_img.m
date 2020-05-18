@@ -9,6 +9,7 @@
 % You should have received a copy of the GNU General Public License
 % along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+function create_vdm_img(functional_file_name)
 data_path = pwd; % assuming the shell command places the wd to: ('Processed/MRI_files/03_Fieldmaps/Fieldmap_nback' or /Fieldmap_motorImagery' or /DTI) 
 clear matlabbatch
 spm('Defaults','fMRI');
@@ -16,12 +17,12 @@ spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
 fieldmap_file = spm_select('ExtFPList',data_path, '^fpm_my_fieldmap.*\.img$');
-epi_file = spm_select('FPList',data_path, '^se.*\.nii$');
-% magnitude_file = spm_select('FPList',data_path, '^my_fieldmap_mag.*\.nii$');
+epi_file = spm_select('FPList', data_path, strcat('^',functional_file_name,'$'));
+magnitude_file = spm_select('FPList',data_path, '^se.*\.nii$');
 
 matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.data.precalcfieldmap.precalcfieldmap = {fieldmap_file};
 matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.session.epi = {epi_file};
-matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.data.precalcfieldmap.magfieldmap ={''};
+matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.data.precalcfieldmap.magfieldmap ={magnitude_file};
 matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.defaults.defaultsfile = {'vdm_defaults.m'};
 matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.matchvdm = 1;
 matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.sessname = 'session';
@@ -30,3 +31,4 @@ matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.matchanat = 0;
 matlabbatch{1}.spm.tools.fieldmap.calculatevdm.subj.writeunwarped = 0;
 spm_jobman('run',matlabbatch);
 clear matlabbatch
+end

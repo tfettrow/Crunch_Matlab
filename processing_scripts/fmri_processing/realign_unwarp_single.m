@@ -24,7 +24,7 @@ vdm_imagery_files = spm_select('ExtFPList', data_path, '^vdm5.*\img$');
 
 this_file_with_volumes = spm_select('expand', this_file_to_realign_unwarp);
 
-matlabbatch{1}.spm.spatial.realignunwarp.data.scans =  cellstr(this_file_with_volumes);
+matlabbatch{1}.spm.spatial.realignunwarp.data.scans = cellstr(this_file_with_volumes);
 matlabbatch{1}.spm.spatial.realignunwarp.data.pmscan = cellstr(vdm_imagery_files);
 matlabbatch{1}.spm.spatial.realignunwarp.eoptions.quality = 0.9;
 matlabbatch{1}.spm.spatial.realignunwarp.eoptions.sep = 4;
@@ -50,5 +50,4 @@ matlabbatch{1}.spm.spatial.realignunwarp.uwroptions.mask = 0;
 matlabbatch{1}.spm.spatial.realignunwarp.uwroptions.prefix = 'unwarpedRealigned_';
 spm_jobman('run',matlabbatch);
 clear matlabbatch
-
 end
