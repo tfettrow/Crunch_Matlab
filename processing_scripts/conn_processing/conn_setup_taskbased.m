@@ -126,8 +126,7 @@ for this_subject_index = 1:length(subjects)
         number_of_secondary_datasets = number_of_secondary_datasets + 1;
     end
     cd('..')
-   
-    
+ 
      data_path = pwd;
     BATCH.Setup.covariates.names = {'head_movement'};
     
@@ -243,77 +242,79 @@ BATCH.Setup.analyses=[1,2,3];
 BATCH.Setup.outputfiles=[0,0,0,0,0,0];
 
 
-    %%  this just reads outlier removal settings ... try to package as a stand alone function .. needs implemented in all fmri processing
-    % Find outlier removal settings
-    directory_pieces = regexp(data_path,filesep,'split');
-    levels_back_subject = 2; % standard number of folders from data to subject level
-    levels_back_task = 0;
-    fileID=-1;
-    while fileID == -1
-        subject_level_directory = getfield( directory_pieces, {1:length(directory_pieces)-levels_back_subject} );
-        task_level_directory = getfield( directory_pieces, {1:length(directory_pieces)-levels_back_task} );
-        for i_path_element = 1:size(subject_level_directory,2)
-            subject_level_directory{i_path_element}(end+1) = filesep;
-        end
-        subject_level_directory_string = cellfun(@string,subject_level_directory);
-         subject_level_directory_full = join(subject_level_directory_string,'');
-        
-        outlier_settings_file_path = fullfile(subject_level_directory_full, 'outlier_removal_settings.txt');
-          
-        fileID = fopen(outlier_settings_file_path, 'r');
-        levels_back_subject = levels_back_subject + 1;
-        levels_back_task = levels_back_task + 1;
-        disp(strcat('searching for outlier_removal_settings for ', this_subject, '...'))
+%%  this just reads outlier removal settings ... try to package as a stand alone function .. needs implemented in all fmri processing
+% Find outlier removal settings
+directory_pieces = regexp(data_path,filesep,'split');
+levels_back_subject = 2; % standard number of folders from data to subject level
+levels_back_task = 0;
+fileID=-1;
+while fileID == -1
+    subject_level_directory = getfield( directory_pieces, {1:length(directory_pieces)-levels_back_subject} );
+    task_level_directory = getfield( directory_pieces, {1:length(directory_pieces)-levels_back_task} );
+    for i_path_element = 1:size(subject_level_directory,2)
+        subject_level_directory{i_path_element}(end+1) = filesep;
     end
+    subject_level_directory_string = cellfun(@string,subject_level_directory);
+    subject_level_directory_full = join(subject_level_directory_string,'');
+    
+    outlier_settings_file_path = fullfile(subject_level_directory_full, 'outlier_removal_settings.txt');
+    
+    fileID = fopen(outlier_settings_file_path, 'r');
+    levels_back_subject = levels_back_subject + 1;
+    levels_back_task = levels_back_task + 1;
+    disp(strcat('searching for outlier_removal_settings for ', this_subject, '...'))
+end
+
 if ~isempty(group_names)
     if length(group_ids) ~= length(subjects) || length(unique(group_ids)) ~= length(group_names)
         error('Something wrong with "group_names" or "group_ids"...')
     end
     for this_group_name = 1:length(group_names)
         BATCH.Setup.subjects.group_names{this_group_name} = group_names{this_group_name};
-end
+    end
     BATCH.Setup.subjects.groups = group_ids;
     BATCH.Setup.subjects.add = 0;
 end
-    % read text to cell
+
+% read text to cell
+text_line = fgetl(fileID);
+text_cell = {};
+while ischar(text_line)
+    text_cell = [text_cell; text_line]; %#ok<AGROW>
     text_line = fgetl(fileID);
-    text_cell = {};
-    while ischar(text_line)
-        text_cell = [text_cell; text_line]; %#ok<AGROW>
-        text_line = fgetl(fileID);
-    end
-    fclose(fileID);
+end
+fclose(fileID);
+
+% prune lines
+lines_to_prune = false(size(text_cell, 1), 1);
+for i_line = 1 : size(text_cell, 1)
+    this_line = text_cell{i_line};
     
-     % prune lines
-     lines_to_prune = false(size(text_cell, 1), 1);
-     for i_line = 1 : size(text_cell, 1)
-         this_line = text_cell{i_line};
-         
-         % remove initial white space
-         while ~isempty(this_line) && (this_line(1) == ' ' || double(this_line(1)) == 9)
-             this_line(1) = [];
-         end
-         outlier_removal_cell{i_line} = this_line; %#ok<AGROW>
-         
-         % remove comments
-         if length(this_line) > 1 && any(ismember(this_line, '#'))
-             lines_to_prune(i_line) = true;
-         end
-         
-         % remove lines that do not match this processed folder
-         this_line_pieces = strsplit(this_line, ',');
-         if ~strcmp(directory_pieces{end},this_line_pieces{1})
-              lines_to_prune(i_line) = true;
-         end
-         
-         % flag lines consisting only of white space
-         if all(ismember(this_line, ' ') | double(this_line) == 9)
-             lines_to_prune(i_line) = true;
-         end
-         
-     end
-     outlier_removal_cell(lines_to_prune) = [];
-     
+    % remove initial white space
+    while ~isempty(this_line) && (this_line(1) == ' ' || double(this_line(1)) == 9)
+        this_line(1) = [];
+    end
+    outlier_removal_cell{i_line} = this_line; %#ok<AGROW>
+    
+    % remove comments
+    if length(this_line) > 1 && any(ismember(this_line, '#'))
+        lines_to_prune(i_line) = true;
+    end
+    
+    % remove lines that do not match this processed folder
+    this_line_pieces = strsplit(this_line, ',');
+    if ~strcmp(directory_pieces{end},this_line_pieces{1})
+        lines_to_prune(i_line) = true;
+    end
+    
+    % flag lines consisting only of white space
+    if all(ismember(this_line, ' ') | double(this_line) == 9)
+        lines_to_prune(i_line) = true;
+    end
+    
+end
+outlier_removal_cell(lines_to_prune) = [];
+
      
      %% identify onset and duration of tasks and correct for outliers
      
@@ -425,12 +426,6 @@ end
     cd(strcat(['..' filesep '..' filesep '..' filesep '..'  filesep '..' ]))    
 end
 
-BATCH.filename = project_name;
-BATCH.Setup.isnew=1;
-BATCH.Setup.done=1;
-BATCH.Setup.overwrite=1;
-BATCH.Setup.RT=TR;
-BATCH.Setup.acquisitiontype=1;
 
 for this_roi_index = 1:length(roi_templates)
     roi_path_split = strsplit(roi_templates{this_roi_index},filesep);

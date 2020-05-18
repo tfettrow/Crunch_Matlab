@@ -36,21 +36,8 @@ corr_file_dir = dir([strcat(first_level_corr_folder, filesep, 'ResultsROI_Subjec
 clear roi_file_name_list;
 [available_subject_file_name_list{1:length(corr_file_dir)}] = deal(corr_file_dir.name);
 
-for i_subject = 1 : length(available_subject_file_name_list)
-    this_subject_data = load(strcat(first_level_corr_folder, filesep, available_subject_file_name_list{i_subject}));
-
-    average_total_conn(i_subject) = mean(nanmean(this_subject_data.Z));
-end
-
-figure;
-bar(1:length(subjects), average_total_conn)
-title('Total ROI Connectivity')
-ylabel('Average Connectivity (?)')
-set(gca,'xticklabel',subjects)
-% set(gca,'ylabel', 'Average Connectivity between ROIs (?)')
-
 if isempty(roi_settings)
-   error('need an roi settings file for this analysis') 
+    error('need an roi settings file for this analysis')
 end
 file_name = roi_settings;
 
@@ -96,18 +83,48 @@ clear roi_file_name_list;
 for this_roi_index = 1:length(settings_cell)
     this_roi_settings_line = strsplit(settings_cell{this_roi_index}, ',');
     roi_core_name_cell{this_roi_index} = this_roi_settings_line{1};
-    roi_network_cell{this_roi_index} = this_roi_settings_line{6};
+    roi_network_cell{this_roi_index} = this_roi_settings_line{5};
 end
 
 unique_networks = unique(roi_network_cell);
 
-for this_unique_network_index = 1:length(unique_networks)
-    this_unique_network_occurences = contains(roi_network_cell, unique_networks(this_unique_network_index));
-    this_unique_network_indices = find(this_unique_network_occurences);
-    roi_pairs_this_unique_network = nchoosek(this_unique_network_indices,2);
+
+for i_subject = 1 : length(available_subject_file_name_list)
+      this_subject_data = load(strcat(first_level_corr_folder, filesep, available_subject_file_name_list{i_subject}));
+      
+      for this_unique_network_index = 1:length(unique_networks)
+          this_unique_network_occurences = contains(roi_network_cell, unique_networks(this_unique_network_index));
+          this_unique_network_indices = find(this_unique_network_occurences);
+          roi_pairs_this_unique_network = nchoosek(this_unique_network_indices,2);
+          
+          this_within_network_corr_vector=[];
+          for this_roi_pair = 1:size(roi_pairs_this_unique_network,1)
+              this_network_roi_value = this_subject_data.Z(roi_pairs_this_unique_network(this_roi_pair,1), roi_pairs_this_unique_network(this_roi_pair,2));
+              % if anti-correlated set to 0
+              if this_network_roi_value < 0
+                  this_network_roi_value = 0;
+              end
+              this_within_network_corr_vector(this_roi_pair) = this_network_roi_value;
+          end
+          this_avg_within_network_corr = mean(this_within_network_corr_vector);
+          
+      end
+    % 1) 
     
-    for this_roi_pair = 1:size(roi_pairs_this_unique_network,1)
-        within_network_corr_cell{this_unique_network_index, this_roi_pair} = this_subject_data.Z(roi_pairs_this_unique_network(this_roi_pair,1), roi_pairs_this_unique_network(this_roi_pair,2));
-    end
+%     for i_subject = 1 : length(available_subject_file_name_list)
+%         this_subject_data = load(strcat(first_level_corr_folder, filesep, available_subject_file_name_list{i_subject}));
+%         
+%         average_total_conn(i_subject) = mean(nanmean(this_subject_data.Z));
+%     end
+%     %for i_subject = 1 : length(avail_subject_file_name_list)
+%     
+%     
+%     
+%     figure;
+%     bar(1:length(subjects), average_total_conn)
+%     title('Total ROI Connectivity')
+%     ylabel('Average Connectivity (?)')
+%     set(gca,'xticklabel',subjects)
+    
 end
 end
