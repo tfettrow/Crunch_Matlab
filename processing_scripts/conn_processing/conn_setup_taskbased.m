@@ -61,7 +61,7 @@ for this_subject_index = 1:length(subjects)
     data_path = pwd;
     condition_onset_files = spm_select('FPList', data_path, '^Condition_Onsets_.*.csv');
     primary_smoothed_path = spm_select('FPList', data_path, strcat('^', primary_smoothed, '.*\.nii$'));
-    
+    this_outlier_and_movement_file = spm_select('FPList', data_path,'^art_regression_outliers_and_movement_unwarpedRealigned_slicetimed_.*\.mat$');
     structural_path = spm_select('FPList', data_path, strcat('^',structural,'$'));
     primary_unsmoothed_path = spm_select('FPList', data_path, strcat('^',primary_unsmoothed,'$'));
     if ~isempty(secondary_smoothed)
