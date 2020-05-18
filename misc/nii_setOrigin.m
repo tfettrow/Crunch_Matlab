@@ -131,7 +131,7 @@ spm_jobman('run',matlabbatch);
 %end coregSub()
 
     
-    
+   
 
 function vols = vol1OnlySub(vols)
 %only select first volume of multivolume images '/dir/img.nii' -> '/dir/img.nii,1', '/dir/img.nii,33' -> '/dir/img.nii,1'
