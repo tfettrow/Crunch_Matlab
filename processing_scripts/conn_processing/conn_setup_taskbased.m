@@ -407,8 +407,12 @@ if ~isempty(roi_settings_filename)
 end
 
 
-BATCH.Setup.analyses=[1,2,3];
-BATCH.Setup.outputfiles=[0,0,0,0,0,0];
+BATCH.filename = project_name;
+BATCH.Setup.isnew=1;
+BATCH.Setup.done=1;
+BATCH.Setup.overwrite=1;
+BATCH.Setup.RT=TR;
+BATCH.Setup.acquisitiontype=1;
 
 BATCH.Denoising.done=1;
 % BATCH.Denoising PERFORMS DENOISING STEPS (confound removal & filtering) %!
@@ -425,6 +429,8 @@ BATCH.Denoising.done=1;
 %                       simultaneous regression&band-pass) [1]
 %    confounds       : Cell array of confound names (alternatively see 'confounds.names' below)
 
+BATCH.Setup.analyses=[1,2,3];
+BATCH.Setup.outputfiles=[0,0,0,0,0,0];
 
 BATCH.Analysis.done =1;
 BATCH.Analysis.measure = 1; % 1 = 'correlation (bivariate)', 2 = 'correlation (semipartial)', 3 = 'regression (bivariate)', 4 = 'regression (multivariate)'; [1]
