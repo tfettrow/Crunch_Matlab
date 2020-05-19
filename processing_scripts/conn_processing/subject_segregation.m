@@ -92,6 +92,8 @@ unique_networks = unique(roi_network_cell);
 for i_subject = 1 : length(available_subject_file_name_list)
       this_subject_data = load(strcat(first_level_corr_folder, filesep, available_subject_file_name_list{i_subject}));
       
+      average_total_conn(i_subject) = mean(nanmean(this_subject_data.Z));
+       
       for this_unique_network_index = 1:length(unique_networks)
           this_unique_network_occurences = contains(roi_network_cell, unique_networks(this_unique_network_index));
           this_unique_network_indices = find(this_unique_network_occurences);
@@ -106,25 +108,23 @@ for i_subject = 1 : length(available_subject_file_name_list)
               end
               this_within_network_corr_vector(this_roi_pair) = this_network_roi_value;
           end
-          this_avg_within_network_corr = mean(this_within_network_corr_vector);
-          
+          avg_within_network_corr(this_unique_network_index,i_subject) = mean(this_within_network_corr_vector);
+      
+    
       end
-    % 1) 
-    
-%     for i_subject = 1 : length(available_subject_file_name_list)
-%         this_subject_data = load(strcat(first_level_corr_folder, filesep, available_subject_file_name_list{i_subject}));
-%         
-%         average_total_conn(i_subject) = mean(nanmean(this_subject_data.Z));
-%     end
-%     %for i_subject = 1 : length(avail_subject_file_name_list)
-%     
-%     
-%     
-%     figure;
-%     bar(1:length(subjects), average_total_conn)
-%     title('Total ROI Connectivity')
-%     ylabel('Average Connectivity (?)')
-%     set(gca,'xticklabel',subjects)
-    
 end
+
+for this_unique_network_index = 1:length(unique_networks)
+    figure;
+    bar(1:length(subjects), avg_within_network_corr(this_unique_network_index,:))
+    title(strcat(unique_networks{this_unique_network_index}, ' within Network Connectivity'))
+    ylabel('Average Connectivity (?)')
+    set(gca,'xticklabel',subjects)
+end
+
+figure;
+bar(1:length(subjects), average_total_conn)
+title('Total ROI Connectivity')
+ylabel('Average Connectivity (?)')
+set(gca,'xticklabel',subjects)
 end
