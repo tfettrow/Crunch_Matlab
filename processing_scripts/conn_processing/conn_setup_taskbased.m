@@ -19,13 +19,17 @@ addParameter(parser, 'primary_unsmoothed', '')
 addParameter(parser, 'secondary_smoothed', '')
 addParameter(parser, 'secondary_unsmoothed', '')
 addParameter(parser, 'structural', 'warpedToMNI_biascorrected_SkullStripped_T1.nii')
-addParameter(parser, 'roi_settings_filename', '') %%%Grant: Use powers2011 roi dataset
+addParameter(parser, 'roi_settings_filename', '') 
 addParameter(parser, 'primary_dataset', 'whole_brain')  % whole_brain or cerebellum, based on what the primary datatset is
 addParameter(parser, 'TR', 1.5)
 addParameter(parser, 'subjects', '')
-addParameter(parser, 'task_folder', '')  %% nback folder
+addParameter(parser, 'task_folder', '')  %% fmri processing  folder
 addParameter(parser, 'group_names', '')
 addParameter(parser, 'group_ids', '')
+addParameter(parser, 'step_1', 1)
+addParameter(parser, 'step_2', 1)
+addParameter(parser, 'step_3', 1)
+
 %%%addParameter(parser, 'band_pass_threshold', '')  %%%%  This is to adjust the band threshold of filtering, flips what a low and high pass do
 parse(parser, varargin{:})
 TR = parser.Results.TR;
@@ -41,11 +45,12 @@ project_name = parser.Results.project_name;
 task_folder = parser.Results.task_folder;
 group_names = parser.Results.group_names;
 group_ids = parser.Results.group_ids;
-
+step_1 = parser.Results.step_1;
+step_2 = parser.Results.step_2;
+step_3 = parser.Results.step_3;
 
 disp(strcat(['Primary: ', primary_smoothed, ' Structural: ', structural, ' Secondary: ', secondary_smoothed]));
 clear matlabbatch
-
 
 spm('Defaults','fMRI');
 spm_jobman('initcfg');
@@ -57,63 +62,36 @@ end
 
 for this_subject_index = 1:length(subjects)
     this_subject = subjects(this_subject_index);
-    cd(strcat([this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep task_folder filesep 'ANTS_Normalization']))
     data_path = pwd;
-    condition_onset_files = spm_select('FPList', data_path, '^Condition_Onsets_.*.csv');
-    primary_smoothed_path = spm_select('FPList', data_path, strcat('^', primary_smoothed, '.*\.nii$'));
-    this_outlier_and_movement_file = spm_select('FPList', data_path,'^art_regression_outliers_and_movement_unwarpedRealigned_slicetimed_.*\.mat$');
-    structural_path = spm_select('FPList', data_path, strcat('^',structural,'$'));
-    primary_unsmoothed_path = spm_select('FPList', data_path, strcat('^',primary_unsmoothed, '.*\.nii$'));
-%     if ~isempty(secondary_smoothed)
-%         secondary_smoothed_path = spm_select('ExtFPList', data_path, strcat('^',secondary_smoothed,'$'));
-%     end
-%     if ~isempty(secondary_unsmoothed)
-%         secondary_unsmoothed_path = spm_select('ExtFPList', data_path, strcat('^',secondary_unsmoothed,'$'));
-%     end
+    this_subject_path = strcat([data_path filesep this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep task_folder filesep 'ANTS_Normalization' filesep 'conn_processing']);
+    
+    condition_onset_files = spm_select('FPList', this_subject_path, '^Condition_Onsets_.*.csv');
+    primary_smoothed_path = spm_select('FPList', this_subject_path, strcat('^', primary_smoothed, '.*\.nii$'));
+    this_outlier_and_movement_file = spm_select('FPList', this_subject_path,'^art_regression_outliers_and_movement_unwarpedRealigned_slicetimed_.*\.mat$');
+    structural_path = spm_select('FPList', this_subject_path, strcat('^',structural,'$'));
+    primary_unsmoothed_path = spm_select('FPList', this_subject_path, strcat('^',primary_unsmoothed, '.*\.nii$'));
+    if ~isempty(secondary_smoothed)
+        secondary_smoothed_path = spm_select('ExtFPList', this_subject_path, strcat('^',secondary_smoothed,'$'));
+    end
+    if ~isempty(secondary_unsmoothed)
+        secondary_unsmoothed_path = spm_select('ExtFPList', this_subject_path, strcat('^',secondary_unsmoothed,'$'));
+    end
     if ~isempty(secondary_smoothed) && isempty(secondary_unsmoothed)
         error('need to specify unsmoothed secondary file name ')
     end
     
-    gray_matter_path = spm_select('FPList', data_path, '^c1warpedToMNI*');
-    white_matter_path = spm_select('FPList', data_path, '^c2warpedToMNI*');
-    csf_matter_path = spm_select('FPList', data_path, '^c3warpedToMNI*');
-    
-    BATCH.Setup.masks.Grey.files{this_subject_index} = gray_matter_path;
-    BATCH.Setup.masks.White.files{this_subject_index} = white_matter_path;
-    BATCH.Setup.masks.CSF.files{this_subject_index} = csf_matter_path;
-    
-    
     BATCH.Setup.nsubjects=length(subjects);
     BATCH.Setup.structurals{this_subject_index} = structural_path;
     
-    
-    % WARNING: This always set target dataset to smoothed whole-brain
-    if strcmp(primary_dataset, 'whole_brain')
-        BATCH.Setup.masks.Grey.dataset = 0;
-        BATCH.Setup.masks.White.dataset = 0;
-        BATCH.Setup.masks.CSF.dataset = 0;
-    else
-        if ~isempty(primary_unsmoothed_path)
-            BATCH.Setup.masks.Grey.dataset = 2;
-            BATCH.Setup.masks.White.dataset = 2;
-            BATCH.Setup.masks.CSF.dataset = 2;
-        else
-            BATCH.Setup.masks.Grey.dataset = 1;
-            BATCH.Setup.masks.White.dataset = 1;
-            BATCH.Setup.masks.CSF.dataset = 1;
-        end
-    end
-    
-    data_path = pwd;
     BATCH.Setup.covariates.names = {'head_movement'};
     
-    this_outlier_and_movement_file = spm_select('FPList', data_path, '^art_regression_outliers_and_movement_unwarpedRealigned_slicetimed_.*\.mat$');
+    this_outlier_and_movement_file = spm_select('FPList', this_subject_path, '^art_regression_outliers_and_movement_unwarpedRealigned_slicetimed_.*\.mat$');
     
     BATCH.Setup.covariates.files{1}{this_subject_index}{1} = this_outlier_and_movement_file;
     
     %%  this just reads outlier removal settings ... try to package as a stand alone function .. needs implemented in all fmri processing
     % Find outlier removal settings
-    directory_pieces = regexp(data_path,filesep,'split');
+    directory_pieces = regexp(this_subject_path,filesep,'split');
     levels_back_subject = 2; % standard number of folders from data to subject level
     levels_back_task = 0;
     fileID=-1;
@@ -313,7 +291,6 @@ for this_subject_index = 1:length(subjects)
 %             number_of_secondary_datasets = number_of_secondary_datasets + 1;
 %         end
     end
-    cd(strcat(['..' filesep '..' filesep '..' filesep '..'  filesep '..' ]))
 
 end
 
@@ -368,7 +345,7 @@ if ~isempty(roi_settings_filename)
     
     for this_roi_index = 1:length(settings_cell)
         this_roi_settings_line = strsplit(settings_cell{this_roi_index}, ',');
-        this_roi_core_name = this_roi_settings_line{1};
+        this_roi_core_name = this_roi_settings_line{4};
         this_roi_file_name = strcat(this_roi_core_name, '.nii');
         this_roi_dataset_target = this_roi_settings_line{6};
         
@@ -428,6 +405,59 @@ BATCH.Denoising.done=1;
 %    regbp           : 1/2: order of band-pass filtering step (1 = RegBP: regression followed by band-pass; 2 = Simult:
 %                       simultaneous regression&band-pass) [1]
 %    confounds       : Cell array of confound names (alternatively see 'confounds.names' below)
+if step_1
+conn_batch(BATCH)
+end
+clear BATCH
+
+BATCH.filename = project_name;
+BATCH.Setup.isnew=0;
+% BATCH.Setup.done=1;
+BATCH.Setup.overwrite=0;
+% BATCH.Setup.RT=TR;
+% BATCH.Setup.acquisitiontype=1;
+for  this_subject_index = 1:length(subjects)
+    this_subject = subjects(this_subject_index);
+    data_path = pwd;
+    this_subject_path = strcat([data_path filesep this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep task_folder filesep 'ANTS_Normalization' filesep 'conn_processing']);
+    
+    gray_matter_path = spm_select('FPList', this_subject_path, '^c1warpedToMNI*');
+    white_matter_path = spm_select('FPList', this_subject_path, '^c2warpedToMNI*');
+    csf_matter_path = spm_select('FPList', this_subject_path, '^c3warpedToMNI*');
+    
+    BATCH.Setup.masks.Grey.files{this_subject_index} = gray_matter_path;
+    BATCH.Setup.masks.White.files{this_subject_index} = white_matter_path;
+    BATCH.Setup.masks.CSF.files{this_subject_index} = csf_matter_path;   
+
+    % WARNING: This always set target dataset to smoothed whole-brain
+    if strcmp(primary_dataset, 'whole_brain')
+        BATCH.Setup.masks.Grey.dataset = 0;
+        BATCH.Setup.masks.White.dataset = 0;
+        BATCH.Setup.masks.CSF.dataset = 0;
+    else
+        if ~isempty(primary_unsmoothed_path)
+            BATCH.Setup.masks.Grey.dataset = 2;
+            BATCH.Setup.masks.White.dataset = 2;
+            BATCH.Setup.masks.CSF.dataset = 2;
+        else
+            BATCH.Setup.masks.Grey.dataset = 1;
+            BATCH.Setup.masks.White.dataset = 1;
+            BATCH.Setup.masks.CSF.dataset = 1;
+        end
+    end
+    
+if step_2
+conn_batch(BATCH)
+end
+clear BATCH
+% 
+BATCH.filename = project_name;
+
+BATCH.Setup.isnew=0;
+% BATCH.Setup.done=1;
+BATCH.Setup.overwrite=0;
+% BATCH.Setup.RT=TR;
+% BATCH.Setup.acquisitiontype=1;
 
 BATCH.Setup.analyses=[1,2,3];
 BATCH.Setup.outputfiles=[0,0,0,0,0,0];
@@ -438,6 +468,7 @@ BATCH.Analysis.type = 3;
 %
 BATCH.vvAnalysis.done=1;
 BATCH.vvAnalysis.measures = 'MCOR';
-
+if step_3
 conn_batch(BATCH)
+end
 end
