@@ -1,15 +1,18 @@
 function convert_to_voxel_coordinates(roi_name, roi_x, roi_y, roi_z)
-% roi_name = 'roi2';
-% roi_mni_coord = [-34 -32 66];
-% roi_x = '69';
-% roi_y = '-2'; 
-% roi_z = '46';
+% roi_name = 'caudate';
+% % roi_mni_coord = [-34 -32 66];
+% roi_x = '0';
+% roi_y = '24'; 
+% roi_z = '-4';
+
+
+roi_name = strtrim(roi_name);
 
 roi_x = str2num(roi_x);
 roi_y = str2num(roi_y);
 roi_z = str2num(roi_z);
 
-this_contrast_data = spm_vol('con_0001.nii');
+this_contrast_data = spm_vol('MNI_2mm.nii');
 
 this_roi_vox_coord = [roi_x roi_y roi_z 1] / this_contrast_data.mat' -1;
 this_roi_vox_coord1 = this_roi_vox_coord(1);
