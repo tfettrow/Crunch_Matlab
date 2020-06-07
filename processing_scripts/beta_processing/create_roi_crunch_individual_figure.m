@@ -12,8 +12,8 @@ extraction_type='voxel';
 % extraction_type='Network';
 % roi_type = '5sig';
 
-% population = 'oldAdult';
- population = 'youngAdult';
+population = 'oldAdult';
+%  population = 'youngAdult';
 
 no_labels = 0;
 
@@ -48,21 +48,22 @@ if any(strcmp(task, '05_MotorImagery'))
         split_filename = strsplit(roi_results_file_list(this_subject_index).name,'_');
         subject_id_imagery{this_subject_index}  = split_filename{1};
         
-        data = textscan(fileID,'%s %s %f', 'Delimiter',',');
+        data = textscan(fileID,'%s %f %s', 'Delimiter',',');
         
 %         if size(data,2) > 2
 %             error 'something wrong with results file'
 %         end
-        roi_condition_name = data{2};
+        roi_condition_name = data{3};
         rois_names = data{1};
-        roi_beta_value = data{3};
+        roi_beta_value = data{2};
         
         %     if strcmp(subject_level_directory{end}, '05_MotorImagery')
         condition_order = {'flat', 'low', 'medium', 'high'};
         %     end
         
         for this_roi_index = 1 : length(roi_condition_name)
-            roi_condition_name_matrix(this_roi_index,:) = strsplit(roi_condition_name{this_roi_index},'_');
+            split_condition_name = strsplit(roi_condition_name{this_roi_index},' ');
+            roi_condition_name_matrix{this_roi_index} = split_condition_name{1};
         end
         
         % just preallocating
@@ -79,7 +80,8 @@ if any(strcmp(task, '05_MotorImagery'))
             [tf, idx] =ismember(condition_order, roi_condition_name_matrix(indices_this_roi));
             this_cond_ordered_roi_beta_value = roi_beta_value(indices_this_roi(1) - 1 + idx);
             ordered_roi_beta_value = [ordered_roi_beta_value this_cond_ordered_roi_beta_value];
-            ordered_roi_condition_name_matrix = [ordered_roi_condition_name_matrix; roi_condition_name_matrix(indices_this_roi(1) - 1 + idx, : )];
+%             ordered_roi_condition_name_matrix = [ordered_roi_condition_name_matrix; roi_condition_name_matrix(indices_this_roi(1) - 1 + idx, : )];
+            ordered_roi_condition_name_matrix = [ordered_roi_condition_name_matrix; roi_condition_name_matrix(indices_this_roi)];
             %         end
         end
         

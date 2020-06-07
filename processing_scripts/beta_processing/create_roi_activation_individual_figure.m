@@ -5,9 +5,13 @@ close all
 
 task={'05_MotorImagery'};                            
 population={'youngAdult', 'oldAdult'};
-rois_of_interest={'Lprecuneus1','Rcalcarine','LmidOcc','Lprecent','LsupFrontalMed','Lputamen','LsuppMotor','Rangular','Rinsula','RrolandicOper'};
-create_corr_table=1;
+% rois_of_interest={'anterior_cingulate', 'caudate', 'inferior_parietal_lobule', 'insula_1', 'insula_2', 'mid_frontal_gyrus_1','mid_frontal_gyrus_2','mid_frontal_gyrus_3','parahippocampal_1','precentral_gyrus','precuneus','subcallosal_gyrus','sup_frontal_gyrus','sup_temporal_gyrus','superior_parietal_lobule_1'}
+rois_of_interest={'caudate',  'insula_1', 'insula_2', 'mid_frontal_gyrus_2','mid_frontal_gyrus_3','parahippocampal_1','precentral_gyrus','precuneus','subcallosal_gyrus','sup_temporal_gyrus',}
+% rois_of_interest={'Lprecuneus1','Rcalcarine','LmidOcc','Lprecent','LsupFrontalMed','Lputamen','LsuppMotor','Rangular','Rinsula','RrolandicOper'};
+create_corr_table=0;
 
+subplot_row = 2;
+subplot_col = 5;
 
 %% TO DO ::: Setup for loop for each task/group???XXXX %%%
 % seperate=1;
@@ -47,7 +51,7 @@ if strcmp(roi_type,'manual')
     this_figure_number = 1;
     if any(strcmp(task, '05_MotorImagery'))
         for this_roi = rois_of_interest
-            subplot(2, 5, this_figure_number);
+            subplot(subplot_row, subplot_col, this_figure_number);
             this_oa_roi_index = find(strcmp(oa_crunch.rois_imagery_manual,this_roi));
             this_oa_roi_betas = oa_crunch.beta_matrix_imagery_manual(:,:,this_oa_roi_index);
             oa_average_activation_betas = mean(this_oa_roi_betas,2);
@@ -88,7 +92,8 @@ if strcmp(roi_type,'manual')
             end
             this_x_var_index=this_x_var_index+1;
         end
+        T=array2table(this_roi_table_betas(2:end,2:end), 'VariableNames', this_roi_table_ylabels(2:end), 'RowNames', this_roi_table_xlabels(2:end));
+        writetable(T,'Roi2RoiCorrelations.xlsx')
+
     end
-T=array2table(this_roi_table_betas(2:end,2:end), 'VariableNames', this_roi_table_ylabels(2:end), 'RowNames', this_roi_table_xlabels(2:end));
-writetable(T,'Roi2RoiCorrelations.xlsx')
 end

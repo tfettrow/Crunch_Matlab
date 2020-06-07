@@ -4,10 +4,12 @@ close all
 
 % rois_of_interest={'Lprecuneus1','Rcalcarine','LmidOcc','Lprecent','LsupFrontalMed','Lputamen','LsuppMotor','Rangular','Rinsula','RrolandicOper'};
 
-rois_of_interest={'Rcalcarine','LmidOcc','Rangular','Rinsula'};
+% rois_of_interest={'Rcalcarine','LmidOcc','Rangular','Rinsula'};
+%ois_of_interest={'anterior_cingulate', 'caudate', 'inferior_parietal_lobule', 'insula_1', 'insula_2', 'mid_frontal_gyrus_1','mid_frontal_gyrus_2','mid_frontal_gyrus_3','parahippocampal_1','precentral_gyrus','precuneus','subcallosal_gyrus','sup_temporal_gyrus'}
+rois_of_interest={'mid_frontal_gyrus_2','mid_frontal_gyrus_3'}
 
 subplot_row = 1;
-subplot_col = 4;
+subplot_col = 2;
 
 no_labels = 0;
 
@@ -32,7 +34,8 @@ cd ..
 cd ..
 
 % find each subject roi_results file
-    cd 'Crunch_Effects'
+    cd(strcat('Group_Results_loadModulation', filesep, 'MRI_files'))
+%     cd 'Crunch_Effects'
 %     cd 'MRI_files'
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % motor imagery manual
@@ -86,9 +89,11 @@ if strcmp(roi_type,'manual')
             
             this_oa_x_data(this_oa_subject_index, this_figure_number) = oa_average_activation_betas(this_subject_beta_index);
             
-            plot(this_oa_x_data(this_oa_subject_index, this_figure_number), this_oa_y_data(this_oa_subject_index, this_figure_number), 'o', 'MarkerEdge', 'k', 'MarkerFace', 'r')
+            plot(this_oa_x_data(this_oa_subject_index, this_figure_number), this_oa_y_data(this_oa_subject_index, this_figure_number), 'o', 'MarkerEdge', 'k', 'MarkerFace', 'b')
             
-            title([oa_crunch.rois_imagery_manual(this_roi_index)])
+            if ~no_labels
+                title([oa_crunch.rois_imagery_manual(this_roi_index)])
+            end
         end
         this_figure_number = this_figure_number + 1;
     end
@@ -123,7 +128,7 @@ if strcmp(roi_type,'manual')
         %         fittedX_ya=linspace(0, 3, 100);
         %         fittedY_ya=polyval(coefs_ya, fittedX_ya);
         
-        plot(fittedX_oa, fittedY_oa, '-', 'Color','r','LineWidth',1);
+        plot(fittedX_oa, fittedY_oa, '-', 'Color','b','LineWidth',1);
         %         plot(fittedX_ya, fittedY_ya, '-', 'Color','b','LineWidth',1);
         
         x1 = thisXLim(1);
@@ -142,7 +147,9 @@ if strcmp(roi_type,'manual')
 %         text(x1,y3,text3)
 %         text(x1,y4,text4)
     end
-     suptitle('ROI Activation (x-axis) vs 400m Walk (y-axis)')
+    if ~no_labels
+        suptitle('ROI Activation (x-axis) vs 400m Walk (y-axis)')
+    end
      
  
      
@@ -171,9 +178,11 @@ if strcmp(roi_type,'manual')
                 
                 this_oa_x_data(this_oa_subject_index, this_figure_number) = oa_average_activation_betas(this_subject_beta_index);
                 
-                plot(this_oa_x_data(this_oa_subject_index, this_figure_number), this_oa_y_data(this_oa_subject_index, this_figure_number), 'o', 'MarkerEdge', 'k', 'MarkerFace', 'r')
+                plot(this_oa_x_data(this_oa_subject_index, this_figure_number), this_oa_y_data(this_oa_subject_index, this_figure_number), 'o', 'MarkerEdge', 'k', 'MarkerFace', 'b')
             end
-            title([oa_crunch.rois_imagery_manual(this_roi_index)])
+            if ~no_labels
+                title([oa_crunch.rois_imagery_manual(this_roi_index)])
+            end
           end
         this_figure_number = this_figure_number + 1;
     end
@@ -216,7 +225,7 @@ if strcmp(roi_type,'manual')
 %         fittedX_ya=linspace(0, 3, 100);
 %         fittedY_ya=polyval(coefs_ya, fittedX_ya);
 %         
-        plot(fittedX_oa, fittedY_oa, '-', 'Color','r','LineWidth',1);
+        plot(fittedX_oa, fittedY_oa, '-', 'Color','b','LineWidth',1);
 %         plot(fittedX_ya, fittedY_ya, '-', 'Color','b','LineWidth',1);
          
           x1 = thisXLim(1);
@@ -235,8 +244,10 @@ if strcmp(roi_type,'manual')
 %         text(x1,y2,text2)
 %         text(x1,y3,text3)
 %         text(x1,y4,text4)
-     end
+    end
+         if ~no_labels
      suptitle('ROI Activation (x-axis) vs Pain Threshold (y-axis)')
+         end
    
     
     %% Proprio Mono and MI Activation
@@ -264,9 +275,11 @@ if strcmp(roi_type,'manual')
                 
                 this_oa_x_data(this_oa_subject_index, this_figure_number) = oa_average_activation_betas(this_subject_beta_index);
                 
-                plot(this_oa_x_data(this_oa_subject_index, this_figure_number), this_oa_y_data(this_oa_subject_index, this_figure_number), 'o', 'MarkerEdge', 'k', 'MarkerFace', 'r')
+                plot(this_oa_x_data(this_oa_subject_index, this_figure_number), this_oa_y_data(this_oa_subject_index, this_figure_number), 'o', 'MarkerEdge', 'k', 'MarkerFace', 'b')
             end
+                if ~no_labels
             title([oa_crunch.rois_imagery_manual(this_roi_index)])
+                end
        
         end
 
@@ -310,7 +323,7 @@ if strcmp(roi_type,'manual')
 %         fittedX_ya=linspace(0, 3, 100);
 %         fittedY_ya=polyval(coefs_ya, fittedX_ya);
 %         
-        plot(fittedX_oa, fittedY_oa, '-', 'Color','r','LineWidth',1);
+        plot(fittedX_oa, fittedY_oa, '-', 'Color','b','LineWidth',1);
 %         plot(fittedX_ya, fittedY_ya, '-', 'Color','b','LineWidth',1);
          
       x1 = thisXLim(1);
@@ -329,9 +342,10 @@ if strcmp(roi_type,'manual')
 %         text(x1,y2,text2)
 %         text(x1,y3,text3)
 %         text(x1,y4,text4)
-     end
-     suptitle('ROI Activation (x-axis) vs Tactile Mono  (y-axis)')
-     
+    end
+    if ~no_labels
+        suptitle('ROI Activation (x-axis) vs Tactile Mono  (y-axis)')
+    end
      
     
     %% Proprio Dual and MI Acivation
@@ -359,9 +373,11 @@ if strcmp(roi_type,'manual')
                 
                 this_oa_x_data(this_oa_subject_index, this_figure_number) = oa_average_activation_betas(this_subject_beta_index);
                 
-                plot(this_oa_x_data(this_oa_subject_index, this_figure_number), this_oa_y_data(this_oa_subject_index, this_figure_number), 'o', 'MarkerEdge', 'k', 'MarkerFace', 'r')
+                plot(this_oa_x_data(this_oa_subject_index, this_figure_number), this_oa_y_data(this_oa_subject_index, this_figure_number), 'o', 'MarkerEdge', 'k', 'MarkerFace', 'b')
             end
-            title([oa_crunch.rois_imagery_manual(this_roi_index)])
+            if ~no_labels
+                title([oa_crunch.rois_imagery_manual(this_roi_index)])
+            end
         end
         this_figure_number = this_figure_number + 1;
     end
@@ -404,7 +420,7 @@ if strcmp(roi_type,'manual')
 %         fittedX_ya=linspace(0, 3, 100);
 %         fittedY_ya=polyval(coefs_ya, fittedX_ya);
 %         
-        plot(fittedX_oa, fittedY_oa, '-', 'Color','r','LineWidth',1);
+        plot(fittedX_oa, fittedY_oa, '-', 'Color','b','LineWidth',1);
 %         plot(fittedX_ya, fittedY_ya, '-', 'Color','b','LineWidth',1);
          
          x1 = thisXLim(1);
@@ -423,9 +439,10 @@ if strcmp(roi_type,'manual')
 %         text(x1,y2,text2)
 %         text(x1,y3,text3)
 %         text(x1,y4,text4)
-     end
-    suptitle('ROI Activation (x-axis) vs Tactile Dual  (y-axis)')
-     
+    end
+    if ~no_labels
+        suptitle('ROI Activation (x-axis) vs Tactile Dual  (y-axis)')
+    end
     
     
        %% SPPB and MI CRUNCH
@@ -453,9 +470,11 @@ if strcmp(roi_type,'manual')
                 
                 this_oa_x_data(this_oa_subject_index, this_figure_number) = oa_average_activation_betas(this_subject_beta_index);
                 
-                plot(this_oa_x_data(this_oa_subject_index, this_figure_number), this_oa_y_data(this_oa_subject_index, this_figure_number), 'o', 'MarkerEdge', 'k', 'MarkerFace', 'r')
+                plot(this_oa_x_data(this_oa_subject_index, this_figure_number), this_oa_y_data(this_oa_subject_index, this_figure_number), 'o', 'MarkerEdge', 'k', 'MarkerFace', 'b')
             end
-            title([oa_crunch.rois_imagery_manual(this_roi_index)])
+            if ~no_labels
+                title([oa_crunch.rois_imagery_manual(this_roi_index)])
+            end
         end
 %         for this_ya_subject_index = 1:length(ya_subject_id)
 %             this_subject_id = ya_subject_id(this_ya_subject_index);
@@ -509,7 +528,7 @@ if strcmp(roi_type,'manual')
 %         fittedX_ya=linspace(0, 3, 100);
 %         fittedY_ya=polyval(coefs_ya, fittedX_ya);
 %         
-        plot(fittedX_oa, fittedY_oa, '-', 'Color','r','LineWidth',1);
+        plot(fittedX_oa, fittedY_oa, '-', 'Color','b','LineWidth',1);
 %         plot(fittedX_ya, fittedY_ya, '-', 'Color','b','LineWidth',1);
          
          x1 = thisXLim(1);
@@ -528,9 +547,10 @@ if strcmp(roi_type,'manual')
 %         text(x1,y2,text2)
 %         text(x1,y3,text3)
 %         text(x1,y4,text4)
-     end
-    suptitle('ROI Activation (x-axis) vs SPPB (y-axis)')
-   
+    end
+    if ~no_labels
+        suptitle('ROI Activation (x-axis) vs SPPB (y-axis)')
+    end
     
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -562,7 +582,7 @@ if strcmp(roi_type,'manual')
                  this_subject_row_walking_data = find(strcmp(string(walking_data(:,1)), this_subject_id));
                  this_oa_x_data(this_oa_subject_index, this_figure_number) = walking_data(this_subject_row_walking_data,6);
                            
-                plot(this_oa_x_data(this_oa_subject_index, this_figure_number), this_oa_y_data(this_oa_subject_index, this_figure_number), 'o', 'MarkerEdge', 'k', 'MarkerFace', 'r')
+                plot(this_oa_x_data(this_oa_subject_index, this_figure_number), this_oa_y_data(this_oa_subject_index, this_figure_number), 'o', 'MarkerEdge', 'k', 'MarkerFace', 'b')
             end
 %             title([oa_crunch.rois_imagery_manual(this_roi_index)])
           end
@@ -577,7 +597,7 @@ if strcmp(roi_type,'manual')
         fittedX_oa=linspace(thisXLim(1), thisXLim(2), 100);
         fittedY_oa=polyval(coefs_oa, fittedX_oa);
             
-        plot(fittedX_oa, fittedY_oa, '-', 'Color','r','LineWidth',1);
+        plot(fittedX_oa, fittedY_oa, '-', 'Color','b','LineWidth',1);
          
           x1 = thisXLim(1);
         y1 = thisYLim(1);
@@ -595,8 +615,9 @@ if strcmp(roi_type,'manual')
 %         text(x1,y2,text2)
 %         text(x1,y3,text3)
 %         text(x1,y4,text4)
-     end
-     suptitle('Walk Time (x-axis) vs Pain Threshold (y-axis)')
-
+end
+if ~no_labels
+    suptitle('Walk Time (x-axis) vs Pain Threshold (y-axis)')
+end
 cd ..
     

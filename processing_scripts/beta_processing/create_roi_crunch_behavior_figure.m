@@ -23,7 +23,7 @@ cd ..
 cd ..
 
 % find each subject roi_results file
-    cd 'Crunch_Effects'
+    cd(strcat('Group_Results_loadModulation', filesep, 'MRI_files'))
 %     cd 'MRI_files'
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % motor imagery manual
