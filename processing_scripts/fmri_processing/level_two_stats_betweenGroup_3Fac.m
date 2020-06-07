@@ -11,7 +11,7 @@
 
 
 function level_two_stats_betweenGroup(create_model_and_estimate, task_folder, group_one_subject_codes, group_two_subject_codes)
-create_model_and_estimate=0;
+create_model_and_estimate=1;
 task_folder = '05_MotorImagery';
 
 group_one_subject_codes = {'1002', '1004', '1010', '1011','1013'}; % need to figure out how to pass cell from shell
@@ -19,10 +19,6 @@ group_two_subject_codes =  {'2002','2007','2008','2012','2013','2015','2018','20
 
 group_one_subject_codes = split(group_one_subject_codes,",");
 group_two_subject_codes = split(group_two_subject_codes,",");
-
-% condition='high';
-% group_name='youngAdult'
-% subject_codes = split(subject_codes,",");
 
 data_path = pwd; % assuming shell script places wd as study level folder
 clear matlabbatch
@@ -205,6 +201,8 @@ if strcmp(task_folder, '05_MotorImagery')
     fourth = MEc*[n2/(n1+n2)];
     main_effect_contrast_condition = [first second third fourth];
     
+    
+    %% vvv these do not make sense  vv %%
     %Interaction group x condition
     first = zeros(1,ng);
     second = zeros(1,nc);
@@ -231,13 +229,13 @@ if strcmp(task_folder, '05_MotorImagery')
     matlabbatch{1}.spm.stats.con.consess{3}.tcon.weights = main_effect_contrast_condition;
     matlabbatch{1}.spm.stats.con.consess{3}.tcon.sessrep = 'none';
     
-    matlabbatch{1}.spm.stats.con.consess{4}.tcon.name = 'Interaction_ya_gt_oa';
-    matlabbatch{1}.spm.stats.con.consess{4}.tcon.weights = interaction_contrast_ya_gt_oa;
-    matlabbatch{1}.spm.stats.con.consess{4}.tcon.sessrep = 'none';
-    
-    matlabbatch{1}.spm.stats.con.consess{5}.tcon.name = 'Interaction_oa_gt_ya';
-    matlabbatch{1}.spm.stats.con.consess{5}.tcon.weights = interaction_contrast_oa_gt_ya;
-    matlabbatch{1}.spm.stats.con.consess{5}.tcon.sessrep = 'none';
+%     matlabbatch{1}.spm.stats.con.consess{4}.tcon.name = 'Interaction_ya_gt_oa';
+%     matlabbatch{1}.spm.stats.con.consess{4}.tcon.weights = interaction_contrast_ya_gt_oa;
+%     matlabbatch{1}.spm.stats.con.consess{4}.tcon.sessrep = 'none';
+%     
+%     matlabbatch{1}.spm.stats.con.consess{5}.tcon.name = 'Interaction_oa_gt_ya';
+%     matlabbatch{1}.spm.stats.con.consess{5}.tcon.weights = interaction_contrast_oa_gt_ya;
+%     matlabbatch{1}.spm.stats.con.consess{5}.tcon.sessrep = 'none';
 
     
     
