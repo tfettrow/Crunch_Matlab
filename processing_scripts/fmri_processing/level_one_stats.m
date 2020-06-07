@@ -9,10 +9,12 @@
 % You should have received a copy of the GNU General Public License
 % along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+% TO DO: allow for input of "files_to_test" to enable ceres images through
+% level one script
 function level_one_stats(create_model_and_estimate, TR_from_json)
 %      TR_from_json = str2num(TR_from_json);
-create_model_and_estimate=0;
-     TR_from_json=1.5;
+% create_model_and_estimate=1;
+%      TR_from_json=1.5;
     data_path = pwd;
     clear matlabbatch
     spm('Defaults','fMRI');
@@ -21,7 +23,7 @@ create_model_and_estimate=0;
 
     % TO DO: need more specific prefix check to decipher between ANTS and
     % SPM norm files (need to be able to exclude smothed T1)
-    files_to_test = spm_select('FPList', data_path, '^smoothed.*\.nii$');
+    files_to_test = spm_select('FPList', data_path, '^smoothed_warpedToMNI.*\.nii$');
     art_regression_outlier_files  = spm_select('FPList',  data_path,'^art_regression_outliers_and_movement.*.mat');
     condition_onset_files = spm_select('FPList', data_path, '^Condition_Onsets_.*.csv');
     
