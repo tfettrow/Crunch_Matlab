@@ -109,13 +109,10 @@ for i_subject = 1 : length(available_subject_file_name_list)
               this_within_network_corr_vector(this_roi_pair) = this_network_roi_value;
           end
           avg_within_network_corr(this_unique_network_index,i_subject) = mean(this_within_network_corr_vector);
-          
-%           network_segregation = (avg_within_network_corr(this_unique_network_index,i_subject) - average_total_conn) / avg_within_network_corr;
-      
-    
       end
+        total_network_segregation(i_subject) = ((avg_within_network_corr(:,i_subject) - average_total_conn(i_subject))/(avg_within_network_corr(:,i_subject)));   %calculates total network segregation value by subtracting the total connectivity from each network's connectivity and displaying that value as a proportion of the within-network connectivity
+          
 end
-
 
 for this_unique_network_index = 1:length(unique_networks)
     figure;
@@ -124,6 +121,15 @@ for this_unique_network_index = 1:length(unique_networks)
     ylabel('Average Connectivity (?)')
     set(gca,'xticklabel',subjects)
 end
+
+for this_unique_network_index = 1:length(unique_networks)
+    figure;
+    bar(1:length(subjects), total_network_segregation(this_unique_network_index,:))
+    title('Network Segregation by Subject')
+    ylabel('Network Segregation Value')
+    set(gca,'xticklabel',subjects)
+end
+
 
 figure;
 bar(1:length(subjects), average_total_conn)
