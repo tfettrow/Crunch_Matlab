@@ -109,10 +109,13 @@ for i_subject = 1 : length(available_subject_file_name_list)
               this_within_network_corr_vector(this_roi_pair) = this_network_roi_value;
           end
           avg_within_network_corr(this_unique_network_index,i_subject) = mean(this_within_network_corr_vector);
+          
+%           network_segregation = (avg_within_network_corr(this_unique_network_index,i_subject) - average_total_conn) / avg_within_network_corr;
       
     
       end
 end
+
 
 for this_unique_network_index = 1:length(unique_networks)
     figure;
