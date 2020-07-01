@@ -11,10 +11,13 @@
 
 % TO DO: allow for input of "files_to_test" to enable ceres images through
 % level one script
-function level_one_stats(create_model_and_estimate, TR_from_json)
+function level_one_stats(create_model_and_estimate, TR_from_json, file_to_test_prefix, results_file_name)
 %      TR_from_json = str2num(TR_from_json);
-% create_model_and_estimate=1;
+%     file_to_test_prefix = 'smoothed_warpedToSUIT';
+%     results_file_name = 'Level1_Ceres';
+%      create_model_and_estimate=1;
 %      TR_from_json=1.5;
+     
     data_path = pwd;
     clear matlabbatch
     spm('Defaults','fMRI');
@@ -23,7 +26,7 @@ function level_one_stats(create_model_and_estimate, TR_from_json)
 
     % TO DO: need more specific prefix check to decipher between ANTS and
     % SPM norm files (need to be able to exclude smothed T1)
-    files_to_test = spm_select('FPList', data_path, '^smoothed_warpedToMNI.*\.nii$');
+    files_to_test = spm_select('FPList', data_path, strcat('^',file_to_test_prefix,'.*\.nii$'));
     art_regression_outlier_files  = spm_select('FPList',  data_path,'^art_regression_outliers_and_movement.*.mat');
     condition_onset_files = spm_select('FPList', data_path, '^Condition_Onsets_.*.csv');
     
@@ -86,15 +89,12 @@ function level_one_stats(create_model_and_estimate, TR_from_json)
          
      end
      outlier_removal_cell(lines_to_prune) = [];
-     
-     
-    
     
     if size(condition_onset_files,1) ~= size(files_to_test,1)
         error('Need the same # of Onset Files as Functional Runs')
     end
 %     
-    level1_results_dir = fullfile(data_path,"Level1_Results");
+    level1_results_dir = fullfile(data_path, results_file_name);
     matlabbatch{1}.spm.stats.fmri_spec.dir = cellstr(level1_results_dir);
     matlabbatch{1}.spm.stats.fmri_spec.timing.units = 'secs';
     matlabbatch{1}.spm.stats.fmri_spec.timing.RT = TR_from_json;
@@ -206,7 +206,7 @@ function level_one_stats(create_model_and_estimate, TR_from_json)
     if create_model_and_estimate
           % unlink beta and other analysis files
           if exist(fullfile(level1_results_dir,'SPM.mat'),'file')
-          rmdir(level1_results_dir, 's')
+            rmdir(level1_results_dir, 's')
           end
 %     
 %         files = {'^mask\..{3}$','^ResMS\..{3}$','^RPV\..{3}$',...
