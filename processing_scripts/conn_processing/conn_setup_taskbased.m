@@ -80,9 +80,41 @@ for this_subject_index = 1:length(subjects)
         error('need to specify unsmoothed secondary file name ')
     end
     
+<<<<<<< HEAD
     BATCH.Setup.nsubjects=length(subjects);
     BATCH.Setup.structurals{this_subject_index} = structural_path;
     
+=======
+    gray_matter_path = spm_select('FPList', data_path, '^warpedToMNI_c1T1*');
+    white_matter_path = spm_select('FPList', data_path, '^warpedToMNI_c2T1*');
+    csf_matter_path = spm_select('FPList', data_path, '^warpedToMNI_c3T1*');
+    
+    BATCH.Setup.masks.Grey.files{this_subject_index} = gray_matter_path;
+    BATCH.Setup.masks.White.files{this_subject_index} = white_matter_path;
+    BATCH.Setup.masks.CSF.files{this_subject_index} = csf_matter_path;
+        
+    BATCH.Setup.nsubjects=length(subjects);
+    BATCH.Setup.structurals{this_subject_index} = structural_path;
+    
+    % WARNING: This always set target dataset to smoothed whole-brain
+    if strcmp(primary_dataset, 'whole_brain')
+        BATCH.Setup.masks.Grey.dataset = 0;
+        BATCH.Setup.masks.White.dataset = 0;
+        BATCH.Setup.masks.CSF.dataset = 0;
+    else
+        if ~isempty(primary_unsmoothed_path)
+            BATCH.Setup.masks.Grey.dataset = 2;
+            BATCH.Setup.masks.White.dataset = 2;
+            BATCH.Setup.masks.CSF.dataset = 2;
+        else
+            BATCH.Setup.masks.Grey.dataset = 1;
+            BATCH.Setup.masks.White.dataset = 1;
+            BATCH.Setup.masks.CSF.dataset = 1;
+        end
+    end
+    
+    data_path = pwd;
+>>>>>>> reverting_conn_setups
     BATCH.Setup.covariates.names = {'head_movement'};
     
     this_outlier_and_movement_file = spm_select('FPList', this_subject_path, '^art_regression_outliers_and_movement_unwarpedRealigned_slicetimed_.*\.mat$');

@@ -23,11 +23,16 @@ addParameter(parser, 'secondary_smoothed', '')
 addParameter(parser, 'secondary_unsmoothed', '')
 addParameter(parser, 'structural', 'warpedToMNI_biascorrected_SkullStripped_T1.nii')
 addParameter(parser, 'roi_settings_filename', '')
+addParameter(parser, 'rs_folder', '')  %% restingstate folder
 addParameter(parser, 'primary_dataset', 'whole_brain')  % 'whole_brain' or 'cerebellum'
 addParameter(parser, 'TR', 1.5) % assuming default is UF sequence
 addParameter(parser, 'subjects', '')
 addParameter(parser, 'group_names', '')
 addParameter(parser, 'group_ids', '')
+addParameter(parser, 'step_1', 1)
+addParameter(parser, 'step_2', 1)
+addParameter(parser, 'step_3', 1)
+%%%addParameter(parser, 'band_pass_threshold', '')  %%%%  This is to adjust the band threshold of filtering, flips what a low and high pass do
 parse(parser, varargin{:})
 TR = parser.Results.TR;
 subjects = parser.Results.subjects;
@@ -41,6 +46,10 @@ roi_settings_filename = parser.Results.roi_settings_filename;
 primary_dataset = parser.Results.primary_dataset;
 group_names = parser.Results.group_names;
 group_ids = parser.Results.group_ids;
+step_1 = parser.Results.step_1;
+step_2 = parser.Results.step_2;
+step_3 = parser.Results.step_3;
+rs_folder = parser.Results.rs_folder;
 
 disp(strcat(['Primary: ', primary_smoothed, ' Structural: ', structural, ' Secondary: ', secondary_smoothed]));
 
@@ -77,6 +86,8 @@ for this_subject_index = 1:length(subjects)
     BATCH.Setup.structurals{this_subject_index} = structural_path;
     BATCH.Setup.functionals{this_subject_index}{1} = primary_smoothed_path;
     
+<<<<<<< HEAD
+=======
     gray_matter_path = spm_select('FPList', data_path, '^warpedToMNI_c1T1*');
     white_matter_path = spm_select('FPList', data_path, '^warpedToMNI_c2T1*');
     csf_matter_path = spm_select('FPList', data_path, '^warpedToMNI_c3T1*');
@@ -102,6 +113,7 @@ for this_subject_index = 1:length(subjects)
         end
     end
     
+>>>>>>> reverting_conn_setups
     % Preallocating and add as we check for number of datasets
     number_of_secondary_datasets = 1;
     if ~isempty(primary_unsmoothed)
@@ -143,13 +155,6 @@ if ~isempty(group_names)
     BATCH.Setup.subjects.groups = group_ids;
     BATCH.Setup.subjects.add = 0;
 end
-
-BATCH.filename = project_name;
-BATCH.Setup.isnew=1;
-BATCH.Setup.done=1;
-BATCH.Setup.overwrite=1;
-BATCH.Setup.RT=TR;
-BATCH.Setup.acquisitiontype=1;
 
 %% read roi settings file
  
@@ -228,30 +233,83 @@ if ~isempty(roi_settings_filename)
     end
 end
 
-% 
+
+
+BATCH.filename = project_name;
+BATCH.Setup.isnew=1;
+BATCH.Setup.done=1;
+BATCH.Setup.overwrite=1;
+BATCH.Setup.RT=TR;
+BATCH.Setup.acquisitiontype=1;
+BATCH.Denoising.done=1;
+
+if step_1
+conn_batch(BATCH)
+end
+clear BATCH
+
+BATCH.filename = project_name;
+BATCH.Setup.isnew=0;
+% BATCH.Setup.done=1;
+BATCH.Setup.overwrite=0;
+
+for  this_subject_index = 1:length(subjects)
+    this_subject = subjects(this_subject_index);
+    data_path = pwd;
+    this_subject_path = strcat([data_path filesep this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep rs_folder filesep 'ANTS_Normalization']);
+
+ gray_matter_path = spm_select('FPList', this_subject_path, '^c1warpedToMNI*');
+    white_matter_path = spm_select('FPList', this_subject_path, '^c2warpedToMNI*');
+    csf_matter_path = spm_select('FPList', this_subject_path, '^c3warpedToMNI*');
+         
+    BATCH.Setup.masks.Grey.files{this_subject_index} = gray_matter_path;
+    BATCH.Setup.masks.White.files{this_subject_index} = white_matter_path;
+    BATCH.Setup.masks.CSF.files{this_subject_index} = csf_matter_path;
+
+    % WARNING: This always set target dataset to smoothed whole-brain
+    if strcmp(primary_dataset, 'whole_brain')
+        BATCH.Setup.masks.Grey.dataset = 0;
+        BATCH.Setup.masks.White.dataset = 0;
+        BATCH.Setup.masks.CSF.dataset = 0;
+    else
+        if ~isempty(primary_unsmoothed_path)
+            BATCH.Setup.masks.Grey.dataset = 2;
+            BATCH.Setup.masks.White.dataset = 2;
+            BATCH.Setup.masks.CSF.dataset = 2;
+        else
+            BATCH.Setup.masks.Grey.dataset = 1;
+            BATCH.Setup.masks.White.dataset = 1;
+            BATCH.Setup.masks.CSF.dataset = 1;
+        end
+    end
+end
+
+if step_2
+conn_batch(BATCH)
+end
+clear BATCH
+
+
+BATCH.Setup.isnew=0;
+% BATCH.Setup.done=1;
+BATCH.Setup.overwrite=0;
+% BATCH.Setup.RT=TR;
+% BATCH.Setup.acquisitiontype=1;
+
 BATCH.Setup.analyses=[1,2,3];
 BATCH.Setup.outputfiles=[0,0,0,0,0,0];
-
-BATCH.Denoising.done=1;
 
 BATCH.Analysis.done =1;
 BATCH.Analysis.measure = 1; % 1 = 'correlation (bivariate)', 2 = 'correlation (semipartial)', 3 = 'regression (bivariate)', 4 = 'regression (multivariate)'; [1]
 BATCH.Analysis.type = 3;
+%
 BATCH.vvAnalysis.done=1;
 BATCH.vvAnalysis.measures = 'MCOR';
 
-%% supposed to but does not seem to run... have to go in and manually run.. obviously
-%BATCH.Results PERFORMS SECOND-LEVEL ANALYSES (ROI-to-ROI and Seed-to-Voxel analyses) %!
-BATCH.Results.done=1;
-BATCH.Results.overwrite=1;
-
-%BATCH.vvResults PERFORMS SECOND-LEVEL ANALYSES (Voxel-to-Voxel analyses) %!
-BATCH.wResults.done=1;
-BATCH.wResults.overwrite=1;
-
-disp('starting conn...')
- 
+if step_3
 conn_batch(BATCH)
+end
+clear BATCH
 
 disp('saving subject ids for later use...')
 save([project_name filesep 'subject_ids'], 'subjects')
