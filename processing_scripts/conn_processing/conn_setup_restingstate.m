@@ -77,9 +77,9 @@ for this_subject_index = 1:length(subjects)
     BATCH.Setup.structurals{this_subject_index} = structural_path;
     BATCH.Setup.functionals{this_subject_index}{1} = primary_smoothed_path;
     
-    gray_matter_path = spm_select('FPList', data_path, '^c1warpedToMNI*');
-    white_matter_path = spm_select('FPList', data_path, '^c2warpedToMNI*');
-    csf_matter_path = spm_select('FPList', data_path, '^c3warpedToMNI*');
+    gray_matter_path = spm_select('FPList', data_path, '^warpedToMNI_c1T1*');
+    white_matter_path = spm_select('FPList', data_path, '^warpedToMNI_c2T1*');
+    csf_matter_path = spm_select('FPList', data_path, '^warpedToMNI_c3T1*');
          
     BATCH.Setup.masks.Grey.files{this_subject_index} = gray_matter_path;
     BATCH.Setup.masks.White.files{this_subject_index} = white_matter_path;
