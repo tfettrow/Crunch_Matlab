@@ -15,18 +15,18 @@ function level_two_stats_withinGroup(create_model_and_estimate, task_folder, sub
 % RUN THIS FUNCTION ONCE PER GROUP (youngAdult, oldAdult) AND TASK (Motor Imagery, Nback)
 
 create_model_and_estimate=1;
-% task_folder='05_MotorImagery';
-task_folder = '06_Nback';
-%  subject_codes = {'1002','1004','1010','1011','1013'};
+task_folder='05_MotorImagery';
+%task_folder = '06_Nback';
+ subject_codes = {'1002', '1004', '1010', '1011','1013'};
 %subject_codes = {'2002','2015','2018','2012','2025','2020'};
-subject_codes = {'2002','2007','2008','2012','2013','2015','2018','2020','2021','2022','2023','2025','2026'}; % need to write script to pass cell from shell
-% group_name='youngAdult';
-group_name='oldAdult';
+% subject_codes =  {'2002','2007','2008','2012','2013','2015','2018','2020','2021','2022','2023','2025','2026'}; % need to write script to pass cell from shell
+group_name='youngAdult';
+% group_name='oldAdult';
 
-cd 'spreadsheet_data'
+% cd 'spreadsheet_data'
 headers={'subject_id', 'flat', 'low', 'medium', 'high'};
-imageryvividness_data = xlsread('imageryvividness_data.xlsx');
-cd ..
+imageryvividness_data = xlsread(strcat('spreadsheet_data', filesep, 'imagery_data', filesep, 'imageryvividness_data.xlsx'));
+% cd ..
 
 subject_codes = split(subject_codes,",");
 
@@ -36,7 +36,7 @@ spm('Defaults','fMRI');
 spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
-level2_results_dir = fullfile(data_path, 'withinGroup_Results', 'MRI_files', task_folder, group_name);
+level2_results_dir = fullfile(data_path, 'Level2_Results', 'MRI_files', task_folder, group_name);
 
 matlabbatch{1}.spm.stats.factorial_design.dir = {level2_results_dir};
 % matlabbatch{1}.spm.stats.factorial_design.des.fblock.fac(1).name = 'subject';

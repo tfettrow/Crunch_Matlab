@@ -26,10 +26,8 @@ spm('Defaults','fMRI');
 spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
-cd 'spreadsheet_data'
 headers={'subject_id', 'flat', 'low', 'medium', 'high'};
-imageryvividness_data = xlsread('imageryvividness_data.xlsx');
-cd ..
+imageryvividness_data = xlsread(strcat('spreadsheet_data', filesep, 'imagery_data', filesep, 'imageryvividness_data.xlsx'));
 
 level2_results_dir = fullfile(data_path, 'twosampTtest_Results', 'MRI_files', task_folder, condition);
 
