@@ -24,7 +24,7 @@ spm('Defaults','fMRI');
 spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
-level2_results_dir = fullfile(data_path, '3Fac_swe', 'MRI_files', task_folder);
+level2_results_dir = fullfile(data_path, 'Leve2_Results_3FacsweNP', 'MRI_files', task_folder);
 
 matlabbatch{1}.spm.tools.swe.smodel.dir = {level2_results_dir}; % results directory
 
@@ -142,7 +142,12 @@ matlabbatch{1}.spm.tools.swe.smodel.multi_cov = struct('files', {});
 matlabbatch{1}.spm.tools.swe.smodel.masking.tm.tm_none = 1;
 matlabbatch{1}.spm.tools.swe.smodel.masking.im = 1;
 matlabbatch{1}.spm.tools.swe.smodel.masking.em = {''};
-matlabbatch{1}.spm.tools.swe.smodel.WB.WB_no = 0;
+% matlabbatch{1}.spm.tools.swe.smodel.WB.WB_no = 0;
+matlabbatch{1}.spm.tools.swe.smodel.WB.WB_yes.WB_ss = 4;
+matlabbatch{1}.spm.tools.swe.smodel.WB.WB_yes.WB_nB = 10;
+matlabbatch{1}.spm.tools.swe.smodel.WB.WB_yes.WB_SwE = 0;
+matlabbatch{1}.spm.tools.swe.smodel.WB.WB_yes.WB_stat.WB_T.WB_T_con = [-3 -1 1 3 -1 1 0];
+matlabbatch{1}.spm.tools.swe.smodel.WB.WB_yes.WB_infType.WB_voxelwise = 0;
 matlabbatch{1}.spm.tools.swe.smodel.globalc.g_omit = 1;
 matlabbatch{1}.spm.tools.swe.smodel.globalm.gmsca.gmsca_no = 1;
 matlabbatch{1}.spm.tools.swe.smodel.globalm.glonorm = 1;
@@ -160,6 +165,6 @@ matlabbatch{1}.spm.tools.swe.rmodel.des = {strcat(level2_results_dir,filesep,'Sw
 spm_jobman('run',matlabbatch);
 clear matlabbatch
  
-matlabbatch{1}.spm.tools.swe.results.dis = {strcat(level2_results_dir,filesep,'SwE.mat')};
-spm_jobman('run',matlabbatch);
-clear matlabbatch
+% matlabbatch{1}.spm.tools.swe.results.dis = {strcat(level2_results_dir,filesep,'SwE.mat')};
+% spm_jobman('run',matlabbatch);
+% clear matlabbatch
