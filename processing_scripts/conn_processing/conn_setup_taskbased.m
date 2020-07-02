@@ -73,9 +73,11 @@ for this_subject_index = 1:length(subjects)
         error('need to specify unsmoothed secondary file name ')
     end
     
-    gray_matter_path = spm_select('FPList', data_path, '^warpedToMNI_c1T1*');
-    white_matter_path = spm_select('FPList', data_path, '^warpedToMNI_c2T1*');
-    csf_matter_path = spm_select('FPList', data_path, '^warpedToMNI_c3T1*');
+    % ATTENTION: Added ability to edit through the GUI and batch commands the binarization/erosion options for grey matter, white matter, and CSF masks (see Setup.ROIs.Erosion settings; previous batch.Setup.cwthreshold field)
+    
+    gray_matter_path = spm_select('FPList', this_subject_path, '^warpedToMNI_c1T1*');
+    white_matter_path = spm_select('FPList', this_subject_path, '^warpedToMNI_c2T1*');
+    csf_matter_path = spm_select('FPList', this_subject_path, '^warpedToMNI_c3T1*');
     
     BATCH.Setup.masks.Grey.files{this_subject_index} = gray_matter_path;
     BATCH.Setup.masks.White.files{this_subject_index} = white_matter_path;
@@ -99,12 +101,6 @@ for this_subject_index = 1:length(subjects)
             BATCH.Setup.masks.CSF.dataset = 1;
         end
     end
-    
-    data_path = pwd;
-    BATCH.Setup.covariates.names = {'head_movement'};
-    
-    
-    BATCH.Setup.covariates.files{1}{this_subject_index}{1} = this_outlier_and_movement_file;
     
     %%  this just reads outlier removal settings ... try to package as a stand alone function .. needs implemented in all fmri processing
     % Find outlier removal settings
