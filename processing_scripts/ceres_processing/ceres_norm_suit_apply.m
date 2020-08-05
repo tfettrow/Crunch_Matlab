@@ -18,11 +18,11 @@ spm_get_defaults('cmdline',true);
 
 data_path = pwd;
 
-affine = spm_select('FPList', data_path,'Affine.*.mat'); 				% Affine transformation 
-flowfield = spm_select('FPList', data_path,'u_.*.nii'); 				% Non-linear flowfield 
+affine = spm_select('FPList', data_path,'^Affine.*.mat'); 				% Affine transformation 
+flowfield = spm_select('FPList', data_path,'^u_.*.nii'); 				% Non-linear flowfield 
 % flowfield = spm_select('FPList', data_path,'^m.*.mat');
 
-funcImages = spm_select('FPList', fullfile(data_path),'CBmasked_coregToT1_unwarpedRealigned.*\.nii$'); 	% All of the con images (8 images) 
+funcImages = spm_select('FPList', fullfile(data_path),'^CBmasked_coregToT1_unwarpedRealigned.*\.nii$'); 	% All of the con images (8 images) 
 mask = spm_select('FPList', data_path,'^coregToT1_CB_mask.nii'); 	% The CB isolation mask
 
 %---------------------------------------------------------------------------------------------------------------------------------------------
@@ -47,7 +47,7 @@ for i_file = 1 : size(funcImages,1)
     
     matlabbatch{1}.spm.tools.suit.reslice_dartel.subj.affineTr = cellstr(affine);
     matlabbatch{1}.spm.tools.suit.reslice_dartel.subj.flowfield = cellstr(flowfield);
-    matlabbatch{1}.spm.tools.suit.reslice_dartel.subj.resample = cellstr(funcImages(i_file,:)); %cellstr(this_file_path_with_volumes);
+    matlabbatch{1}.spm.tools.suit.reslice_dartel.subj.resample = cellstr(this_file_path_with_volumes(1,:)); %cellstr(funcImages(i_file,:));
     matlabbatch{1}.spm.tools.suit.reslice_dartel.subj.mask = cellstr(mask);
     matlabbatch{1}.spm.tools.suit.reslice_dartel.jactransf = 0;
     matlabbatch{1}.spm.tools.suit.reslice_dartel.K = 6;
