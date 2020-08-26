@@ -11,7 +11,7 @@ rois_of_interest={'mid_frontal_gyrus_2','mid_frontal_gyrus_3'}
 subplot_row = 1;
 subplot_col = 2;
 
-no_labels = 0;
+no_labels = 1;
 
 roi_type = 'manual';
 extraction_type='voxel';
@@ -34,7 +34,7 @@ cd ..
 cd ..
 
 % find each subject roi_results file
-    cd(strcat('Group_Results_loadModulation', filesep, 'MRI_files'))
+    cd(strcat('Level2_Results_loadModulation', filesep, 'MRI_files'))
 %     cd 'Crunch_Effects'
 %     cd 'MRI_files'
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -90,7 +90,7 @@ if strcmp(roi_type,'manual')
             this_oa_x_data(this_oa_subject_index, this_figure_number) = oa_average_activation_betas(this_subject_beta_index);
             
             plot(this_oa_x_data(this_oa_subject_index, this_figure_number), this_oa_y_data(this_oa_subject_index, this_figure_number), 'o', 'MarkerEdge', 'k', 'MarkerFace', 'b')
-            
+            set(gca,'FontSize',12)
             if ~no_labels
                 title([oa_crunch.rois_imagery_manual(this_roi_index)])
             end
@@ -143,6 +143,7 @@ if strcmp(roi_type,'manual')
         if ~no_labels     
             text(x1,y1,text1)
         end
+        set(gca,'FontSize',12)
 %         text(x1,y2,text2)
 %         text(x1,y3,text3)
 %         text(x1,y4,text4)
@@ -183,6 +184,7 @@ if strcmp(roi_type,'manual')
             if ~no_labels
                 title([oa_crunch.rois_imagery_manual(this_roi_index)])
             end
+            set(gca,'FontSize',12)
           end
         this_figure_number = this_figure_number + 1;
     end
@@ -226,6 +228,7 @@ if strcmp(roi_type,'manual')
 %         fittedY_ya=polyval(coefs_ya, fittedX_ya);
 %         
         plot(fittedX_oa, fittedY_oa, '-', 'Color','b','LineWidth',1);
+        set(gca,'FontSize',12)
 %         plot(fittedX_ya, fittedY_ya, '-', 'Color','b','LineWidth',1);
          
           x1 = thisXLim(1);
@@ -277,9 +280,10 @@ if strcmp(roi_type,'manual')
                 
                 plot(this_oa_x_data(this_oa_subject_index, this_figure_number), this_oa_y_data(this_oa_subject_index, this_figure_number), 'o', 'MarkerEdge', 'k', 'MarkerFace', 'b')
             end
-                if ~no_labels
-            title([oa_crunch.rois_imagery_manual(this_roi_index)])
-                end
+            if ~no_labels
+                title([oa_crunch.rois_imagery_manual(this_roi_index)])
+            end
+            set(gca,'FontSize',12)
        
         end
 
@@ -325,6 +329,7 @@ if strcmp(roi_type,'manual')
 %         
         plot(fittedX_oa, fittedY_oa, '-', 'Color','b','LineWidth',1);
 %         plot(fittedX_ya, fittedY_ya, '-', 'Color','b','LineWidth',1);
+set(gca,'FontSize',12)
          
       x1 = thisXLim(1);
          y1 = thisYLim(1);
@@ -378,6 +383,7 @@ if strcmp(roi_type,'manual')
             if ~no_labels
                 title([oa_crunch.rois_imagery_manual(this_roi_index)])
             end
+            set(gca,'FontSize',12)
         end
         this_figure_number = this_figure_number + 1;
     end
@@ -421,6 +427,7 @@ if strcmp(roi_type,'manual')
 %         fittedY_ya=polyval(coefs_ya, fittedX_ya);
 %         
         plot(fittedX_oa, fittedY_oa, '-', 'Color','b','LineWidth',1);
+        set(gca,'FontSize',12)
 %         plot(fittedX_ya, fittedY_ya, '-', 'Color','b','LineWidth',1);
          
          x1 = thisXLim(1);
@@ -475,6 +482,7 @@ if strcmp(roi_type,'manual')
             if ~no_labels
                 title([oa_crunch.rois_imagery_manual(this_roi_index)])
             end
+            set(gca,'FontSize',12)
         end
 %         for this_ya_subject_index = 1:length(ya_subject_id)
 %             this_subject_id = ya_subject_id(this_ya_subject_index);
@@ -530,7 +538,7 @@ if strcmp(roi_type,'manual')
 %         
         plot(fittedX_oa, fittedY_oa, '-', 'Color','b','LineWidth',1);
 %         plot(fittedX_ya, fittedY_ya, '-', 'Color','b','LineWidth',1);
-         
+         set(gca,'FontSize',12)
          x1 = thisXLim(1);
          y1 = thisYLim(1);
         y2 = min(allYLim) + min(allYLim) * .2;  
