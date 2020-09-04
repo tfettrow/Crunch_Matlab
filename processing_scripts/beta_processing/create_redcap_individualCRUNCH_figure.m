@@ -3,20 +3,18 @@
 clear,clc
 % close all
 
-% task_folder={'05_MotorImagery'};  
-task_folder={'06_Nback'};  
+task_folder={'05_MotorImagery'};  
+% task_folder={'06_Nback'};  
 subjects = {'1002', '1004', '1010', '1011','1013'}; % need to figure out how to pass cell from shell
 % subjects =  {'2002','2007','2008','2012','2013','2015','2018','2020','2021','2022','2023','2025','2026'};
+
+Results_filename='CRUNCH_secondorder_max.mat';
+% rm
 
 %% TO DO ::: Setup for loop for each task/group???XXXX %%%
 no_labels = 0;
 
 data_path = pwd;
-
-handles.handle_plot = [];
-directory_pieces = regexp(data_path,filesep,'split');
-levels_back = 1; % assuming only working in ANTS folder atm
-subject_level_directory = getfield( directory_pieces, {1:length(directory_pieces)-levels_back} );
 
 subject_color_matrix = distinguishable_colors(length(subjects));
 
@@ -24,10 +22,11 @@ subject_color_matrix = distinguishable_colors(length(subjects));
 for this_subject_index = 1 : length(subjects)
     subj_results_dir = fullfile(data_path, subjects{this_subject_index}, 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_WholeBrain');
     this_subject_roiResults_path = fullfile(data_path, subjects{this_subject_index}, 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_WholeBrain', strcat(subjects{this_subject_index},'_fmri_redcap.csv'));
+    
     fileID = fopen(this_subject_roiResults_path{:});
     
-    data = textscan(fileID,'%s','delimiter',',','headerlines',0)
-    data = reshape(data{:},length(data{1})/2,2)
+    data = textscan(fileID,'%s','delimiter',',','headerlines',0);
+    data = reshape(data{:},length(data{1})/2,2);
     
     for this_beta = 3:length(data)
         split_condition_name = strsplit(data{this_beta,1},'_');
@@ -45,22 +44,15 @@ for this_subject_index = 1 : length(subjects)
     
     this_figure_number = 1;
     for this_roi_index = 1 : length(unique_rois)
-        %         if strcmp(subject_level_directory{end}, '05_MotorImagery')
         
         x_num = [1 : 4];
-%         starting_index_for_this_roi = this_roi_index * 4 - 3;
-        if any(strcmp(task_folder, '05_MotorImagery'))
-            x_label = {'flat', 'low', 'medium', 'high'};
-        elseif any(strcmp(task_folder, '06_Nback'))
-            xlabel = {'zero', 'one', 'two_short', 'three_short'};
-            condition_order2 = {'zero_long', 'one_long', 'two_long', 'three_long'};
-        end
+
         
-        this_roi_indices = find(strcmp(roi_names, unique_rois{this_roi_index}))
+        this_roi_indices = find(strcmp(roi_names, unique_rois{this_roi_index}));
         
         temp = ordered_beta(:,this_roi_indices)';
         for i_beta= 1:length(temp)
-            y(:,i_beta) = sscanf(temp{i_beta},'%f')
+            y(:,i_beta) = sscanf(temp{i_beta},'%f');
         end
         subplot(1, 4, this_figure_number);        
         hold on;
@@ -89,9 +81,11 @@ for this_subject_index = 1 : length(subjects)
             scatter(fittedX(crunchpoint_percent2(this_subject_index,this_roi_index)), fittedY2(crunchpoint_percent2(this_subject_index,this_roi_index)), 100,  'o', 'MarkerFaceColor',  subject_color_matrix(this_subject_index, :), 'MarkerEdgeColor', subject_color_matrix(this_subject_index, :), 'MarkerFaceAlpha',3/8); % 'MarkerSize', 12,
         end
         if any(strcmp(task_folder, '05_MotorImagery'))
-            save(char(strcat(subj_results_dir,filesep,'CRUNCH_Results.mat')), 'crunchpoint_percent');
+            task='MotorImagery';
+            save(char(strcat(subj_results_dir,filesep,strcat(subjects{this_subject_index},'_',task,'_',Results_filename))), 'crunchpoint_percent','unique_rois');
         else any(strcmp(task_folder, '06_Nback'))
-            save(char(strcat(subj_results_dir,filesep,'CRUNCH_Results.mat')), 'crunchpoint_percent1', 'crunchpoint_percent2');
+            task='Nback';
+            save(char(strcat(subj_results_dir,strcat(subjects{this_subject_index},'_',task,'_',Results_filename))), 'crunchpoint_percent1', 'crunchpoint_percent2','unique_rois');
         end
          
         xticks([x_num])
@@ -122,7 +116,7 @@ for this_subplot = 1 : this_figure_number  - 1
         legend(gca, 'hide');
     end
 end
-MaximizeFigureWindow;
+% MaximizeFigureWindow;
 
 figure;hold on;
 title('Correlations between left_acc and right_acc', 'interpreter','latex')
