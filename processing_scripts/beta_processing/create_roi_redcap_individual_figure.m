@@ -3,8 +3,8 @@
 clear,clc
 % close all
 
-task_folder={'05_MotorImagery'};  
-% task_folder={'06_Nback'};  
+% task_folder={'05_MotorImagery'};  
+task_folder={'06_Nback'};  
 subjects = {'1002', '1004', '1010', '1011','1013'}; % need to figure out how to pass cell from shell
 % subjects =  {'2002','2007','2008','2012','2013','2015','2018','2020','2021','2022','2023','2025','2026'};
 
@@ -22,7 +22,8 @@ subject_color_matrix = distinguishable_colors(length(subjects));
 
 
 for this_subject_index = 1 : length(subjects)
-    this_subject_roiResults_path = fullfile(data_path, subjects{this_subject_index}, 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_Results', strcat(subjects{this_subject_index},'_fmri_redcap.csv'));
+    subj_results_dir = fullfile(data_path, subjects{this_subject_index}, 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_WholeBrain');
+    this_subject_roiResults_path = fullfile(data_path, subjects{this_subject_index}, 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_WholeBrain', strcat(subjects{this_subject_index},'_fmri_redcap.csv'));
     fileID = fopen(this_subject_roiResults_path{:});
     
     data = textscan(fileID,'%s','delimiter',',','headerlines',0)
@@ -87,6 +88,12 @@ for this_subject_index = 1 : length(subjects)
             scatter(fittedX(crunchpoint_percent1(this_subject_index,this_roi_index)), fittedY1(crunchpoint_percent1(this_subject_index,this_roi_index)), 100,  'o', 'MarkerFaceColor',  subject_color_matrix(this_subject_index, :), 'MarkerEdgeColor', subject_color_matrix(this_subject_index, :), 'MarkerFaceAlpha',3/8); % 'MarkerSize', 12,
             scatter(fittedX(crunchpoint_percent2(this_subject_index,this_roi_index)), fittedY2(crunchpoint_percent2(this_subject_index,this_roi_index)), 100,  'o', 'MarkerFaceColor',  subject_color_matrix(this_subject_index, :), 'MarkerEdgeColor', subject_color_matrix(this_subject_index, :), 'MarkerFaceAlpha',3/8); % 'MarkerSize', 12,
         end
+        if any(strcmp(task_folder, '05_MotorImagery'))
+            save(char(strcat(subj_results_dir,filesep,'CRUNCH_Results.mat')), 'crunchpoint_percent');
+        else any(strcmp(task_folder, '06_Nback'))
+            save(char(strcat(subj_results_dir,filesep,'CRUNCH_Results.mat')), 'crunchpoint_percent1', 'crunchpoint_percent2');
+        end
+         
         xticks([x_num])
         xlim([0 5])
         title([unique_rois(this_roi_index)],'interpreter','latex')
@@ -169,4 +176,3 @@ elseif any(strcmp(task_folder, '06_Nback'))
     text(x1,y1,text1)
     text(x1,y2,text2)
 end
-
