@@ -1,13 +1,7 @@
+
 % roi_results figure generation
 clear,clc
-close all
-
-roi_type = 'manual';
-extraction_type='voxel';
-% extraction_type='WFU';
-% extraction_type='Network';
-%% TO DO ::: Setup for loop for each task/group???XXXX %%%
-% roi_type = '5sig';
+% close all
 
 data_path = pwd;
 
