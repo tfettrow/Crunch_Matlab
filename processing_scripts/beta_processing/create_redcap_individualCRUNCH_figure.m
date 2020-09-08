@@ -3,16 +3,21 @@
 clear,clc
 % close all
 
-task_folder={'05_MotorImagery'};  
-% task_folder={'06_Nback'};  
+%% settings
+% task_folder={'05_MotorImagery'};  
+task_folder={'06_Nback'};  
 subjects = {'1002', '1004', '1010', '1011','1013'}; % need to figure out how to pass cell from shell
 % subjects =  {'2002','2007','2008','2012','2013','2015','2018','2020','2021','2022','2023','2025','2026'};
 
 Results_filename='CRUNCH_secondorder_max.mat';
-% rm
+% Results_filename='CRUNCH_secondorder_extrapmax.mat';
+% Results_filename='CRUNCH_thirdorder_max.mat';
 
-%% TO DO ::: Setup for loop for each task/group???XXXX %%%
+save_variables = 1;
 no_labels = 0;
+
+
+%%
 
 data_path = pwd;
 
@@ -43,56 +48,91 @@ for this_subject_index = 1 : length(subjects)
     unique_rois = unique(roi_names);
     
     this_figure_number = 1;
-    for this_roi_index = 1 : length(unique_rois)
-        
-        x_num = [1 : 4];
-
-        
+    for this_roi_index = 1 : length(unique_rois)     
         this_roi_indices = find(strcmp(roi_names, unique_rois{this_roi_index}));
         
         temp = ordered_beta(:,this_roi_indices)';
         for i_beta= 1:length(temp)
-            y(:,i_beta) = sscanf(temp{i_beta},'%f');
+            beta_values(:,i_beta) = sscanf(temp{i_beta},'%f');
         end
         subplot(1, 4, this_figure_number);        
         hold on;
-        
-        if any(strcmp(task_folder, '05_MotorImagery'))
-            plot(x_num, y,'o', 'MarkerFaceColor', subject_color_matrix(this_subject_index, :), 'MarkerEdgeColor', subject_color_matrix(this_subject_index, :), 'MarkerSize', 3)
-            coeffs=polyfit(x_num, y, 2);
-            fittedX=linspace(min(x_num), max(x_num), 100);
+       
+         if any(strcmp(task_folder, '05_MotorImagery'))
+        if strcmp(Results_filename, 'CRUNCH_secondorder_max.mat')
+            number_of_levels = [1 : 4];
+            coeffs=polyfit(number_of_levels, beta_values, 2);
+            fittedX=linspace(min(number_of_levels), max(number_of_levels), 100);
             fittedY=polyval(coeffs, fittedX);
+        elseif strcmp(Results_filename, 'CRUNCH_thirdorder_max.mat')
+            number_of_levels = [1 : 4];
+            coeffs=polyfit(number_of_levels, beta_values, 3);
+            fittedX=linspace(min(number_of_levels), max(number_of_levels), 100);
+            fittedY=polyval(coeffs, fittedX);
+        elseif strcmp(Results_filename, 'CRUNCH_secondorder_extrapmax.mat')
+            number_of_levels = [1 : 4];
+            coeffs=polyfit(number_of_levels, beta_values, 2);
+%             number_of_levels_to_extrapolate =
+            fittedX=linspace(min(number_of_levels), max(number_of_levels), 100);
+            fittedY=polyval(coeffs, fittedX);
+        end
+       
+            plot(number_of_levels, beta_values,'o', 'MarkerFaceColor', subject_color_matrix(this_subject_index, :), 'MarkerEdgeColor', subject_color_matrix(this_subject_index, :), 'MarkerSize', 3)
             plot(fittedX, fittedY, '--', 'Color', subject_color_matrix(this_subject_index, :),'LineWidth',1);
-            [crunchpoint_y, crunchpoint_percent(this_subject_index,this_roi_index)] = max(fittedY);
-            scatter(fittedX(crunchpoint_percent(this_subject_index,this_roi_index)), fittedY(crunchpoint_percent(this_subject_index,this_roi_index)), 100,  'o', 'MarkerFaceColor',  subject_color_matrix(this_subject_index, :), 'MarkerEdgeColor', subject_color_matrix(this_subject_index, :), 'MarkerFaceAlpha',3/8); % 'MarkerSize', 12)
+            
+            % identify crunch point in terms of difficulty level
+            [crunchpoint_y, crunchpoint_percent_of_fit(this_subject_index,this_roi_index)] = max(fittedY);
+            crunchpoint_x(this_roi_index) = fittedX(crunchpoint_percent_of_fit(this_subject_index,this_roi_index));
+            
+            scatter(fittedX(crunchpoint_percent_of_fit(this_subject_index,this_roi_index)), fittedY(crunchpoint_percent_of_fit(this_subject_index,this_roi_index)), 100,  'o', 'MarkerFaceColor',  subject_color_matrix(this_subject_index, :), 'MarkerEdgeColor', subject_color_matrix(this_subject_index, :), 'MarkerFaceAlpha',3/8); % 'MarkerSize', 12)
         elseif any(strcmp(task_folder, '06_Nback'))
-            plot(x_num, y(1:4),'o', 'MarkerFaceColor', subject_color_matrix(this_subject_index, :), 'MarkerEdgeColor', subject_color_matrix(this_subject_index, :), 'MarkerSize', 3)
-            plot(x_num, y(5:8),'o', 'MarkerFaceColor', subject_color_matrix(this_subject_index, :), 'MarkerEdgeColor', subject_color_matrix(this_subject_index, :), 'MarkerSize', 3)
-            coeffs1=polyfit(x_num, y(1:4), 2);
-            coeffs2=polyfit(x_num, y(5:8), 2);
-            fittedX=linspace(min(x_num), max(x_num), 100);
-            fittedY1=polyval(coeffs1, fittedX);
-            fittedY2=polyval(coeffs2, fittedX);
+            if strcmp(Results_filename, 'CRUNCH_secondorder_max.mat')
+                number_of_levels = [1 : 4];
+                coeffs1=polyfit(number_of_levels, beta_values(1:4), 2);
+                coeffs2=polyfit(number_of_levels, beta_values(5:8), 2);
+                fittedX=linspace(min(number_of_levels), max(number_of_levels), 100);
+                fittedY1=polyval(coeffs1, fittedX);
+                fittedY2=polyval(coeffs2, fittedX);
+            elseif strcmp(Results_filename, 'CRUNCH_thirdorder_max.mat')
+                number_of_levels = [1 : 4];
+%                 coeffs=polyfit(number_of_levels, beta_values, 3);
+%                 fittedX=linspace(min(number_of_levels), max(number_of_levels), 100);
+%                 fittedY=polyval(coeffs, fittedX);
+            elseif strcmp(Results_filename, 'CRUNCH_secondorder_extrapmax.mat')
+                number_of_levels = [1 : 4];
+%                 coeffs=polyfit(number_of_levels, beta_values, 2);
+%                 %             number_of_levels_to_extrapolate =
+%                 fittedX=linspace(min(number_of_levels), max(number_of_levels), 100);
+%                 fittedY=polyval(coeffs, fittedX);
+            end
+            
             plot(fittedX, fittedY1, '--', 'Color', subject_color_matrix(this_subject_index, :),'LineWidth',1);
             plot(fittedX, fittedY2, '-', 'Color', subject_color_matrix(this_subject_index, :),'LineWidth',1);
-            [crunchpoint_y1, crunchpoint_percent1(this_subject_index,this_roi_index)] = max(fittedY1);
-            [crunchpoint_y2, crunchpoint_percent2(this_subject_index,this_roi_index)] = max(fittedY2);
-            scatter(fittedX(crunchpoint_percent1(this_subject_index,this_roi_index)), fittedY1(crunchpoint_percent1(this_subject_index,this_roi_index)), 100,  'o', 'MarkerFaceColor',  subject_color_matrix(this_subject_index, :), 'MarkerEdgeColor', subject_color_matrix(this_subject_index, :), 'MarkerFaceAlpha',3/8); % 'MarkerSize', 12,
-            scatter(fittedX(crunchpoint_percent2(this_subject_index,this_roi_index)), fittedY2(crunchpoint_percent2(this_subject_index,this_roi_index)), 100,  'o', 'MarkerFaceColor',  subject_color_matrix(this_subject_index, :), 'MarkerEdgeColor', subject_color_matrix(this_subject_index, :), 'MarkerFaceAlpha',3/8); % 'MarkerSize', 12,
+            plot(number_of_levels, beta_values(1:4),'o', 'MarkerFaceColor', subject_color_matrix(this_subject_index, :), 'MarkerEdgeColor', subject_color_matrix(this_subject_index, :), 'MarkerSize', 3)
+            plot(number_of_levels, beta_values(5:8),'o', 'MarkerFaceColor', subject_color_matrix(this_subject_index, :), 'MarkerEdgeColor', subject_color_matrix(this_subject_index, :), 'MarkerSize', 3)
+
+            [crunchpoint_y1, crunchpoint_percent_of_fit_1(this_subject_index,this_roi_index)] = max(fittedY1);
+            [crunchpoint_y2, crunchpoint_percent_of_fit_2(this_subject_index,this_roi_index)] = max(fittedY2);
+            crunchpoint_x1(this_roi_index) = fittedX(crunchpoint_percent_of_fit_1(this_subject_index,this_roi_index));
+            crunchpoint_x2(this_roi_index) = fittedX(crunchpoint_percent_of_fit_2(this_subject_index,this_roi_index));
+            
+            scatter(fittedX(crunchpoint_percent_of_fit_1(this_subject_index,this_roi_index)), fittedY1(crunchpoint_percent_of_fit_1(this_subject_index,this_roi_index)), 100,  'o', 'MarkerFaceColor',  subject_color_matrix(this_subject_index, :), 'MarkerEdgeColor', subject_color_matrix(this_subject_index, :), 'MarkerFaceAlpha',3/8); % 'MarkerSize', 12,
+            scatter(fittedX(crunchpoint_percent_of_fit_2(this_subject_index,this_roi_index)), fittedY2(crunchpoint_percent_of_fit_2(this_subject_index,this_roi_index)), 100,  'o', 'MarkerFaceColor',  subject_color_matrix(this_subject_index, :), 'MarkerEdgeColor', subject_color_matrix(this_subject_index, :), 'MarkerFaceAlpha',3/8); % 'MarkerSize', 12,
         end
-        if any(strcmp(task_folder, '05_MotorImagery'))
-            task='MotorImagery';
-            save(char(strcat(subj_results_dir,filesep,strcat(subjects{this_subject_index},'_',task,'_',Results_filename))), 'crunchpoint_percent','unique_rois');
-        else any(strcmp(task_folder, '06_Nback'))
-            task='Nback';
-            save(char(strcat(subj_results_dir,strcat(subjects{this_subject_index},'_',task,'_',Results_filename))), 'crunchpoint_percent1', 'crunchpoint_percent2','unique_rois');
-        end
-         
-        xticks([x_num])
+        xticks([number_of_levels])
         xlim([0 5])
         title([unique_rois(this_roi_index)],'interpreter','latex')
         this_figure_number = this_figure_number + 1;
-        ylabel('beta value')%, 'FontSize', 32       
+        ylabel('beta value')
+    end
+    if save_variables
+        if any(strcmp(task_folder, '05_MotorImagery'))
+            task='MotorImagery';
+            save(char(strcat(subj_results_dir,filesep,strcat(subjects{this_subject_index},'_',task,'_',Results_filename))), 'crunchpoint_x','unique_rois');
+        elseif any(strcmp(task_folder, '06_Nback'))
+            task='Nback';
+            save(char(strcat(subj_results_dir,filesep,strcat(subjects{this_subject_index},'_',task,'_',Results_filename))), 'crunchpoint_x1', 'crunchpoint_x2','unique_rois');
+        end
     end
 end
 
@@ -127,12 +167,12 @@ xlim([0 100])
 ylim([0 100])
 
 if any(strcmp(task_folder, '05_MotorImagery'))
-    coeffs1=polyfit(crunchpoint_percent(:,1), crunchpoint_percent(:,3), 1);
+    coeffs1=polyfit(crunchpoint_percent_of_fit(:,1), crunchpoint_percent_of_fit(:,3), 1);
     fittedX=linspace(0, 100, 100);
     fittedY1=polyval(coeffs1, fittedX);
-    plot(crunchpoint_percent(:,1), crunchpoint_percent(:,3), 'o', 'MarkerFaceColor', 'b', 'MarkerEdgeColor', 'b', 'MarkerSize', 12)
+    plot(crunchpoint_percent_of_fit(:,1), crunchpoint_percent_of_fit(:,3), 'o', 'MarkerFaceColor', 'b', 'MarkerEdgeColor', 'b', 'MarkerSize', 12)
     plot(fittedX, fittedY1, '--', 'Color', 'k','LineWidth',1);
-    [r , p] = corr(crunchpoint_percent(:,1), crunchpoint_percent(:,3));
+    [r , p] = corr(crunchpoint_percent_of_fit(:,1), crunchpoint_percent_of_fit(:,3));
     r2 = r^2;
     thisXLim = get(gca, 'XLim');
     thisYLim = get(gca, 'YLim');
@@ -146,17 +186,17 @@ if any(strcmp(task_folder, '05_MotorImagery'))
     text(x1,y1,text1)
     text(x1,y2,text2)
 elseif any(strcmp(task_folder, '06_Nback'))
-    coeffs1=polyfit(crunchpoint_percent1(:,1), crunchpoint_percent1(:,1), 1);
-    coeffs2=polyfit(crunchpoint_percent2(:,1), crunchpoint_percent2(:,1), 1);
+    coeffs1=polyfit(crunchpoint_percent_of_fit_1(:,1), crunchpoint_percent_of_fit_1(:,1), 1);
+    coeffs2=polyfit(crunchpoint_percent_of_fit_2(:,1), crunchpoint_percent_of_fit_2(:,1), 1);
     fittedX=linspace(0, 100, 100);
     fittedY1=polyval(coeffs1, fittedX);
     fittedY2=polyval(coeffs2, fittedX);
-    plot(crunchpoint_percent1(:,1), crunchpoint_percent1(:,3), 'o', 'MarkerFaceColor', 'b', 'MarkerEdgeColor', 'b', 'MarkerSize', 12)
+    plot(crunchpoint_percent_of_fit_1(:,1), crunchpoint_percent_of_fit_1(:,3), 'o', 'MarkerFaceColor', 'b', 'MarkerEdgeColor', 'b', 'MarkerSize', 12)
     plot(fittedX, fittedY1, '--', 'Color', 'k','LineWidth',1);
-    plot(crunchpoint_percent2(:,1), crunchpoint_percent2(:,3), 'o', 'MarkerFaceColor', 'b', 'MarkerEdgeColor', 'b', 'MarkerSize', 12)
+    plot(crunchpoint_percent_of_fit_2(:,1), crunchpoint_percent_of_fit_2(:,3), 'o', 'MarkerFaceColor', 'b', 'MarkerEdgeColor', 'b', 'MarkerSize', 12)
     plot(fittedX, fittedY1, '--', 'Color', 'k','LineWidth',1);
     plot(fittedX, fittedY2, '--', 'Color', 'k','LineWidth',1);
-    [r , p] = corr([crunchpoint_percent1(:,1); crunchpoint_percent2(:,1)], [crunchpoint_percent1(:,3); crunchpoint_percent2(:,3)]);
+    [r , p] = corr([crunchpoint_percent_of_fit_1(:,1); crunchpoint_percent_of_fit_2(:,1)], [crunchpoint_percent_of_fit_1(:,3); crunchpoint_percent_of_fit_2(:,3)]);
     r2 = r^2;
     thisXLim = get(gca, 'XLim');
     thisYLim = get(gca, 'YLim');
