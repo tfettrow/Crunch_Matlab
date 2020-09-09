@@ -9,7 +9,7 @@ task_folder={'06_Nback'};
 subjects = {'1002', '1004', '1010', '1011','1013'}; % need to figure out how to pass cell from shell
 % subjects =  {'2002','2007','2008','2012','2013','2015','2018','2020','2021','2022','2023','2025','2026'};
 
-Results_filename='CRUNCH_secondorder_max.mat';
+Results_filename='CRUNCH_secondorder_max_VAS.mat';
 % Results_filename='CRUNCH_secondorder_extrapmax.mat';
 % Results_filename='CRUNCH_thirdorder_max.mat';
 
@@ -86,19 +86,19 @@ for this_subject_index = 1 : length(subjects)
             
             scatter(fittedX(crunchpoint_percent_of_fit(this_subject_index,this_roi_index)), fittedY(crunchpoint_percent_of_fit(this_subject_index,this_roi_index)), 100,  'o', 'MarkerFaceColor',  subject_color_matrix(this_subject_index, :), 'MarkerEdgeColor', subject_color_matrix(this_subject_index, :), 'MarkerFaceAlpha',3/8); % 'MarkerSize', 12)
         elseif any(strcmp(task_folder, '06_Nback'))
-            if strcmp(Results_filename, 'CRUNCH_secondorder_max.mat')
+            if strcmp(Results_filename, 'CRUNCH_secondorder_max_VAS.mat')
                 number_of_levels = [1 : 4];
                 coeffs1=polyfit(number_of_levels, beta_values(1:4), 2);
                 coeffs2=polyfit(number_of_levels, beta_values(5:8), 2);
                 fittedX=linspace(min(number_of_levels), max(number_of_levels), 100);
                 fittedY1=polyval(coeffs1, fittedX);
                 fittedY2=polyval(coeffs2, fittedX);
-            elseif strcmp(Results_filename, 'CRUNCH_thirdorder_max.mat')
+            elseif strcmp(Results_filename, 'CRUNCH_thirdorder_max_VAS.mat')
                 number_of_levels = [1 : 4];
 %                 coeffs=polyfit(number_of_levels, beta_values, 3);
 %                 fittedX=linspace(min(number_of_levels), max(number_of_levels), 100);
 %                 fittedY=polyval(coeffs, fittedX);
-            elseif strcmp(Results_filename, 'CRUNCH_secondorder_extrapmax.mat')
+            elseif strcmp(Results_filename, 'CRUNCH_secondorder_extrapmax_VAS.mat')
                 number_of_levels = [1 : 4];
 %                 coeffs=polyfit(number_of_levels, beta_values, 2);
 %                 %             number_of_levels_to_extrapolate =
