@@ -42,9 +42,7 @@ for this_subject_index = 1 : length(subjects)
         load(char(strcat(subj_results_dir,filesep,strcat(subjects{this_subject_index},'_',task,'_',Results_filename))));
         results(this_subject_index,:) = [crunchpoint_x1 crunchpoint_x2];
     end
-    
 
-    
     this_subject_row_walking_data = find(strcmp(string(walking_data(:,1)), subjects{this_subject_index}));
     this_subject_400m_data(this_subject_index) = walking_data(this_subject_row_walking_data,6);
 end
@@ -58,36 +56,51 @@ for this_group_index = 1 : length(group_names)
         if any(strcmp(task_folder, '05_MotorImagery'))
             subplot(1, 4, this_figure_number); hold on;           
             plot( results(this_group_subjectindices,this_roi_index), this_subject_400m_data(this_group_subjectindices), 'o', 'MarkerEdge', 'k', 'MarkerFace', group_color_matrix(this_group_index, :))
+            [r , p] = corr(results(this_group_subjectindices,this_roi_index), this_subject_400m_data(this_group_subjectindices)');
+            r2 = r^2;
+            coefs = polyfit(results(this_group_subjectindices,this_roi_index)', this_subject_400m_data(this_group_subjectindices), 1);
+            fittedX=linspace(1, 4, 100);
+            fittedY=polyval(coefs, fittedX);
+            plot(fittedX, fittedY, '-', 'Color',group_color_matrix(this_group_index, :),'LineWidth',1);
             this_figure_number = this_figure_number+1;
         elseif any(strcmp(task_folder, '06_Nback'))
             subplot(1, 4, this_figure_number); hold on;
             plot(results(this_group_subjectindices,this_roi_index), this_subject_400m_data(this_group_subjectindices), 'o', 'MarkerEdge', 'k', 'MarkerFace',  group_color_matrix(this_group_index, :))
             plot(results(this_group_subjectindices,this_roi_index+4), this_subject_400m_data(this_group_subjectindices), 'o', 'MarkerEdge', 'k', 'MarkerFace',  (group_color_matrix(this_group_index, :)+.2)*.5)
+            [r1 , p] = corr(results(this_group_subjectindices,this_roi_index), this_subject_400m_data(this_group_subjectindices)');
+            [r2 , p] = corr(results(this_group_subjectindices,this_roi_index+4), this_subject_400m_data(this_group_subjectindices)');
+            r21 = r1^2;
+            r22 = r2^2;
+            coefs1 = polyfit(results(this_group_subjectindices,this_roi_index)', this_subject_400m_data(this_group_subjectindices), 1);
+            coefs2 = polyfit(results(this_group_subjectindices,this_roi_index+4)', this_subject_400m_data(this_group_subjectindices), 1);
+            fittedX=linspace(0, 5, 100);
+            fittedY1=polyval(coefs1, fittedX);
+            fittedY2=polyval(coefs2, fittedX);
+            plot(fittedX, fittedY1, '-', 'Color',group_color_matrix(this_group_index, :),'LineWidth',1);
+            plot(fittedX, fittedY2, '-', 'Color',(group_color_matrix(this_group_index, :)+.2)*.5,'LineWidth',1);
             this_figure_number = this_figure_number+1;
         end
         title([unique_rois(this_roi_index)],'interpreter','latex')
         
-        [r , p] = corr(results(this_group_subjectindices,this_roi_index), this_subject_400m_data(this_group_subjectindices)');
-        r2 = r^2;
-        coefs = polyfit(results(this_group_subjectindices,this_roi_index)', this_subject_400m_data(this_group_subjectindices), 1);
-        fittedX=linspace(1, 4, 100);
-        fittedY=polyval(coefs, fittedX);
-        plot(fittedX, fittedY, '-', 'Color',group_color_matrix(this_group_index, :),'LineWidth',1);
-        x1 = 0.1;
-        y1 = min(allYLim) + min(allYLim) * .25;
-        y2 = min(allYLim) + min(allYLim) * .2;
-        y3 = min(allYLim) + min(allYLim) * .1;
-        y4 = min(allYLim) + min(allYLim) * .05;
-        text1 = ['OA r^2 = ' num2str(r2)];
-        text2 = ['OA m = ' num2str(coefs(1))];
+        
+%         x1 = 0.1;
+%         y1 = min(allYLim) + min(allYLim) * .25;
+%         y2 = min(allYLim) + min(allYLim) * .2;
+%         y3 = min(allYLim) + min(allYLim) * .1;
+%         y4 = min(allYLim) + min(allYLim) * .05;
+%         text1 = ['OA r^2 = ' num2str(r2)];
+%         text2 = ['OA m = ' num2str(coefs(1))];
 %         text3 = ['YA r^2 = ' num2str(r2_ya)];
 %         text4 = ['YA m = ' num2str(coefs_ya(1))];
         
 % %         text(x1,y1,text1)
-% set(gca, 'XLim', [1 4])
+% set(gca, 'XLim', [0 5]
+xticks([1:4])
+        xlim([0 5])
 %      
 %         thisYLim = get(gca, 'YLim');
 %         allYLim = [allYLim thisYLim];
+            ylim([200 550])
 %         set(gca, 'YLim', [min(allYLim), max(allYLim)]);
     end
 end

@@ -68,7 +68,7 @@ for this_subject_index = 1 : length(subjects)
         this_group_subjectindices = find(group_ids==this_group_index);
         this_figure_number = 1;
         for this_roi_index = 1 : length(unique_rois)
-            this_group_and_roi_results = all_results(this_group_subjectindices,:,this_roi_index)
+            this_group_and_roi_results = all_results(this_group_subjectindices,:,this_roi_index);
             group_avg_results(this_group_index,:,this_roi_index) = mean(this_group_and_roi_results,1);
             
             if strcmp(Results_filename, 'CRUNCH_secondorder_max.mat')
@@ -80,7 +80,7 @@ for this_subject_index = 1 : length(subjects)
             if any(strcmp(task_folder, '05_MotorImagery'))
                 plot(number_of_levels, group_avg_results(this_group_index,:,this_roi_index),'-o', 'MarkerFaceColor', subject_color_matrix(this_group_index, :), 'MarkerEdgeColor', subject_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',3, 'Color', subject_color_matrix(this_group_index, :))
             elseif any(strcmp(task_folder, '06_Nback'))
-                plot(number_of_levels, group_avg_results(this_group_index,1:4,this_roi_index),'--o', 'MarkerFaceColor', subject_color_matrix(this_group_index, :), 'MarkerEdgeColor', subject_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',3, 'Color', subject_color_matrix(this_group_index, :))
+                plot(number_of_levels, group_avg_results(this_group_index,1:4,this_roi_index),'--o', 'MarkerFaceColor', (subject_color_matrix(this_group_index, :)+.2)*.5, 'MarkerEdgeColor', (subject_color_matrix(this_group_index, :)+.2)*.5,'MarkerSize', 5, 'LineWidth',3, 'Color',(subject_color_matrix(this_group_index, :)+.2)*.5 )
                 plot(number_of_levels, group_avg_results(this_group_index,5:8,this_roi_index),'-o', 'MarkerFaceColor', subject_color_matrix(this_group_index, :), 'MarkerEdgeColor', subject_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',3, 'Color', subject_color_matrix(this_group_index, :))
             end
             xticks([number_of_levels])
