@@ -4,136 +4,133 @@ clear,clc
 % close all
 
 %% settings
-task = 1; %select the task 1 = MOTO, 2 = nback
+%select the task 1 = MOTO, 2 = nback
+task = 1;
+
 if task == 1
-    task_folder={'05_MotorImagery'};
-    subjects = {'1002', '1004', '1010', '1011','1013', '1009'}; 
+    task_folder='05_MotorImagery';
+    subjects = [1002,1004,1010,1011,1013,1009];
 elseif task == 2
-    task_folder={'06_Nback'};
-    subjects =  {'2002','2007','2008','2012','2013','2015','2018','2020','2021','2022','2023','2025','2026','2033','2034'};
+    task_folder='06_Nback';
+    subjects =  [2002,2007,2008,2012,2013,2015,2018,2020,2021,2022,2023,2025,2026,2033,2034];
 end
 
-Results_filename='CRUNCH_secondorder_max.mat';
+Results_filename='CRUNCH_discrete_vas.mat';
 
 save_variables = 1;
 no_labels = 0;
-
-
-%%
-
+% data folder path
 data_path = 'Z:\share\FromExternal\Research_Projects_UF\CRUNCH\MiM_Data'; % change this to reflect the share drive path for your PC
 
 %subject_color_matrix = distinguishable_colors(length(subjects));
 
 
-for sub_in = 1
-    subj_results_dir = fullfile(data_path, subjects{sub_in}, 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_WholeBrain');
-    this_subject_roiResults_path = fullfile(data_path, subjects{sub_in}, 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_WholeBrain', strcat(subjects{sub_in},'_fmri_redcap.csv'));
+for sub = 1
+    %%create file path for beta values
+    subj_results_dir = fullfile(data_path, num2str(subjects(sub)), 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_WholeBrain');
+    this_subject_roiResults_path = fullfile(subj_results_dir, strcat(num2str(subjects(sub)),'_fmri_redcap.csv'));
     
-    fileID = fopen(this_subject_roiResults_path{:});
+    fileID = fopen(this_subject_roiResults_path);
     
-    data = textscan(fileID,'%s','delimiter',',','headerlines',0);
+    %%read the csv file and reshape to have separate headers and values
+    data = textscan(fileID,'%s','delimiter',',');
     data = reshape(data{:},length(data{1})/2,2);
     
     for this_beta = 3:length(data)
-        split_condition_name = strsplit(data{this_beta,1},'_');
-        if any(strcmp(task_folder, '05_MotorImagery'))
-            ordered_conditions{this_beta-2} = split_condition_name{1};
-            roi_names{this_beta-2} = strcat(split_condition_name{2},'_',split_condition_name{3});
-            ordered_beta{this_beta-2} = data{this_beta,2};
-        elseif any(strcmp(task_folder, '06_Nback'))
-            ordered_conditions{this_beta-2} = strcat(split_condition_name{1},'_',split_condition_name{2});
-            roi_names{this_beta-2} = strcat(split_condition_name{3},'_',split_condition_name{4});
-            ordered_beta{this_beta-2} = data{this_beta,2};
+        split_difficulty = strsplit(data{this_beta,1},'_');%separate difficulty and brain region
+        if task == 1
+            ordered_conditions{this_beta-2} = split_difficulty{1}; %difficulty level = flat to high
+            roi_names{this_beta-2} = strcat(split_difficulty{2},'_',split_difficulty{3}); %brain region name, l-pfc, r-pfc, l-acc, r-acc
+            ordered_beta{this_beta-2} = data{this_beta,2}; %beta value arranged here
+        elseif task == 2
+            ordered_conditions{this_beta-2} = strcat(split_difficulty{1},'_',split_difficulty{2}); % difficulty = 0 to 3 with long or short ISI
+            roi_names{this_beta-2} = strcat(split_difficulty{3},'_',split_difficulty{4}); %brain region name
+            ordered_beta{this_beta-2} = data{this_beta,2}; %beta value
         end
     end
-    unique_rois = unique(roi_names);
+    unique_rois = unique(roi_names); %delete the repeats of the brain region name
     
     this_figure_number = 1;
-    for this_roi_index = 1 : length(unique_rois)     
-        this_roi_indices = find(strcmp(roi_names, unique_rois{this_roi_index}));
+    for this_roi_index = 1 : length(unique_rois) %1:4, l-pfc, r-pfc, l-acc, r-acc
+        this_roi_indices = find(strcmp(roi_names, unique_rois{this_roi_index})); %find the index of when the current ROI occurs
         
-        temp = ordered_beta(:,this_roi_indices)';
+        temp = ordered_beta(:,this_roi_indices)'; %temporary hold the beta values
         for i_beta= 1:length(temp)
-            beta_values(:,i_beta) = sscanf(temp{i_beta},'%f');
+            beta_values(:,i_beta) = textscan(temp{i_beta},'%f'); %beta values for current ROI
         end
-        subplot(1, 4, this_figure_number);        
+        beta_values = cell2mat(beta_values);
+        subplot(1, 4, this_figure_number);
         hold on;
+        
+        if any(strcmp(task_folder, '05_MotorImagery'))
+            number_of_levels = 1:4;
+            plot(number_of_levels,beta_values,'-or');
+            mm = find(max(beta_values)==beta_values);
+            if (mm < 2 || mm > 3)
+                cr(this_roi_index) = 0;
+            else
+                cr(this_roi_index) = mm;
+            end
+
+%             coeffs=polyfit(number_of_levels, beta_values, 2);
+%             fittedX=linspace(min(number_of_levels), max(number_of_levels), 100);
+%             fittedY=polyval(coeffs, fittedX);
+%             
+%             plot(number_of_levels, beta_values,'o', 'MarkerFaceColor', subject_color_matrix(sub, :), 'MarkerEdgeColor', subject_color_matrix(sub, :), 'MarkerSize', 3)
+%             plot(fittedX, fittedY, '--', 'Color', subject_color_matrix(sub, :),'LineWidth',1);
+%             
+%             % identify crunch point in terms of difficulty level
+%             [crunchpoint_y, crunchpoint_percent_of_fit(sub,this_roi_index)] = max(fittedY);
+%             crunchpoint_x(this_roi_index) = fittedX(crunchpoint_percent_of_fit(sub,this_roi_index));
+%             
+%             scatter(fittedX(crunchpoint_percent_of_fit(sub,this_roi_index)), fittedY(crunchpoint_percent_of_fit(sub,this_roi_index)), 100,  'o', 'MarkerFaceColor',  subject_color_matrix(sub, :), 'MarkerEdgeColor', subject_color_matrix(sub, :), 'MarkerFaceAlpha',3/8); % 'MarkerSize', 12)
        
-         if any(strcmp(task_folder, '05_MotorImagery'))
-        if strcmp(Results_filename, 'CRUNCH_secondorder_max.mat')
-            number_of_levels = [1 : 4];
-            coeffs=polyfit(number_of_levels, beta_values, 2);
-            fittedX=linspace(min(number_of_levels), max(number_of_levels), 100);
-            fittedY=polyval(coeffs, fittedX);
-        elseif strcmp(Results_filename, 'CRUNCH_thirdorder_max.mat')
-            number_of_levels = [1 : 4];
-            coeffs=polyfit(number_of_levels, beta_values, 3);
-            fittedX=linspace(min(number_of_levels), max(number_of_levels), 100);
-            fittedY=polyval(coeffs, fittedX);
-        elseif strcmp(Results_filename, 'CRUNCH_secondorder_extrapmax.mat')
-            number_of_levels = [1 : 4];
-            coeffs=polyfit(number_of_levels, beta_values, 2);
-%             number_of_levels_to_extrapolate =
-            fittedX=linspace(min(number_of_levels), max(number_of_levels), 100);
-            fittedY=polyval(coeffs, fittedX);
-        end
-       
-            plot(number_of_levels, beta_values,'o', 'MarkerFaceColor', subject_color_matrix(sub_in, :), 'MarkerEdgeColor', subject_color_matrix(sub_in, :), 'MarkerSize', 3)
-            plot(fittedX, fittedY, '--', 'Color', subject_color_matrix(sub_in, :),'LineWidth',1);
-            
-            % identify crunch point in terms of difficulty level
-            [crunchpoint_y, crunchpoint_percent_of_fit(sub_in,this_roi_index)] = max(fittedY);
-            crunchpoint_x(this_roi_index) = fittedX(crunchpoint_percent_of_fit(sub_in,this_roi_index));
-            
-            scatter(fittedX(crunchpoint_percent_of_fit(sub_in,this_roi_index)), fittedY(crunchpoint_percent_of_fit(sub_in,this_roi_index)), 100,  'o', 'MarkerFaceColor',  subject_color_matrix(sub_in, :), 'MarkerEdgeColor', subject_color_matrix(sub_in, :), 'MarkerFaceAlpha',3/8); % 'MarkerSize', 12)
         elseif any(strcmp(task_folder, '06_Nback'))
-            if strcmp(Results_filename, 'CRUNCH_secondorder_max.mat')
-                number_of_levels = [1 : 4];
-                coeffs1=polyfit(number_of_levels, beta_values(1:4), 2);
-                coeffs2=polyfit(number_of_levels, beta_values(5:8), 2);
-                fittedX=linspace(min(number_of_levels), max(number_of_levels), 100);
-                fittedY1=polyval(coeffs1, fittedX);
-                fittedY2=polyval(coeffs2, fittedX);
-            elseif strcmp(Results_filename, 'CRUNCH_thirdorder_max.mat')
-                number_of_levels = [1 : 4];
-%                 coeffs=polyfit(number_of_levels, beta_values, 3);
-%                 fittedX=linspace(min(number_of_levels), max(number_of_levels), 100);
-%                 fittedY=polyval(coeffs, fittedX);
-            elseif strcmp(Results_filename, 'CRUNCH_secondorder_extrapmax.mat')
-                number_of_levels = [1 : 4];
-%                 coeffs=polyfit(number_of_levels, beta_values, 2);
-%                 %             number_of_levels_to_extrapolate =
-%                 fittedX=linspace(min(number_of_levels), max(number_of_levels), 100);
-%                 fittedY=polyval(coeffs, fittedX);
+            number_of_levels = 1:4;
+            slope_cr = diff(beta_values)./diff(number_of_levels); %find slope
+            plot(number_of_levels,beta_values(1:4),'-or');
+            plot(number_of_levels,beta_values(5:8),'-.or');
+            mm = find(max(beta_values)==beta_values);
+            if (mm < 2 || mm > 3)
+                cr(this_roi_index) = 0;
+            else
+                cr(this_roi_index) = mm;
             end
             
-            plot(fittedX, fittedY1, '--', 'Color', subject_color_matrix(sub_in, :),'LineWidth',1);
-            plot(fittedX, fittedY2, '-', 'Color', subject_color_matrix(sub_in, :),'LineWidth',1);
-            plot(number_of_levels, beta_values(1:4),'o', 'MarkerFaceColor', subject_color_matrix(sub_in, :), 'MarkerEdgeColor', subject_color_matrix(sub_in, :), 'MarkerSize', 3)
-            plot(number_of_levels, beta_values(5:8),'o', 'MarkerFaceColor', subject_color_matrix(sub_in, :), 'MarkerEdgeColor', subject_color_matrix(sub_in, :), 'MarkerSize', 3)
-
-            [crunchpoint_y1, crunchpoint_percent_of_fit_1(sub_in,this_roi_index)] = max(fittedY1);
-            [crunchpoint_y2, crunchpoint_percent_of_fit_2(sub_in,this_roi_index)] = max(fittedY2);
-            crunchpoint_x1(this_roi_index) = fittedX(crunchpoint_percent_of_fit_1(sub_in,this_roi_index));
-            crunchpoint_x2(this_roi_index) = fittedX(crunchpoint_percent_of_fit_2(sub_in,this_roi_index));
-            
-            scatter(fittedX(crunchpoint_percent_of_fit_1(sub_in,this_roi_index)), fittedY1(crunchpoint_percent_of_fit_1(sub_in,this_roi_index)), 100,  'o', 'MarkerFaceColor',  subject_color_matrix(sub_in, :), 'MarkerEdgeColor', subject_color_matrix(sub_in, :), 'MarkerFaceAlpha',3/8); % 'MarkerSize', 12,
-            scatter(fittedX(crunchpoint_percent_of_fit_2(sub_in,this_roi_index)), fittedY2(crunchpoint_percent_of_fit_2(sub_in,this_roi_index)), 100,  'o', 'MarkerFaceColor',  subject_color_matrix(sub_in, :), 'MarkerEdgeColor', subject_color_matrix(sub_in, :), 'MarkerFaceAlpha',3/8); % 'MarkerSize', 12,
+%             coeffs1=polyfit(number_of_levels, beta_values(1:4), 2);
+%             coeffs2=polyfit(number_of_levels, beta_values(5:8), 2);
+%             fittedX=linspace(min(number_of_levels), max(number_of_levels), 100);
+%             fittedY1=polyval(coeffs1, fittedX);
+%             fittedY2=polyval(coeffs2, fittedX);
+%             
+%             
+%             plot(fittedX, fittedY1, '--', 'Color', subject_color_matrix(sub, :),'LineWidth',1);
+%             plot(fittedX, fittedY2, '-', 'Color', subject_color_matrix(sub, :),'LineWidth',1);
+%             plot(number_of_levels, beta_values(1:4),'o', 'MarkerFaceColor', subject_color_matrix(sub, :), 'MarkerEdgeColor', subject_color_matrix(sub, :), 'MarkerSize', 3)
+%             plot(number_of_levels, beta_values(5:8),'o', 'MarkerFaceColor', subject_color_matrix(sub, :), 'MarkerEdgeColor', subject_color_matrix(sub, :), 'MarkerSize', 3)
+%             
+%             [crunchpoint_y1, crunchpoint_percent_of_fit_1(sub,this_roi_index)] = max(fittedY1);
+%             [crunchpoint_y2, crunchpoint_percent_of_fit_2(sub,this_roi_index)] = max(fittedY2);
+%             crunchpoint_x1(this_roi_index) = fittedX(crunchpoint_percent_of_fit_1(sub,this_roi_index));
+%             crunchpoint_x2(this_roi_index) = fittedX(crunchpoint_percent_of_fit_2(sub,this_roi_index));
+%             
+%             scatter(fittedX(crunchpoint_percent_of_fit_1(sub,this_roi_index)), fittedY1(crunchpoint_percent_of_fit_1(sub,this_roi_index)), 100,  'o', 'MarkerFaceColor',  subject_color_matrix(sub, :), 'MarkerEdgeColor', subject_color_matrix(sub, :), 'MarkerFaceAlpha',3/8); % 'MarkerSize', 12,
+%             scatter(fittedX(crunchpoint_percent_of_fit_2(sub,this_roi_index)), fittedY2(crunchpoint_percent_of_fit_2(sub,this_roi_index)), 100,  'o', 'MarkerFaceColor',  subject_color_matrix(sub, :), 'MarkerEdgeColor', subject_color_matrix(sub, :), 'MarkerFaceAlpha',3/8); % 'MarkerSize', 12,
         end
-        xticks([number_of_levels])
+        xticks(number_of_levels)
         xlim([0 5])
-        title([unique_rois(this_roi_index)],'interpreter','latex')
+        title(unique_rois(this_roi_index),'interpreter','latex')
         this_figure_number = this_figure_number + 1;
         ylabel('beta value')
+        clearvars beta_values;
     end
     if save_variables
         if any(strcmp(task_folder, '05_MotorImagery'))
             task='MotorImagery';
-            save(char(strcat(subj_results_dir,filesep,strcat(subjects{sub_in},'_',task,'_',Results_filename))), 'crunchpoint_x','unique_rois');
+            save(char(strcat(subj_results_dir,filesep,strcat(num2str(subjects(sub)),'_',task,'_',Results_filename))));
         elseif any(strcmp(task_folder, '06_Nback'))
             task='Nback';
-            save(char(strcat(subj_results_dir,filesep,strcat(subjects{sub_in},'_',task,'_',Results_filename))), 'crunchpoint_x1', 'crunchpoint_x2','unique_rois');
+            save(char(strcat(subj_results_dir,filesep,strcat(num2str(subjects(sub)),'_',task,'_',Results_filename))));
         end
     end
 end
