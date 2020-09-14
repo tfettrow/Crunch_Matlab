@@ -4,9 +4,10 @@ clear,clc
 % close all
 
 %% settings
+data_path = 'Z:\share\FromExternal\Research_Projects_UF\CRUNCH\MiM_Data'; % change this to reflect the share drive path for your PC
 %select the task 1 = MOTO, 2 = nback
 task = 2;
-subj = 2;
+subj = 2; %1 = YA, 2 = OA
 
 if task == 1
     task_folder='05_MotorImagery';
@@ -29,10 +30,6 @@ Results_filename='CRUNCH_discrete.mat';
 save_variables = 1;
 no_labels = 0;
 % data folder path
-data_path = 'Z:\share\FromExternal\Research_Projects_UF\CRUNCH\MiM_Data'; % change this to reflect the share drive path for your PC
-
-%subject_color_matrix = distinguishable_colors(length(subjects));
-
 
 for sub = 1:length(subjects)
     %create file path for beta values
