@@ -1,45 +1,32 @@
-function indentify_individual_discrete_crunch(varargin)
+function identify_individual_discrete_crunch(varargin)
 %input task (1 for Motor 2 for nback), subject numbers [####], data path for where all subject folders are stoered 
 parser = inputParser;
 parser.KeepUnmatched = true;
 % setup defaults in case no arguments specified
-addParameter(parser, 'task', '')
+addParameter(parser, 'task_folder', '')
 addParameter(parser, 'subjects', '')
-addParameter(parser, 'data_path', '')
 addParameter(parser, 'no_labels', 0)
 addParameter(parser, 'Results_filename', 'CRUNCH_discrete.mat')
+addParameter(parser, 'save_variables', 1)
 parse(parser, varargin{:})
 subjects = parser.Results.subjects;
-task = parser.Results.task;
+task_folder = parser.Results.task_folder;
 Results_filename = parser.Results.Results_filename;
-data_path = parser.Results.data_path;
+save_variables = parser.Results.save_variables;
 
-%% settings
-% data_path = 'Z:\share\FromExternal\Research_Projects_UF\CRUNCH\MiM_Data'; % change this to reflect the share drive path for your PC
-%select the task 1 = MOTO, 2 = nback
-if task == 1
-    task_folder='05_MotorImagery';
-%     if subj == 1
-%         subjects = [1002,1004,1010,1011,1013,1009];
-%     elseif subj == 2
-%         subjects =  [2002,2007,2008,2012,2013,2015,2018,2020,2021,2022,2023,2025,2026,2033,2034];
-%     end
-elseif task == 2
-    task_folder='06_Nback';
-%     if subj == 1
-%         subjects = [1002,1004,1010,1011,1013,1009];
-%     elseif subj == 2
-%         subjects =  [2002,2007,2008,2012,2013,2015,2018,2020,2021,2022,2023,2025,2026,2033,2034];
-%     end
+
+data_path = pwd;
+
+if any(strcmp(task_folder, '05_MotorImagery'))
+    task='MotorImagery';
+elseif any(strcmp(task_folder, '06_Nback'))
+    task='Nback';
 end
-
-save_variables = 1;
-% data folder path
 
 for sub = 1:length(subjects)
     %create file path for beta values
-    subj_results_dir = fullfile(data_path, num2str(subjects(sub)), 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_WholeBrain');
-    this_subject_roiResults_path = fullfile(subj_results_dir, strcat(num2str(subjects(sub)),'_fmri_redcap.csv'));
+    subj_results_dir = fullfile(data_path, subjects{sub}, 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_WholeBrain');
+    this_subject_roiResults_path = fullfile(subj_results_dir, strcat(subjects{sub},'_fmri_redcap.csv'));
     
     fileID = fopen(this_subject_roiResults_path);
     
@@ -49,10 +36,10 @@ for sub = 1:length(subjects)
     
     for this_beta = 3:length(data)
         split_difficulty = strsplit(data{this_beta,1},'_');%separate difficulty and brain region
-        if task == 1
+        if any(strcmp(task_folder, '05_MotorImagery'))
             ordered_conditions{this_beta-2} = split_difficulty{1}; %difficulty level = flat to high
             roi_names{this_beta-2} = strcat(split_difficulty{2},'_',split_difficulty{3}); %brain region name, l-pfc, r-pfc, l-acc, r-acc
-        elseif task == 2
+        elseif any(strcmp(task_folder, '06_Nback'))
             ordered_conditions{this_beta-2} = strcat(split_difficulty{1},'_',split_difficulty{2}); % difficulty = 0 to 3 with long or short ISI
             roi_names{this_beta-2} = strcat(split_difficulty{3},'_',split_difficulty{4}); %brain region name
         end
@@ -116,10 +103,10 @@ for sub = 1:length(subjects)
     if save_variables
         if any(strcmp(task_folder, '05_MotorImagery'))
             task='MotorImagery';
-            save(char(strcat(subj_results_dir,filesep,strcat(num2str(subjects(sub)),'_',task,'_',Results_filename))),'cr*','data','unique_rois');
+            save(char(strcat(subj_results_dir,filesep,strcat(subjects{sub},'_',task_folder,'_',Results_filename))),'cr*','data','unique_rois');
         elseif any(strcmp(task_folder, '06_Nback'))
             task='Nback';
-            save(char(strcat(subj_results_dir,filesep,strcat(num2str(subjects(sub)),'_',task,'_',Results_filename))),'cr*','data','unique_rois');
+            save(char(strcat(subj_results_dir,filesep,strcat(subjects{sub},'_',task_folder,'_',Results_filename))),'cr*','data','unique_rois');
         end
     end
     fclose(fileID);
