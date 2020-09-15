@@ -1,4 +1,4 @@
-function create_redcap_groupCRUNCH_figure(varargin)
+function average_individual_discrete_crunch(varargin)
 parser = inputParser;
 parser.KeepUnmatched = true;
 % setup defaults in case no arguments specified
@@ -7,7 +7,7 @@ addParameter(parser, 'subjects', '')
 addParameter(parser, 'group_names', '')
 addParameter(parser, 'group_ids', '')
 addParameter(parser, 'no_labels', 0)
-addParameter(parser, 'Results_filename', 'CRUNCH_secondorder_max.mat')
+addParameter(parser, 'Results_filename', 'CRUNCH_discrete.mat')
 parse(parser, varargin{:})
 subjects = parser.Results.subjects;
 group_names = parser.Results.group_names;
@@ -71,8 +71,8 @@ for this_subject_index = 1 : length(subjects)
             this_group_and_roi_results = all_results(this_group_subjectindices,:,this_roi_index);
             group_avg_results(this_group_index,:,this_roi_index) = mean(this_group_and_roi_results,1);
             
-            if strcmp(Results_filename, 'CRUNCH_secondorder_max.mat')
-                number_of_levels = [1 : 4];
+            if strcmp(Results_filename, 'CRUNCH_discrete.mat')
+                number_of_levels = [0 : 3];
             end
             
             subplot(1, 4, this_figure_number); hold on;
@@ -84,7 +84,7 @@ for this_subject_index = 1 : length(subjects)
                 plot(number_of_levels, group_avg_results(this_group_index,5:8,this_roi_index),'-o', 'MarkerFaceColor', subject_color_matrix(this_group_index, :), 'MarkerEdgeColor', subject_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',3, 'Color', subject_color_matrix(this_group_index, :))
             end
             xticks([number_of_levels])
-            xlim([0 5])
+            xlim([-1 4])
             title([unique_rois(this_roi_index)],'interpreter','latex')
             this_figure_number = this_figure_number + 1;
             ylabel('beta value')

@@ -1,4 +1,4 @@
-function create_redcap_behaviorCRUNCH_figure(varargin)
+function correlate_crunch(varargin)
 parser = inputParser;
 parser.KeepUnmatched = true;
 % setup defaults in case no arguments specified
@@ -7,7 +7,7 @@ addParameter(parser, 'subjects', '')
 addParameter(parser, 'group_names', '')
 addParameter(parser, 'group_ids', '')
 addParameter(parser, 'no_labels', 0)
-addParameter(parser, 'Results_filename', 'CRUNCH_secondorder_max.mat')
+addParameter(parser, 'Results_filename', 'CRUNCH_discrete.mat')
 parse(parser, varargin{:})
 subjects = parser.Results.subjects;
 group_names = parser.Results.group_names;
@@ -87,8 +87,8 @@ for this_group_index = 1 : length(group_names)
             this_figure_number = this_figure_number+1;
         end
         title([unique_rois(this_roi_index)],'interpreter','latex')
-        xticks([1:4])
-        xlim([0 5])
+        xticks([0:3])
+        xlim([-1 4])
         ylim([200 550])
     end
 end
