@@ -1,34 +1,39 @@
-
-% roi_results figure generation
-clear,clc
-% close all
+function indentify_individual_discrete_crunch(varargin)
+%input task (1 for Motor 2 for nback), subject numbers [####], data path for where all subject folders are stoered 
+parser = inputParser;
+parser.KeepUnmatched = true;
+% setup defaults in case no arguments specified
+addParameter(parser, 'task', '')
+addParameter(parser, 'subjects', '')
+addParameter(parser, 'data_path', '')
+addParameter(parser, 'no_labels', 0)
+addParameter(parser, 'Results_filename', 'CRUNCH_discrete.mat')
+parse(parser, varargin{:})
+subjects = parser.Results.subjects;
+task = parser.Results.task;
+Results_filename = parser.Results.Results_filename;
+data_path = parser.Results.data_path;
 
 %% settings
-data_path = 'Z:\share\FromExternal\Research_Projects_UF\CRUNCH\MiM_Data'; % change this to reflect the share drive path for your PC
+% data_path = 'Z:\share\FromExternal\Research_Projects_UF\CRUNCH\MiM_Data'; % change this to reflect the share drive path for your PC
 %select the task 1 = MOTO, 2 = nback
-task = 2;
-subj = 2; %1 = YA, 2 = OA
-
 if task == 1
     task_folder='05_MotorImagery';
-    if subj == 1
-        subjects = [1002,1004,1010,1011,1013,1009];
-    elseif subj == 2
-        subjects =  [2002,2007,2008,2012,2013,2015,2018,2020,2021,2022,2023,2025,2026,2033,2034];
-    end
+%     if subj == 1
+%         subjects = [1002,1004,1010,1011,1013,1009];
+%     elseif subj == 2
+%         subjects =  [2002,2007,2008,2012,2013,2015,2018,2020,2021,2022,2023,2025,2026,2033,2034];
+%     end
 elseif task == 2
     task_folder='06_Nback';
-    if subj == 1
-        subjects = [1002,1004,1010,1011,1013,1009];
-    elseif subj == 2
-        subjects =  [2002,2007,2008,2012,2013,2015,2018,2020,2021,2022,2023,2025,2026,2033,2034];
-    end
+%     if subj == 1
+%         subjects = [1002,1004,1010,1011,1013,1009];
+%     elseif subj == 2
+%         subjects =  [2002,2007,2008,2012,2013,2015,2018,2020,2021,2022,2023,2025,2026,2033,2034];
+%     end
 end
 
-Results_filename='CRUNCH_discrete.mat';
-
 save_variables = 1;
-no_labels = 0;
 % data folder path
 
 for sub = 1:length(subjects)
@@ -120,5 +125,5 @@ for sub = 1:length(subjects)
     fclose(fileID);
     clearvars beta_values cr* data temp ordered_conditions this_beta this_roi_index;
 end
-
+end
 
