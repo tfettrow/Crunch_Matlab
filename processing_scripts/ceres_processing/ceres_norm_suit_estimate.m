@@ -21,10 +21,18 @@ data_path = pwd;
 %----------------------------------------------------------------------------------------------------------------------------------------
 % Select the GM, WM, and mask files 
 %----------------------------------------------------------------------------------------------------------------------------------------
-GM = spm_select('FPList', data_path, 'coregToT1_GM_mask.nii');		 				% GM mask
-WM = spm_select('FPList', data_path, 'coregToT1_WM_mask.nii'); 		 				% WM mask 
-CBmask = spm_select('FPList', data_path, 'coregToT1_CB_mask.nii'); 	 			% Whole CB mask  
+% GM = spm_select('FPList', data_path, '^coregToT1_GM_mask.nii');		 				% GM mask
+% WM = spm_select('FPList', data_path, '^coregToT1_WM_mask.nii'); 		 				% WM mask 
+% CBmask = spm_select('FPList', data_path, '^coregToT1_CB_mask.nii'); 	 			% Whole CB mask  
+% GM = spm_select('FPList', data_path, '^GM_mask.nii');		 				% GM mask
+% WM = spm_select('FPList', data_path, '^WM_mask.nii'); 		 				% WM mask 
+% CBmask = spm_select('FPList', data_path, '^CB_mask.nii'); 	 			% Whole CB mask  
 
+GM = spm_select('FPList', data_path, '^coregToSUIT_coregToT1_GM_mask.nii');		 				% GM mask
+WM = spm_select('FPList', data_path, '^coregToSUIT_coregToT1_WM_mask.nii'); 		 				% WM mask 
+CBmask = spm_select('FPList', data_path, '^coregToSUIT_coregToT1_CB_mask.nii'); 	 			% Whole CB mask  
+
+% template = spm_select('FPList', data_path, '^SUIT_Nobrainstem_2mm.nii');
 %----------------------------------------------------------------------------------------------------------------------------------------
 % Run SUIT Normalize Dartel 
 %----------------------------------------------------------------------------------------------------------------------------------------
@@ -32,5 +40,7 @@ clear matlabbatch
 matlabbatch{1}.spm.tools.suit.normalise_dartel.subjND.gray = cellstr(GM); 				% GM mask 
 matlabbatch{1}.spm.tools.suit.normalise_dartel.subjND.white = cellstr(WM); 				% WM mask 
 matlabbatch{1}.spm.tools.suit.normalise_dartel.subjND.isolation = cellstr(CBmask); 		% Whole CB mask 
+% matlabbatch{1}.spm.tools.suit.normalise_dartel.template.template = cellstr(template);
 
-spm_jobman('run',matlabbatch);
+% spm_jobman('run',matlabbatch, 'template', template);
+spm_jobman('run',matlabbatch)

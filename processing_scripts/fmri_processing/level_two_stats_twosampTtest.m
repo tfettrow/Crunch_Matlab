@@ -13,7 +13,7 @@
 function level_two_stats_betweenGroup(create_model_and_estimate, task_folder, group_one_subject_codes, group_two_subject_codes)
 create_model_and_estimate=1;
 task_folder = '05_MotorImagery';
-condition='high'; % need to run once per condition (flat,low,medium,high)
+condition='all'; % need to run once per condition (all,flat,low,medium,high)
 group_one_subject_codes = {'1002', '1004', '1010', '1011'}; % need to figure out how to pass cell from shell
 group_two_subject_codes =  {'2002','2007','2008','2012','2013','2015','2018','2020','2021','2022','2023','2025','2026'};
 
@@ -104,11 +104,11 @@ for this_subject_index = 1 : length(group_two_subject_codes)
     imageryscores = [imageryscores; imageryvividness_data(this_subject_index_row,2); imageryvividness_data(this_subject_index_row,3); imageryvividness_data(this_subject_index_row,4); imageryvividness_data(this_subject_index_row,5)] ;
 end
 
-matlabbatch{1}.spm.stats.factorial_design.cov.c = imageryscores;
-matlabbatch{1}.spm.stats.factorial_design.cov.cname = 'imagery';
-matlabbatch{1}.spm.stats.factorial_design.cov.iCFI = 1;
-matlabbatch{1}.spm.stats.factorial_design.cov.iCC = 1;
-
+% matlabbatch{1}.spm.stats.factorial_design.cov.c = imageryscores;
+% matlabbatch{1}.spm.stats.factorial_design.cov.cname = 'imagery';
+% matlabbatch{1}.spm.stats.factorial_design.cov.iCFI = 1;
+% matlabbatch{1}.spm.stats.factorial_design.cov.iCC = 1;
+matlabbatch{1}.spm.stats.factorial_design.cov = struct('files', {}, 'iCFI', {}, 'iCC', {});
 matlabbatch{1}.spm.stats.factorial_design.multi_cov = struct('files', {}, 'iCFI', {}, 'iCC', {});
 matlabbatch{1}.spm.stats.factorial_design.masking.tm.tm_none = 1;
 matlabbatch{1}.spm.stats.factorial_design.masking.im = 0;

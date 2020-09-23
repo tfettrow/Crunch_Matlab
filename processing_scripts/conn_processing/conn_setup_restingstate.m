@@ -23,6 +23,7 @@ addParameter(parser, 'secondary_smoothed', '')
 addParameter(parser, 'secondary_unsmoothed', '')
 addParameter(parser, 'structural', 'warpedToMNI_biascorrected_SkullStripped_T1.nii')
 addParameter(parser, 'roi_settings_filename', '')
+addParameter(parser, 'rs_folder', '')
 addParameter(parser, 'primary_dataset', 'whole_brain')  % 'whole_brain' or 'cerebellum'
 addParameter(parser, 'TR', 1.5) % assuming default is UF sequence
 addParameter(parser, 'subjects', '')
@@ -37,6 +38,7 @@ structural = parser.Results.structural;
 secondary_smoothed = parser.Results.secondary_smoothed;
 secondary_unsmoothed = parser.Results.secondary_unsmoothed;
 project_name = parser.Results.project_name;
+rs_folder = parser.Results.rs_folder;
 roi_settings_filename = parser.Results.roi_settings_filename;
 primary_dataset = parser.Results.primary_dataset;
 group_names = parser.Results.group_names;
@@ -59,9 +61,15 @@ for this_subject_index = 1:length(subjects)
     this_subject_path = strcat([data_path filesep this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep rs_folder filesep 'ANTS_Normalization']);
     
     primary_smoothed_path = spm_select('FPList', this_subject_path, strcat('^',primary_smoothed,'$'));
+    primary_unsmoothed_path = spm_select('FPList', this_subject_path, strcat('^',primary_unsmoothed,'$'));
+    % Beware... Hard coded for WU120 data
+    if ~exist(primary_smoothed_path)
+        primary_smoothed_path= spm_select('FPList', this_subject_path, '^smoothed_warpedToMNI_unwarpedRealigned_slicetimed_RestingState1.nii');
+        primary_unsmoothed_path = spm_select('FPList', this_subject_path, strcat('^','warpedToMNI_unwarpedRealigned_slicetimed_RestingState1.nii','$'));
+    end
+    
     structural_path = spm_select('FPList', this_subject_path, strcat('^',structural,'$'));
     
-    primary_unsmoothed_path = spm_select('FPList', this_subject_path, strcat('^',primary_unsmoothed,'$'));
     if ~isempty(secondary_smoothed)
         secondary_smoothed_path = spm_select('ExtFPList', this_subject_path, strcat('^',secondary_smoothed,'$'));
     end
@@ -127,6 +135,10 @@ for this_subject_index = 1:length(subjects)
     
     this_outlier_and_movement_file = spm_select('FPList', this_subject_path, strcat('^','art_regression_outliers_and_movement_unwarpedRealigned_slicetimed_RestingState.mat','$'));
   
+   % Beware... Hard coded for WU120 data
+    if ~exist(this_outlier_and_movement_file)
+        this_outlier_and_movement_file = spm_select('FPList', this_subject_path, strcat('^','art_regression_outliers_and_movement_unwarpedRealigned_slicetimed_RestingState1.mat','$'));
+    end
     BATCH.Setup.covariates.files{1}{this_subject_index}{1} = this_outlier_and_movement_file;
     
 end
@@ -242,14 +254,42 @@ BATCH.vvAnalysis.measures = 'MCOR';
 
 %% supposed to but does not seem to run... have to go in and manually run.. obviously
 %BATCH.Results PERFORMS SECOND-LEVEL ANALYSES (ROI-to-ROI and Seed-to-Voxel analyses) %!
+% BATCH.Results PERFORMS SECOND-LEVEL ANALYSES (ROI-to-ROI and Seed-to-Voxel analyses) %!
+%  Results             
+% 
+%    done            : 1/0: 0 defines fields only; 1 runs processing steps [0]
+%    overwrite       : (for done=1) 1/0: overwrites target files if they exist [1]
+%    name            : analysis name (identifying each set of first-level independent analysis)
+%                       (alternatively sequential index identifying each set of first-level independent analyses [1])
+%    display         : 1/0 display results [1]
+%    saveas          : (optional) name to save between-subjects/between_conditions contrast
+%    foldername      : (optional) alternative folder name to store the results
+% 
+%    between_subjects
+%      effect_names  : cell array of second-level effect names
+%      contrast      : contrast vector (same size as effect_names)
+%  
+%    between_conditions [defaults to multiple analyses, one per condition]
+%      effect_names  : cell array of condition names (as in Setup.conditions.names)
+%      contrast      : contrast vector (same size as effect_names)
+%  
+%    between_sources    [defaults to multiple analyses, one per source]
+%      effect_names  : cell array of source names (as in Analysis.regressors, typically appended with _1_1; generally 
+%                       they are appended with _N_M -where N is an index ranging from 1 to 1+derivative order, and M 
+%                       is an index ranging from 1 to the number of dimensions specified for each ROI; for example 
+%                       ROINAME_2_3 corresponds to the first derivative of the third PCA component extracted from the 
+%                       roi ROINAME) 
+%      contrast      : contrast vector (same size as effect_names)
+
 BATCH.Results.done=1;
 BATCH.Results.overwrite=1;
+% BATCH.Results.name=1;
 
+%also does not run as is...
 %BATCH.vvResults PERFORMS SECOND-LEVEL ANALYSES (Voxel-to-Voxel analyses) %!
-BATCH.wResults.done=1;
-BATCH.wResults.overwrite=1;
-
-disp('starting conn...')
+BATCH.vvResults.done=1;
+BATCH.vvResults.overwrite=1;
+% BATCH.vvResults.name=1;
  
 conn_batch(BATCH)
 

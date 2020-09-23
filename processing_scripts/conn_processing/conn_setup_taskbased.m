@@ -60,7 +60,7 @@ for this_subject_index = 1:length(subjects)
     
     condition_onset_files = spm_select('FPList', this_subject_path, '^Condition_Onsets_.*.csv');
     primary_smoothed_path = spm_select('FPList', this_subject_path, strcat('^', primary_smoothed, '.*\.nii$'));
-    this_outlier_and_movement_file = spm_select('FPList', this_subject_path,'^art_regression_outliers_and_movement_unwarpedRealigned_slicetimed_.*\.mat$');
+    realignment_file = spm_select('FPList', this_subject_path,'^rp_.*\.txt$');
     structural_path = spm_select('FPList', this_subject_path, strcat('^',structural,'$'));
     primary_unsmoothed_path = spm_select('FPList', this_subject_path, strcat('^',primary_unsmoothed, '.*\.nii$'));
     if ~isempty(secondary_smoothed)
@@ -144,34 +144,28 @@ for this_subject_index = 1:length(subjects)
         text_line = fgetl(fileID);
     end
     fclose(fileID);
-    
     % prune lines
     lines_to_prune = false(size(text_cell, 1), 1);
     for i_line = 1 : size(text_cell, 1)
         this_line = text_cell{i_line};
-        
         % remove initial white space
         while ~isempty(this_line) && (this_line(1) == ' ' || double(this_line(1)) == 9)
             this_line(1) = [];
         end
         outlier_removal_cell{i_line} = this_line; %#ok<AGROW>
-        
         % remove comments
         if length(this_line) > 1 && any(ismember(this_line, '#'))
             lines_to_prune(i_line) = true;
         end
-        
         % remove lines that do not match this processed folder
         this_line_pieces = strsplit(this_line, ',');
         if ~strcmp(directory_pieces{end},this_line_pieces{1})
             lines_to_prune(i_line) = true;
         end
-        
         % flag lines consisting only of white space
         if all(ismember(this_line, ' ') | double(this_line) == 9)
             lines_to_prune(i_line) = true;
         end
-        
     end
     outlier_removal_cell(lines_to_prune) = [];
     
@@ -272,9 +266,9 @@ for this_subject_index = 1:length(subjects)
                 this_cond_durations = round(this_cond_durations, 1) - 0.1;
             end
             
-            BATCH.Setup.covariates.names = {'head_movement'};
-            BATCH.Setup.covariates.files{1}{this_subject_index}{i_run} = this_outlier_and_movement_file(i_run,:);
-            
+            BATCH.Setup.covariates.names = {'realignment'};
+            BATCH.Setup.covariates.files{1}{this_subject_index}{i_run} = realignment_file(i_run,:);
+%             
             % 1+ bc already populated 1 with All Conds
             BATCH.Setup.conditions.names{1+i_cond} = char(unique_condition_names(i_cond));
             BATCH.Setup.conditions.onsets{1+i_cond}{this_subject_index}{i_run} = this_cond_onset_times_corrected;
@@ -404,7 +398,9 @@ BATCH.Setup.overwrite=1;
 BATCH.Setup.RT=TR;
 BATCH.Setup.acquisitiontype=1;
 
+BATCH.Setup.preprocessing.steps={'functional_art'};
 BATCH.Denoising.done=1;
+
 % BATCH.Denoising PERFORMS DENOISING STEPS (confound removal & filtering) %!
 %  Denoising
 %

@@ -31,7 +31,7 @@ end
 matlabbatch{1}.spm.temporal.st.scans = all_scans_fullpath_scan_cell;
 
 [stMsec, TRsec] = bidsSliceTiming(json_path_names(i_file,:));
-if isempty(stMsec) || isempty(TRsec), error('Update dcm2niix? Unable determine slice timeing or TR from BIDS file %s', BIDSname); end;
+if isempty(stMsec) || isempty(TRsec), error('Update dcm2niix? Unable determine slice timeing or TR from BIDS file %s'); end;
 
 reftime = max(stMsec)/2;
 

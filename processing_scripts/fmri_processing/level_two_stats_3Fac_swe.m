@@ -142,9 +142,11 @@ matlabbatch{1}.spm.tools.swe.smodel.multi_cov = struct('files', {});
 matlabbatch{1}.spm.tools.swe.smodel.masking.tm.tm_none = 1;
 matlabbatch{1}.spm.tools.swe.smodel.masking.im = 1;
 matlabbatch{1}.spm.tools.swe.smodel.masking.em = {''};
+% parametric
 % matlabbatch{1}.spm.tools.swe.smodel.WB.WB_no = 0;
+% non-parametric
 matlabbatch{1}.spm.tools.swe.smodel.WB.WB_yes.WB_ss = 4;
-matlabbatch{1}.spm.tools.swe.smodel.WB.WB_yes.WB_nB = 10;
+matlabbatch{1}.spm.tools.swe.smodel.WB.WB_yes.WB_nB = 999;
 matlabbatch{1}.spm.tools.swe.smodel.WB.WB_yes.WB_SwE = 0;
 matlabbatch{1}.spm.tools.swe.smodel.WB.WB_yes.WB_stat.WB_T.WB_T_con = [-3 -1 1 3 -1 1 0];
 matlabbatch{1}.spm.tools.swe.smodel.WB.WB_yes.WB_infType.WB_voxelwise = 0;

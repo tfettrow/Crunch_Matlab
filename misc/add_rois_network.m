@@ -61,12 +61,13 @@ if ~isempty(roi_settings_filename)
     end
     
     % 1) find the unique networks           
-    this_file_unique_networks = unique(this_roi_settings_split(:,5))
-    for this_unique_network_index = 1:length(this_file_unique_networks)-4
+    this_file_unique_networks = strtrim(unique(this_roi_settings_split(:,5)));
+    
+    for this_unique_network_index = 1:length(this_file_unique_networks)
         these_rois_unique_network_bool = contains(this_roi_settings_split(:,5), this_file_unique_networks(this_unique_network_index));
         these_rois_unique_network_indices = find(these_rois_unique_network_bool);
         this_roi_core_name = this_roi_settings_split(these_rois_unique_network_indices,4);
-        this_roi_file_name = strcat(this_roi_core_name, '.nii');
+        this_roi_file_name = strcat(strtrim(this_roi_core_name), '.nii');
         [fda, this_roi_index_in_available_files, asdf] = intersect(available_roi_file_name_list, this_roi_file_name);
         % 2) for each netowk, fin the rois within that network assign it to the files for
         % imcalc an add them all together
@@ -86,7 +87,7 @@ if ~isempty(roi_settings_filename)
         % create an expresion i1 + i2 ... length of this_roi_index_in_available_files
         
         matlabbatch{1}.spm.util.imcalc.input = these_rois_file_names;
-        matlabbatch{1}.spm.util.imcalc.output = strcat(this_file_unique_networks{this_unique_network_index}, '_mask');
+        matlabbatch{1}.spm.util.imcalc.output = strcat('ROIs',filesep,this_file_unique_networks{this_unique_network_index}, '_mask');
         matlabbatch{1}.spm.util.imcalc.outdir = {''};
         matlabbatch{1}.spm.util.imcalc.expression = expression;
         matlabbatch{1}.spm.util.imcalc.var = struct('name', {}, 'value', {});
