@@ -6,7 +6,7 @@ parser.KeepUnmatched = true;
 addParameter(parser, 'task_folder', '')
 addParameter(parser, 'subjects', '')
 addParameter(parser, 'no_labels', 0)
-addParameter(parser, 'Results_filename', 'CRUNCH_discrete.mat')
+addParameter(parser, 'Results_filename', 'CRUNCH_discrete_stringtest.mat')
 addParameter(parser, 'save_variables', 1)
 parse(parser, varargin{:})
 subjects = parser.Results.subjects;
@@ -66,7 +66,7 @@ for sub = 1:length(subjects)
             if (max_beta_index  == 1)
                 cr{this_roi_index} = 'decreasing'; %CRUNCH point
             elseif (max_beta_index  == 2) %if the subject has a CRUNCH point (on a scale of 1-4)
-                cr{this_roi_index} = 'early_crunch'; %no CRUNCH point    
+                cr{this_roi_index} = 'early_crunch'; %no CRUNCH point
             elseif (max_beta_index  == 3) %if the subject has a CRUNCH point (on a scale of 1-4)
                 cr{this_roi_index} = 'late_crunch'; %no CRUNCH point
             elseif (max_beta_index  == 4) %if the subject has a CRUNCH point (on a scale of 1-4)
@@ -78,24 +78,24 @@ for sub = 1:length(subjects)
             plot(number_of_levels,beta_values(1:4),'-or');
             plot(number_of_levels,beta_values(5:8),'-.or');
             max_beta_index = find(max(beta_values(1:4))==beta_values(1:4)); %CRUNCH for 500 ISI
-             if (max_beta_index  == 1)
-                 cr{this_roi_index} = 'decreasing'; %CRUNCH point
+            if (max_beta_index  == 1)
+                cr_500{this_roi_index} = 'decreasing'; %CRUNCH point
             elseif (max_beta_index  == 2) %if the subject has a CRUNCH point (on a scale of 1-4)
-                cr{this_roi_index} = 'early_crunch'; %no CRUNCH point    
+                cr_500{this_roi_index} = 'early_crunch'; %no CRUNCH point
             elseif (max_beta_index  == 3) %if the subject has a CRUNCH point (on a scale of 1-4)
-                cr{this_roi_index} = 'late_crunch'; %no CRUNCH point
+                cr_500{this_roi_index} = 'late_crunch'; %no CRUNCH point
             elseif (max_beta_index  == 4) %if the subject has a CRUNCH point (on a scale of 1-4)
-                cr{this_roi_index} = 'increasing'; %no CRUNCH point
+                cr_500{this_roi_index} = 'increasing'; %no CRUNCH point
             end
             max_beta_index = find(max(beta_values(5:8))==beta_values(5:8)); %CRUNCH for 1500 ISI
-              if (max_beta_index  == 1)
-                 cr{this_roi_index} = 'decreasing'; %CRUNCH point
+            if (max_beta_index  == 1)
+                cr_1500{this_roi_index} = 'decreasing'; %CRUNCH point
             elseif (max_beta_index  == 2) %if the subject has a CRUNCH point (on a scale of 1-4)
-                cr{this_roi_index} = 'early_crunch'; %no CRUNCH point    
+                cr_1500{this_roi_index} = 'early_crunch'; %no CRUNCH point
             elseif (max_beta_index  == 3) %if the subject has a CRUNCH point (on a scale of 1-4)
-                cr{this_roi_index} = 'late_crunch'; %no CRUNCH point
+                cr_1500{this_roi_index} = 'late_crunch'; %no CRUNCH point
             elseif (max_beta_index  == 4) %if the subject has a CRUNCH point (on a scale of 1-4)
-                cr{this_roi_index} = 'increasing'; %no CRUNCH point
+                cr_1500{this_roi_index} = 'increasing'; %no CRUNCH point
             end
         end
         hold off;
@@ -111,10 +111,10 @@ for sub = 1:length(subjects)
     if save_variables
         if any(strcmp(task_folder, '05_MotorImagery'))
             task='MotorImagery';
-            save(char(strcat(subj_results_dir,filesep,strcat(subjects{sub},'_',task_folder,'_',Results_filename))),'cr*','data','unique_rois');
+            save(char(strcat(subj_results_dir,filesep,strcat(subjects{sub},'_',task,'_',Results_filename))),'cr*','data','unique_rois');
         elseif any(strcmp(task_folder, '06_Nback'))
             task='Nback';
-            save(char(strcat(subj_results_dir,filesep,strcat(subjects{sub},'_',task_folder,'_',Results_filename))),'cr*','data','unique_rois');
+            save(char(strcat(subj_results_dir,filesep,strcat(subjects{sub},'_',task,'_',Results_filename))),'cr*','data','unique_rois');
         end
     end
     fclose(fileID);

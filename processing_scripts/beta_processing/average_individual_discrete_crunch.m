@@ -7,7 +7,7 @@ addParameter(parser, 'subjects', '')
 addParameter(parser, 'group_names', '')
 addParameter(parser, 'group_ids', '')
 addParameter(parser, 'no_labels', 0)
-addParameter(parser, 'Results_filename', 'CRUNCH_discrete.mat')
+addParameter(parser, 'Results_filename', 'CRUNCH_discrete_stringtest.mat')
 addParameter(parser, 'plot_groups_together',0)
 addParameter(parser, 'separate_by_crunch_type',1)
 parse(parser, varargin{:})
@@ -25,33 +25,37 @@ data_path = pwd;
 subject_color_matrix = distinguishable_colors(length(subjects));
 group_color_matrix = distinguishable_colors(length(group_names));
 
-cr_results = [];
+cr_results = {};
 for this_subject_index = 1 : length(subjects)
     subj_results_dir = fullfile(data_path, subjects{this_subject_index}, 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_WholeBrain');
     this_subject_roiResults_path = fullfile(data_path, subjects{this_subject_index}, 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_WholeBrain', strcat(subjects{this_subject_index},'_fmri_redcap.csv'));
+
+    % grab crunch data
+    if any(strcmp(task_folder, '05_MotorImagery'))
+        task='MotorImagery';
+        load(char(strcat(subj_results_dir,filesep,strcat(subjects{this_subject_index},'_',task,'_',Results_filename))));
+        cr_results = [cr_results; cr];
+    elseif any(strcmp(task_folder, '06_Nback'))
+        task='Nback';
+        load(char(strcat(subj_results_dir,filesep,strcat(subjects{this_subject_index},'_',task,'_',Results_filename))));
+        cr_results = [cr_results; cr_1500 cr_500];
+    end
     
     fileID = fopen(this_subject_roiResults_path);
     
     data = textscan(fileID,'%s','delimiter',',','headerlines',0);
     data = reshape(data{:},length(data{1})/2,2);
-    
     for this_beta = 3:length(data)
         split_condition_name = strsplit(data{this_beta,1},'_');
         if any(strcmp(task_folder, '05_MotorImagery'))
-            task='MotorImagery';
+          
             % loading and grabbing data
-            load(char(strcat(subj_results_dir,filesep,strcat(subjects{this_subject_index},'_',task,'_',Results_filename))));
-            cr_results(this_subject_index,:) = cr;
-            
             ordered_conditions{this_beta-2} = split_condition_name{1};
             roi_names{this_beta-2} = strcat(split_condition_name{2},'_',split_condition_name{3});
             ordered_beta{this_beta-2} = data{this_beta,2};
         elseif any(strcmp(task_folder, '06_Nback'))
             task='Nback';
             % loading and grabbing data
-            load(char(strcat(subj_results_dir,filesep,strcat(subjects{this_subject_index},'_',task,'_',Results_filename))));
-            cr_results(this_subject_index,:) = [cr_1500 cr_500];
-            
             ordered_conditions{this_beta-2} = strcat(split_condition_name{1},'_',split_condition_name{2});
             roi_names{this_beta-2} = strcat(split_condition_name{3},'_',split_condition_name{4});
             ordered_beta{this_beta-2} = data{this_beta,2};
@@ -105,6 +109,7 @@ for this_group_index = 1 : length(group_names)
             summary_stats.crunch = table(this_group_crunch_results(:,[this_roi_index this_roi_index+4]));
             summary_stats = renamevars(summary_stats,'crunch',unique_rois(this_roi_index));
         end
+        
         % write the table to xlsx
         filename = strcat('crunch_summary_statistics_',task,'.xlsx');
         %     ROI_total={num2str(length(this_group_subjectindices)+1),'1',strcat('=sum(b2,b',num2str(length(this_group_subjectindices)),')')};
@@ -115,11 +120,10 @@ for this_group_index = 1 : length(group_names)
 
        
         if separate_by_crunch_type
-            if strcmp(Results_filename, 'CRUNCH_discrete.mat')
-                number_of_levels = [0 : 3];
-            end
             
-            cruncher_indices = find(this_group_crunch_results(:,this_roi_index) == 2 | this_group_crunch_results(:,this_roi_index) == 3);
+            number_of_levels = [0 : 3];
+            
+            cruncher_indices = find(strcmp(this_group_crunch_results(:,this_roi_index), 'early_crunch') | strcmp(this_group_crunch_results(:,this_roi_index),'late_crunch'));
             
             if ~isempty(cruncher_indices)
                 if any(strcmp(task_folder, '05_MotorImagery'))     
@@ -164,7 +168,7 @@ for this_group_index = 1 : length(group_names)
             this_figure_number = this_figure_number + 1;
             
             %increasing
-            nocruncher_increasing_indices = find(this_group_crunch_results(:,this_roi_index) == 0);
+            nocruncher_increasing_indices = find(strcmp(this_group_crunch_results(:,this_roi_index), 'increasing'));
 
             if ~isempty(nocruncher_increasing_indices)
                if any(strcmp(task_folder, '05_MotorImagery'))     
@@ -210,7 +214,7 @@ for this_group_index = 1 : length(group_names)
             this_figure_number = this_figure_number + 1;
             
             %decreasing 
-            nocruncher_decreasing_indices = find(this_group_crunch_results(:,this_roi_index) == 1);
+            nocruncher_decreasing_indices = find(strcmp(this_group_crunch_results(:,this_roi_index), 'decreasing'));
             
             if ~isempty(nocruncher_decreasing_indices)
                 if any(strcmp(task_folder, '05_MotorImagery'))     
