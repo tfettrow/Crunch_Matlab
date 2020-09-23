@@ -27,7 +27,7 @@ for sub = 1:length(subjects)
     %create file path for beta values
     subj_results_dir = fullfile(data_path, subjects{sub}, 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_WholeBrain');
     this_subject_roiResults_path = fullfile(subj_results_dir, strcat(subjects{sub},'_fmri_redcap.csv'));
-    
+    delete(fullfile(subj_results_dir, '*.mat'))
     fileID = fopen(this_subject_roiResults_path);
     
     %read the csv file and reshape to have separate headers and values
@@ -103,10 +103,10 @@ for sub = 1:length(subjects)
     if save_variables
         if any(strcmp(task_folder, '05_MotorImagery'))
             task='MotorImagery';
-            save(char(strcat(subj_results_dir,filesep,strcat(subjects{sub},'_',task_folder,'_',Results_filename))),'cr*','data','unique_rois');
+            save(char(strcat(subj_results_dir,filesep,strcat(subjects{sub},'_',task,'_',Results_filename))),'cr*','data','unique_rois');
         elseif any(strcmp(task_folder, '06_Nback'))
             task='Nback';
-            save(char(strcat(subj_results_dir,filesep,strcat(subjects{sub},'_',task_folder,'_',Results_filename))),'cr*','data','unique_rois');
+            save(char(strcat(subj_results_dir,filesep,strcat(subjects{sub},'_',task,'_',Results_filename))),'cr*','data','unique_rois');
         end
     end
     fclose(fileID);
