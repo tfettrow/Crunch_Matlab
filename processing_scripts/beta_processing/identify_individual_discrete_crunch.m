@@ -14,7 +14,6 @@ task_folder = parser.Results.task_folder;
 Results_filename = parser.Results.Results_filename;
 save_variables = parser.Results.save_variables;
 
-
 data_path = pwd;
 
 if any(strcmp(task_folder, '05_MotorImagery'))
@@ -61,38 +60,47 @@ for sub = 1:length(subjects)
         hold on;
         
         if any(strcmp(task_folder, '05_MotorImagery'))
-            number_of_levels = 1:4; %difficulty levels (x axis)
+            number_of_levels = 0:3; %difficulty levels (x axis)
             plot(number_of_levels,beta_values,'-or');
-            mm = find(max(beta_values)==beta_values); %find the index of max beta value
-            if (mm > 3) %ifthe subject has a CRUNCH point
-                cr(this_roi_index) = 0; %no CRUNCH point
-            else
-                cr(this_roi_index) = mm; %CRUNCH point
+            max_beta_index = find(max(beta_values)==beta_values); %find the index of max beta value
+            if (max_beta_index  == 1)
+                cr{this_roi_index} = 'decreasing'; %CRUNCH point
+            elseif (max_beta_index  == 2) %if the subject has a CRUNCH point (on a scale of 1-4)
+                cr{this_roi_index} = 'early_crunch'; %no CRUNCH point    
+            elseif (max_beta_index  == 3) %if the subject has a CRUNCH point (on a scale of 1-4)
+                cr{this_roi_index} = 'late_crunch'; %no CRUNCH point
+            elseif (max_beta_index  == 4) %if the subject has a CRUNCH point (on a scale of 1-4)
+                cr{this_roi_index} = 'increasing'; %no CRUNCH point
             end
         elseif any(strcmp(task_folder, '06_Nback'))
-            number_of_levels = 1:4;
-            number_of_levels2 = 5:8;
+            number_of_levels = 0:3;
             
             plot(number_of_levels,beta_values(1:4),'-or');
             plot(number_of_levels,beta_values(5:8),'-.or');
-            mm1 = find(max(beta_values(1:4))==beta_values(1:4)); %CRUNCH for 500 ISI
-            if (mm1 > 3)
-                cr_500(this_roi_index) = 0;
-                
-            else
-                cr_500(this_roi_index) = mm1;
-                
+            max_beta_index = find(max(beta_values(1:4))==beta_values(1:4)); %CRUNCH for 500 ISI
+             if (max_beta_index  == 1)
+                 cr{this_roi_index} = 'decreasing'; %CRUNCH point
+            elseif (max_beta_index  == 2) %if the subject has a CRUNCH point (on a scale of 1-4)
+                cr{this_roi_index} = 'early_crunch'; %no CRUNCH point    
+            elseif (max_beta_index  == 3) %if the subject has a CRUNCH point (on a scale of 1-4)
+                cr{this_roi_index} = 'late_crunch'; %no CRUNCH point
+            elseif (max_beta_index  == 4) %if the subject has a CRUNCH point (on a scale of 1-4)
+                cr{this_roi_index} = 'increasing'; %no CRUNCH point
             end
-            mm2 = find(max(beta_values(5:8))==beta_values(5:8)); %CRUNCH for 1500 ISI
-            if (mm2 > 3)
-                cr_1500(this_roi_index) = 0;
-            else
-                cr_1500(this_roi_index) = mm2;
+            max_beta_index = find(max(beta_values(5:8))==beta_values(5:8)); %CRUNCH for 1500 ISI
+              if (max_beta_index  == 1)
+                 cr{this_roi_index} = 'decreasing'; %CRUNCH point
+            elseif (max_beta_index  == 2) %if the subject has a CRUNCH point (on a scale of 1-4)
+                cr{this_roi_index} = 'early_crunch'; %no CRUNCH point    
+            elseif (max_beta_index  == 3) %if the subject has a CRUNCH point (on a scale of 1-4)
+                cr{this_roi_index} = 'late_crunch'; %no CRUNCH point
+            elseif (max_beta_index  == 4) %if the subject has a CRUNCH point (on a scale of 1-4)
+                cr{this_roi_index} = 'increasing'; %no CRUNCH point
             end
         end
         hold off;
         xticks(number_of_levels)
-        xlim([0 5])
+        xlim([-1 4])
         title(char(unique_rois(this_roi_index)))
         this_figure_number = this_figure_number + 1;
         ylabel('beta value')
