@@ -6,7 +6,7 @@ parser.KeepUnmatched = true;
 addParameter(parser, 'task_folder', '')
 addParameter(parser, 'subjects', '')
 addParameter(parser, 'no_labels', 0)
-addParameter(parser, 'Results_filename', 'CRUNCH_discrete_stringtest.mat')
+addParameter(parser, 'Results_filename', 'CRUNCH_discrete.mat')
 addParameter(parser, 'save_variables', 1)
 parse(parser, varargin{:})
 subjects = parser.Results.subjects;
