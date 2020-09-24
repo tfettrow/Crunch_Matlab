@@ -77,17 +77,7 @@ for sub = 1:length(subjects)
             
             plot(number_of_levels,beta_values(1:4),'-or');
             plot(number_of_levels,beta_values(5:8),'-.or');
-            max_beta_index = find(max(beta_values(1:4))==beta_values(1:4)); %CRUNCH for 500 ISI
-            if (max_beta_index  == 1)
-                cr_500{this_roi_index} = 'decreasing'; %CRUNCH point
-            elseif (max_beta_index  == 2) %if the subject has a CRUNCH point (on a scale of 1-4)
-                cr_500{this_roi_index} = 'early_crunch'; %no CRUNCH point
-            elseif (max_beta_index  == 3) %if the subject has a CRUNCH point (on a scale of 1-4)
-                cr_500{this_roi_index} = 'late_crunch'; %no CRUNCH point
-            elseif (max_beta_index  == 4) %if the subject has a CRUNCH point (on a scale of 1-4)
-                cr_500{this_roi_index} = 'increasing'; %no CRUNCH point
-            end
-            max_beta_index = find(max(beta_values(5:8))==beta_values(5:8)); %CRUNCH for 1500 ISI
+            max_beta_index = find(max(beta_values(1:4))==beta_values(1:4)); %CRUNCH for 1500 ISI
             if (max_beta_index  == 1)
                 cr_1500{this_roi_index} = 'decreasing'; %CRUNCH point
             elseif (max_beta_index  == 2) %if the subject has a CRUNCH point (on a scale of 1-4)
@@ -96,6 +86,16 @@ for sub = 1:length(subjects)
                 cr_1500{this_roi_index} = 'late_crunch'; %no CRUNCH point
             elseif (max_beta_index  == 4) %if the subject has a CRUNCH point (on a scale of 1-4)
                 cr_1500{this_roi_index} = 'increasing'; %no CRUNCH point
+            end
+            max_beta_index = find(max(beta_values(5:8))==beta_values(5:8)); %CRUNCH for 500 ISI
+            if (max_beta_index  == 1)
+                cr_500{this_roi_index} = 'decreasing'; %CRUNCH point
+            elseif (max_beta_index  == 2) %if the subject has a CRUNCH point (on a scale of 1-4)
+                cr_500{this_roi_index} = 'early_crunch'; %no CRUNCH point
+            elseif (max_beta_index  == 3) %if the subject has a CRUNCH point (on a scale of 1-4)
+                cr_500{this_roi_index} = 'late_crunch'; %no CRUNCH point
+            elseif (max_beta_index  == 4) %if the subject has a CRUNCH point (on a scale of 1-4)
+                cr_500{this_roi_index} = 'increasing'; %no CRUNCH point
             end
         end
         hold off;

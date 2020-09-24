@@ -22,14 +22,15 @@ separate_by_crunch_type = parser.Results.separate_by_crunch_type;
 data_path = pwd;
 
 % need to distinguish based on subgropus if separate_by_crunch_type
-subject_color_matrix = distinguishable_colors(length(subjects));
-group_color_matrix = distinguishable_colors(length(group_names));
+% group_color_matrix = distinguishable_colors(length(group_names));
+group_color_matrix = ones(length(group_names),1) *[17 17 17]/255;
+% group_color_matrix(:,4) = .5*ones(size(group_color_matrix,1),1);
 
 cr_results = {};
 for this_subject_index = 1 : length(subjects)
     subj_results_dir = fullfile(data_path, subjects{this_subject_index}, 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_WholeBrain');
     this_subject_roiResults_path = fullfile(data_path, subjects{this_subject_index}, 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_WholeBrain', strcat(subjects{this_subject_index},'_fmri_redcap.csv'));
-
+    
     % grab crunch data
     if any(strcmp(task_folder, '05_MotorImagery'))
         task='MotorImagery';
@@ -48,7 +49,7 @@ for this_subject_index = 1 : length(subjects)
     for this_beta = 3:length(data)
         split_condition_name = strsplit(data{this_beta,1},'_');
         if any(strcmp(task_folder, '05_MotorImagery'))
-          
+            
             % loading and grabbing data
             ordered_conditions{this_beta-2} = split_condition_name{1};
             roi_names{this_beta-2} = strcat(split_condition_name{2},'_',split_condition_name{3});
@@ -80,9 +81,10 @@ end
 
 for this_group_index = 1 : length(group_names)
     this_group_subjectindices = find(group_ids==this_group_index);
+    this_group_subject_color_matrix = distinguishable_colors(length(this_group_subjectindices));
     if ~plot_groups_together
-        if any(strcmp(task_folder, '05_MotorImagery'))      
-            fig1 = figure; sp1 = subplot(4, 3, 1);
+        if any(strcmp(task_folder, '05_MotorImagery'))
+            figure; subplot(4, 3, 1);
         elseif any(strcmp(task_folder, '06_Nback'))
             figure; subplot(4, 3, 1);
             figure; subplot(4, 3, 1);
@@ -94,7 +96,7 @@ for this_group_index = 1 : length(group_names)
     subject_ids_table = cellstr(subjects');
     summary_stats = table(subject_ids_table(this_group_subjectindices));
     summary_stats = renamevars(summary_stats,'Var1','Subject');
-%     summary_stats. = table(this_group_and_roi_crunch_results(:,this_roi_index))
+    %     summary_stats. = table(this_group_and_roi_crunch_results(:,this_roi_index))
     
     this_figure_number = 1;
     for this_roi_index = 1 : length(unique_rois)
@@ -117,193 +119,246 @@ for this_group_index = 1 : length(group_names)
         T2=splitvars(summary_stats);
         writetable(T2,filename,'Sheet',this_group_index)
         %     xlswrite('crunch_summary_statistics.xlsx', ROI_total)
+        
 
-       
-        if separate_by_crunch_type
-            
-            number_of_levels = [0 : 3];
-            
+        number_of_levels = [0 : 3];
+        
+        if any(strcmp(task_folder, '05_MotorImagery'))
             cruncher_indices = find(strcmp(this_group_crunch_results(:,this_roi_index), 'early_crunch') | strcmp(this_group_crunch_results(:,this_roi_index),'late_crunch'));
-            
+            figure(this_group_index);
+            subplot(4, 3, this_figure_number); hold on;
             if ~isempty(cruncher_indices)
-                if any(strcmp(task_folder, '05_MotorImagery'))     
-                    figure(this_group_index*2-1);
-                    subplot(4, 3, this_figure_number); hold on;
-                    plot(number_of_levels, this_group_and_roi_beta_results(cruncher_indices,:),'--o', 'MarkerFaceColor', group_color_matrix(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 2, 'LineWidth',1, 'Color', group_color_matrix(this_group_index, :))
-                    if length(cruncher_indices)>1
-                        plot(number_of_levels, mean(this_group_and_roi_beta_results(cruncher_indices,:)), '-o', 'MarkerFaceColor', group_color_matrix(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',3, 'Color', group_color_matrix(this_group_index, :))
-                    end
-                     figure(this_group_index*2-1);
-                    xticks([number_of_levels])
-                    xlim([-1 4])
-                    title('crunchers')
-                    ylabel([unique_rois(this_roi_index)],'interpreter','latex')
-                elseif any(strcmp(task_folder, '06_Nback'))
-                     figure(this_group_index*2-1); subplot(4, 3, this_figure_number); hold on;
-                    plot(number_of_levels,this_group_and_roi_beta_results(cruncher_indices,1:4),'--o', 'MarkerFaceColor', group_color_matrix(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 2, 'LineWidth',1, 'Color', group_color_matrix(this_group_index, :))
-                    
-                     figure(this_group_index*2); subplot(4, 3, this_figure_number); hold on;
-                    plot(number_of_levels, this_group_and_roi_beta_results(cruncher_indices,5:8),'--o', 'MarkerFaceColor', group_color_matrix(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 2, 'LineWidth',1, 'Color', group_color_matrix(this_group_index, :))
-                    if length(cruncher_indices)>1
-                        figure(this_group_index*2-1); subplot(4, 3, this_figure_number); hold on; 
-                        plot(number_of_levels, mean(this_group_and_roi_beta_results(cruncher_indices,1:4)), '-o', 'MarkerFaceColor', group_color_matrix(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',3, 'Color', group_color_matrix(this_group_index, :))
-                        figure(this_group_index*2); subplot(4, 3, this_figure_number); hold on;
-                        plot(number_of_levels, mean(this_group_and_roi_beta_results(cruncher_indices,5:8)), '-o', 'MarkerFaceColor', group_color_matrix(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',3, 'Color', group_color_matrix(this_group_index, :))
-                    end
-                    figure(this_group_index*2-1);
-                    xticks([number_of_levels])
-                    xlim([-1 4])
-                    title('crunchers')
-                    ylabel([unique_rois(this_roi_index)],'interpreter','latex')
-                    
-                    figure(this_group_index*2);
-                    xticks([number_of_levels])
-                    xlim([-1 4])
-                    title('crunchers')
-                    ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+                for this_cruncher_index = 1 : length(cruncher_indices)
+                    plot(number_of_levels, this_group_and_roi_beta_results(cruncher_indices(this_cruncher_index),:),'-o', 'MarkerFaceColor', this_group_subject_color_matrix(cruncher_indices(this_cruncher_index), :), 'MarkerEdgeColor', this_group_subject_color_matrix(cruncher_indices(this_cruncher_index), :),'MarkerSize', 5, 'LineWidth',1, 'Color',this_group_subject_color_matrix(cruncher_indices(this_cruncher_index), :))
                 end
+                if length(cruncher_indices)>1
+                    p1 = plot(number_of_levels, mean(this_group_and_roi_beta_results(cruncher_indices,:)), '-', 'MarkerFaceColor', group_color_matrix(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',7.5, 'Color', group_color_matrix(this_group_index, :))
+                    p1.Color(4) = 0.25;
+                end
+                figure(this_group_index);
+                xticks([number_of_levels])
+                xlim([-1 4])
+                title('crunchers')
+                ylabel([unique_rois(this_roi_index)],'interpreter','latex')
             end
+        elseif any(strcmp(task_folder, '06_Nback'))
+            cruncher_indices_1500 = find(strcmp(this_group_crunch_results(:,this_roi_index), 'early_crunch') | strcmp(this_group_crunch_results(:,this_roi_index),'late_crunch'));
+            cruncher_indices_500 = find(strcmp(this_group_crunch_results(:,this_roi_index+4), 'early_crunch') | strcmp(this_group_crunch_results(:,this_roi_index),'late_crunch'));
             
-            % on to the next subplot
-            this_figure_number = this_figure_number + 1;
-            
-            %increasing
-            nocruncher_increasing_indices = find(strcmp(this_group_crunch_results(:,this_roi_index), 'increasing'));
-
-            if ~isempty(nocruncher_increasing_indices)
-               if any(strcmp(task_folder, '05_MotorImagery'))     
-                    figure(this_group_index*2-1);
-                    subplot(4, 3, this_figure_number); hold on;
-                    plot(number_of_levels, this_group_and_roi_beta_results(nocruncher_increasing_indices,:),'--o', 'MarkerFaceColor', group_color_matrix(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 2, 'LineWidth',1, 'Color', group_color_matrix(this_group_index, :))
-                    if length(nocruncher_increasing_indices)>1
-                        plot(number_of_levels, mean(this_group_and_roi_beta_results(nocruncher_increasing_indices,:)), '-o', 'MarkerFaceColor', group_color_matrix(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',3, 'Color', group_color_matrix(this_group_index, :))
-                    end
-                    figure(this_group_index*2-1);
-                    xticks([number_of_levels])
-                    xlim([-1 4])
-                    title('No crunchers (increasing)')
-                    ylabel([unique_rois(this_roi_index)],'interpreter','latex')
-                elseif any(strcmp(task_folder, '06_Nback'))
+            if ~isempty(cruncher_indices_1500)
+                figure(this_group_index*2-1); subplot(4, 3, this_figure_number); hold on;
+                for this_cruncher_index = 1 : length(cruncher_indices_1500)
+                    plot(number_of_levels, this_group_and_roi_beta_results(cruncher_indices_1500(this_cruncher_index),1:4),'-o', 'MarkerFaceColor', this_group_subject_color_matrix(cruncher_indices_1500(this_cruncher_index), :), 'MarkerEdgeColor', this_group_subject_color_matrix(cruncher_indices_1500(this_cruncher_index), :),'MarkerSize', 5, 'LineWidth',1, 'Color',this_group_subject_color_matrix(cruncher_indices_1500(this_cruncher_index), :))
+                end
+                if length(cruncher_indices_1500)>1
                     figure(this_group_index*2-1); subplot(4, 3, this_figure_number); hold on;
-                    plot(number_of_levels, this_group_and_roi_beta_results(nocruncher_increasing_indices,1:4),'--o', 'MarkerFaceColor', group_color_matrix(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 2, 'LineWidth',1, 'Color', group_color_matrix(this_group_index, :))
-                    
-                    figure(this_group_index*2); subplot(4, 3, this_figure_number); hold on;
-                    plot(number_of_levels, this_group_and_roi_beta_results(nocruncher_increasing_indices,5:8),'--o', 'MarkerFaceColor', group_color_matrix(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 2, 'LineWidth',1, 'Color', group_color_matrix(this_group_index, :))
-                    if length(nocruncher_increasing_indices)>1
-                        figure(this_group_index*2-1); subplot(4, 3, this_figure_number); hold on; 
-                        plot(number_of_levels, mean(this_group_and_roi_beta_results(nocruncher_increasing_indices,1:4)), '-o', 'MarkerFaceColor', group_color_matrix(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',3, 'Color', group_color_matrix(this_group_index, :))
-                        figure(this_group_index*2); subplot(4, 3, this_figure_number); hold on;
-                        plot(number_of_levels, mean(this_group_and_roi_beta_results(nocruncher_increasing_indices,5:8)), '-o', 'MarkerFaceColor', group_color_matrix(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',3, 'Color', group_color_matrix(this_group_index, :))
-                    end
-                    figure(this_group_index*2-1);
-                    xticks([number_of_levels])
-                    xlim([-1 4])
-                    title('No crunchers (increasing)')
-                    ylabel([unique_rois(this_roi_index)],'interpreter','latex')
-                    
-                    figure(this_group_index*2);
-                    xticks([number_of_levels])
-                    xlim([-1 4])
-                    title('No crunchers (increasing)')
-                    ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+                    p1 = plot(number_of_levels, mean(this_group_and_roi_beta_results(cruncher_indices_1500,1:4)), '-', 'MarkerFaceColor', group_color_matrix(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',7.5, 'Color', group_color_matrix(this_group_index, :))
+                    p1.Color(4) = 0.25;
+                end
+                figure(this_group_index*2-1);
+                xticks([number_of_levels])
+                xlim([-1 4])
+                title('crunchers')
+                ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+            end
+            if ~isempty(cruncher_indices_500)
+                figure(this_group_index*2); subplot(4, 3, this_figure_number); hold on;
+                for this_cruncher_index = 1 : length(cruncher_indices_500)
+                    plot(number_of_levels, this_group_and_roi_beta_results(cruncher_indices_500(this_cruncher_index),5:8),'-o', 'MarkerFaceColor', this_group_subject_color_matrix(cruncher_indices_500(this_cruncher_index), :), 'MarkerEdgeColor', this_group_subject_color_matrix(cruncher_indices_500(this_cruncher_index), :),'MarkerSize', 5, 'LineWidth',1, 'Color',this_group_subject_color_matrix(cruncher_indices_500(this_cruncher_index), :))
+                end
                 
-                end
-            end
-         
-             % on to the next subplot
-            this_figure_number = this_figure_number + 1;
-            
-            %decreasing 
-            nocruncher_decreasing_indices = find(strcmp(this_group_crunch_results(:,this_roi_index), 'decreasing'));
-            
-            if ~isempty(nocruncher_decreasing_indices)
-                if any(strcmp(task_folder, '05_MotorImagery'))     
-                    figure(this_group_index*2-1);
-                    subplot(4, 3, this_figure_number); hold on;
-                    plot(number_of_levels, this_group_and_roi_beta_results(nocruncher_decreasing_indices,:),'--o', 'MarkerFaceColor', group_color_matrix(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 2, 'LineWidth',1, 'Color', group_color_matrix(this_group_index, :))
-                    if length(nocruncher_decreasing_indices)>1
-                        plot(number_of_levels, mean(this_group_and_roi_beta_results(nocruncher_decreasing_indices,:)), '-o', 'MarkerFaceColor', group_color_matrix(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',3, 'Color', group_color_matrix(this_group_index, :))
-                    end
-                    figure(this_group_index*2-1);
-                    xticks([number_of_levels])
-                    xlim([-1 4])
-                    title('No crunchers (decreasing)')
-                    ylabel([unique_rois(this_roi_index)],'interpreter','latex')
-              
-                elseif any(strcmp(task_folder, '06_Nback'))
-                    figure(this_group_index*2-1); subplot(4, 3, this_figure_number); hold on;
-                    plot(number_of_levels, this_group_and_roi_beta_results(nocruncher_decreasing_indices,1:4),'--o', 'MarkerFaceColor', group_color_matrix(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 2, 'LineWidth',1, 'Color', group_color_matrix(this_group_index, :))
-                    
+                if length(cruncher_indices_500)>1
                     figure(this_group_index*2); subplot(4, 3, this_figure_number); hold on;
-                    plot(number_of_levels, this_group_and_roi_beta_results(nocruncher_decreasing_indices,5:8),'--o', 'MarkerFaceColor', group_color_matrix(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 2, 'LineWidth',1, 'Color', group_color_matrix(this_group_index, :))
-                    if length(nocruncher_decreasing_indices)>1
-                        figure(this_group_index*2-1); subplot(4, 3, this_figure_number); hold on; 
-                        plot(number_of_levels, mean(this_group_and_roi_beta_results(nocruncher_decreasing_indices,1:4)), '-o', 'MarkerFaceColor', group_color_matrix(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',3, 'Color', group_color_matrix(this_group_index, :))
-                        figure(this_group_index*2); subplot(4, 3, this_figure_number); hold on;
-                        plot(number_of_levels, mean(this_group_and_roi_beta_results(nocruncher_decreasing_indices,5:8)), '-o', 'MarkerFaceColor', group_color_matrix(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',3, 'Color', group_color_matrix(this_group_index, :))
-                    end
-                    figure(this_group_index*2-1);
-                    xticks([number_of_levels])
-                    xlim([-1 4])
-                    title('No crunchers (decreasing)')
-                    ylabel([unique_rois(this_roi_index)],'interpreter','latex')
-                    
-                    figure(this_group_index*2);
-                    xticks([number_of_levels])
-                    xlim([-1 4])
-                    title('No crunchers (decreasing)')
-                    ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+                    p1 = plot(number_of_levels, mean(this_group_and_roi_beta_results(cruncher_indices_500,5:8)), '-', 'MarkerFaceColor', group_color_matrix(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',7.5, 'Color', group_color_matrix(this_group_index, :))
+                    p1.Color(4) = 0.25;
                 end
-            end
-         
-             % on to the next subplot
-            this_figure_number = this_figure_number + 1;
-            
-            % % TO DO: iron out potential bugs with plot_groups_together..
-            % probably not functioning atm
-            if ~plot_groups_together
-                suptitle(group_names{this_group_index})
-                if any(strcmp(task_folder, '05_MotorImagery'))
-                    figure(this_group_index*2-1);
-                    suptitle(strcat(group_names{this_group_index},{' '},task))
-                elseif any(strcmp(task_folder, '06_Nback'))
-                    figure(this_group_index*2-1);
-                    suptitle(strcat(group_names{this_group_index},{' '},task, {' '}, 'isi-1500'))
-                    figure(this_group_index*2);
-                    suptitle(strcat(group_names{this_group_index},{' '},task, {' '}, 'isi-500'))
-                end
-            else
-                suptitle(strcat('All Groups ',{' '}, task))
+                figure(this_group_index*2);
+                xticks([number_of_levels])
+                xlim([-1 4])
+                title('crunchers')
+                ylabel([unique_rois(this_roi_index)],'interpreter','latex')
             end
             
-      
-%         else
-%             if strcmp(Results_filename, 'CRUNCH_discrete.mat')
-%                 number_of_levels = [0 : 3];
-%             end
-%             
-%             subplot(1, 4, this_figure_number); hold on;
-%             
-%             if any(strcmp(task_folder, '05_MotorImagery'))
-%                 plot(number_of_levels, group_avg_results(this_group_index,:,this_roi_index),'-o', 'MarkerFaceColor', subject_color_matrix(this_group_index, :), 'MarkerEdgeColor', subject_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',3, 'Color', subject_color_matrix(this_group_index, :))
-%             elseif any(strcmp(task_folder, '06_Nback'))
-%                 plot(number_of_levels, group_avg_results(this_group_index,1:4,this_roi_index),'--o', 'MarkerFaceColor', (subject_color_matrix(this_group_index, :)+.2)*.5, 'MarkerEdgeColor', (subject_color_matrix(this_group_index, :)+.2)*.5,'MarkerSize', 5, 'LineWidth',3, 'Color',(subject_color_matrix(this_group_index, :)+.2)*.5 )
-%                 plot(number_of_levels, group_avg_results(this_group_index,5:8,this_roi_index),'-o', 'MarkerFaceColor', subject_color_matrix(this_group_index, :), 'MarkerEdgeColor', subject_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',3, 'Color', subject_color_matrix(this_group_index, :))
-%             end
-%             
-%             xticks([number_of_levels])
-%             xlim([-1 4])
-%             title([unique_rois(this_roi_index)],'interpreter','latex')
-%             ylabel('beta value')
-%             if this_figure_number > 1
-%                 ylabel([])
-%             end
-%             this_figure_number = this_figure_number + 1;
-%         end
+        end
+       
+        % on to the next subplot
+        this_figure_number = this_figure_number + 1;
+        
+        %increasing
+        if any(strcmp(task_folder, '05_MotorImagery'))
+            nocruncher_increasing_indices = find(strcmp(this_group_crunch_results(:,this_roi_index), 'increasing'));
+            if ~isempty(nocruncher_increasing_indices)
+                figure(this_group_index);
+                subplot(4, 3, this_figure_number); hold on;
+                for this_cruncher_index = 1 : length(nocruncher_increasing_indices)
+                    plot(number_of_levels, this_group_and_roi_beta_results(nocruncher_increasing_indices(this_cruncher_index),:),'-o', 'MarkerFaceColor', this_group_subject_color_matrix(nocruncher_increasing_indices(this_cruncher_index), :), 'MarkerEdgeColor', this_group_subject_color_matrix(nocruncher_increasing_indices(this_cruncher_index), :),'MarkerSize', 5, 'LineWidth',1, 'Color',this_group_subject_color_matrix(nocruncher_increasing_indices(this_cruncher_index), :))
+                end
+                if length(nocruncher_increasing_indices)>1
+                    p1 = plot(number_of_levels, mean(this_group_and_roi_beta_results(nocruncher_increasing_indices,:)), '-', 'MarkerFaceColor', group_color_matrix(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',7.5, 'Color', group_color_matrix(this_group_index, :))
+                    p1.Color(4) = 0.25;
+                end
+                figure(this_group_index);
+                xticks([number_of_levels])
+                xlim([-1 4])
+                title('No crunchers (increasing)')
+                ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+            end
+        elseif any(strcmp(task_folder, '06_Nback'))
+            nocruncher_increasing_indices_1500 = find(strcmp(this_group_crunch_results(:,this_roi_index), 'increasing'));
+            nocruncher_increasing_indices_500 = find(strcmp(this_group_crunch_results(:,this_roi_index+4), 'increasing'));
+            
+            if ~isempty(nocruncher_increasing_indices_1500)
+                figure(this_group_index*2-1); subplot(4, 3, this_figure_number); hold on;
+                for this_cruncher_index = 1 : length(nocruncher_increasing_indices_1500)
+                    plot(number_of_levels, this_group_and_roi_beta_results(nocruncher_increasing_indices_1500(this_cruncher_index),1:4),'-o', 'MarkerFaceColor', this_group_subject_color_matrix(nocruncher_increasing_indices_1500(this_cruncher_index), :), 'MarkerEdgeColor', this_group_subject_color_matrix(nocruncher_increasing_indices_1500(this_cruncher_index), :),'MarkerSize', 5, 'LineWidth',1, 'Color',this_group_subject_color_matrix(nocruncher_increasing_indices_1500(this_cruncher_index), :))
+                end
+                if length(nocruncher_increasing_indices_1500)>1
+                    figure(this_group_index*2-1); subplot(4, 3, this_figure_number); hold on;
+                    p1 = plot(number_of_levels, mean(this_group_and_roi_beta_results(nocruncher_increasing_indices_1500,1:4)), '-', 'MarkerFaceColor', group_color_matrix(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',7.5, 'Color', group_color_matrix(this_group_index, :))
+                    p1.Color(4) = 0.25;
+                end
+                figure(this_group_index*2-1);
+                xticks([number_of_levels])
+                xlim([-1 4])
+                title('No crunchers (increasing)')
+                ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+            end
+            if ~isempty(nocruncher_increasing_indices_500)
+                figure(this_group_index*2); subplot(4, 3, this_figure_number); hold on;
+                for this_cruncher_index = 1 : length(nocruncher_increasing_indices_500)
+                    plot(number_of_levels, this_group_and_roi_beta_results(nocruncher_increasing_indices_500(this_cruncher_index),5:8),'-o', 'MarkerFaceColor', this_group_subject_color_matrix(nocruncher_increasing_indices_500(this_cruncher_index), :), 'MarkerEdgeColor', this_group_subject_color_matrix(nocruncher_increasing_indices_500(this_cruncher_index), :),'MarkerSize', 5, 'LineWidth',1, 'Color',this_group_subject_color_matrix(nocruncher_increasing_indices_500(this_cruncher_index), :))
+                end
+                if length(nocruncher_increasing_indices_500)>1
+                    figure(this_group_index*2); subplot(4, 3, this_figure_number); hold on;
+                    p1 = plot(number_of_levels, mean(this_group_and_roi_beta_results(nocruncher_increasing_indices_500,5:8)), '-', 'MarkerFaceColor', group_color_matrix(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',7.5, 'Color', group_color_matrix(this_group_index, :))
+                    p1.Color(4) = 0.25;
+                end
+                
+                figure(this_group_index*2);
+                xticks([number_of_levels])
+                xlim([-1 4])
+                title('No crunchers (increasing)')
+                ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+            end
+        end
+        
+        
+        % on to the next subplot
+        this_figure_number = this_figure_number + 1;
+        
+        
+        %decreasing
+        if any(strcmp(task_folder, '05_MotorImagery'))
+            nocruncher_decreasing_indices = find(strcmp(this_group_crunch_results(:,this_roi_index), 'decreasing'));
+            if ~isempty(nocruncher_decreasing_indices)
+                figure(this_group_index);
+                subplot(4, 3, this_figure_number); hold on;
+                for this_cruncher_index = 1 : length(nocruncher_decreasing_indices)
+                    plot(number_of_levels, this_group_and_roi_beta_results(nocruncher_decreasing_indices(this_cruncher_index),:),'-o', 'MarkerFaceColor', this_group_subject_color_matrix(nocruncher_decreasing_indices(this_cruncher_index), :), 'MarkerEdgeColor', this_group_subject_color_matrix(nocruncher_decreasing_indices(this_cruncher_index), :),'MarkerSize', 5, 'LineWidth',1, 'Color',this_group_subject_color_matrix(nocruncher_decreasing_indices(this_cruncher_index), :))
+                end
+                if length(nocruncher_decreasing_indices)>1
+                    p1 = plot(number_of_levels, mean(this_group_and_roi_beta_results(nocruncher_decreasing_indices,:)), '-', 'MarkerFaceColor', group_color_matrix(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',7.5, 'Color', group_color_matrix(this_group_index, :))
+                    p1.Color(4) = 0.25;
+                end
+                figure(this_group_index);
+                xticks([number_of_levels])
+                xlim([-1 4])
+                title('No crunchers (decreasing)')
+                ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+            end
+        elseif any(strcmp(task_folder, '06_Nback'))
+            nocruncher_decreasing_indices_1500 = find(strcmp(this_group_crunch_results(:,this_roi_index), 'decreasing'));
+            nocruncher_decreasing_indices_500 = find(strcmp(this_group_crunch_results(:,this_roi_index+4), 'decreasing'));
+            
+            if ~isempty(nocruncher_decreasing_indices_1500)
+                figure(this_group_index*2-1); subplot(4, 3, this_figure_number); hold on;
+                for this_cruncher_index = 1 : length(nocruncher_decreasing_indices_1500)
+                    plot(number_of_levels, this_group_and_roi_beta_results(nocruncher_decreasing_indices_1500(this_cruncher_index),1:4),'-o', 'MarkerFaceColor', this_group_subject_color_matrix(nocruncher_decreasing_indices_1500(this_cruncher_index), :), 'MarkerEdgeColor', this_group_subject_color_matrix(nocruncher_decreasing_indices_1500(this_cruncher_index), :),'MarkerSize', 5, 'LineWidth',1, 'Color',this_group_subject_color_matrix(nocruncher_decreasing_indices_1500(this_cruncher_index), :))
+                end
+                if length(nocruncher_decreasing_indices_1500)>1
+                    figure(this_group_index*2-1); subplot(4, 3, this_figure_number); hold on;
+                    p1 = plot(number_of_levels, mean(this_group_and_roi_beta_results(nocruncher_decreasing_indices_1500,1:4)), '-', 'MarkerFaceColor', group_color_matrix(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',7.5, 'Color', group_color_matrix(this_group_index, :))
+                    p1.Color(4) = 0.25;
+                end
+                figure(this_group_index*2-1);
+                xticks([number_of_levels])
+                xlim([-1 4])
+                title('No crunchers (decreasing)')
+                ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+            end
+            
+            if ~isempty(nocruncher_decreasing_indices_500)
+                figure(this_group_index*2); subplot(4, 3, this_figure_number); hold on;
+                for this_cruncher_index = 1 : length(nocruncher_decreasing_indices_500)
+                    plot(number_of_levels, this_group_and_roi_beta_results(nocruncher_decreasing_indices_500(this_cruncher_index),5:8),'-o', 'MarkerFaceColor', this_group_subject_color_matrix(nocruncher_decreasing_indices_500(this_cruncher_index), :), 'MarkerEdgeColor', this_group_subject_color_matrix(nocruncher_decreasing_indices_500(this_cruncher_index), :),'MarkerSize', 5, 'LineWidth',1, 'Color',this_group_subject_color_matrix(nocruncher_decreasing_indices_500(this_cruncher_index), :))
+                end
+                
+                if length(nocruncher_decreasing_indices_500)>1
+                    figure(this_group_index*2); subplot(4, 3, this_figure_number); hold on;
+                    p1 = plot(number_of_levels, mean(this_group_and_roi_beta_results(nocruncher_decreasing_indices_500,5:8)), '-', 'MarkerFaceColor', group_color_matrix(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',7.5, 'Color', group_color_matrix(this_group_index, :))
+                    p1.Color(4) = 0.25;
+                end
+                figure(this_group_index*2);
+                xticks([number_of_levels])
+                xlim([-1 4])
+                title('No crunchers (decreasing)')
+                ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+            end
+        end
+        % end
+        
+        % on to the next subplot
+        this_figure_number = this_figure_number + 1;
+        
+        % % TO DO: iron out potential bugs with plot_groups_together..
+        % probably not functioning atm
+        if ~plot_groups_together
+            suptitle(group_names{this_group_index})
+            if any(strcmp(task_folder, '05_MotorImagery'))
+                figure(this_group_index);
+                suptitle(strcat(group_names{this_group_index},{' '},task))        
+                filename = strcat('figures',filesep,group_names{this_group_index},'_',task,'_CRseparated');
+                saveas(gca, filename, 'tiff')
+            elseif any(strcmp(task_folder, '06_Nback'))
+                figure(this_group_index*2-1);
+                suptitle(strcat(group_names{this_group_index},{' '},task, {' '}, 'isi-1500'))
+                filename = strcat('figures',filesep,group_names{this_group_index},'_',task,'isi-1500_CRseparated');
+                saveas(gca, filename, 'tiff')
+
+                figure(this_group_index*2);
+                suptitle(strcat(group_names{this_group_index},{' '},task, {' '}, 'isi-500'))
+                filename = strcat('figures',filesep,group_names{this_group_index},'_',task,'isi-500_CRseparated');
+                saveas(gca, filename, 'tiff')
+
+            end
+        else
+            suptitle(strcat('All Groups ',{' '}, task))
+        end
+        
+        
+        %         else
+        %             if strcmp(Results_filename, 'CRUNCH_discrete.mat')
+        %                 number_of_levels = [0 : 3];
+        %             end
+        %
+        %             subplot(1, 4, this_figure_number); hold on;
+        %
+        %             if any(strcmp(task_folder, '05_MotorImagery'))
+        %                 plot(number_of_levels, group_avg_results(this_group_index,:,this_roi_index),'-o', 'MarkerFaceColor', subject_color_matrix(this_group_index, :), 'MarkerEdgeColor', subject_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',3, 'Color', subject_color_matrix(this_group_index, :))
+        %             elseif any(strcmp(task_folder, '06_Nback'))
+        %                 plot(number_of_levels, group_avg_results(this_group_index,1:4,this_roi_index),'--o', 'MarkerFaceColor', (subject_color_matrix(this_group_index, :)+.2)*.5, 'MarkerEdgeColor', (subject_color_matrix(this_group_index, :)+.2)*.5,'MarkerSize', 5, 'LineWidth',3, 'Color',(subject_color_matrix(this_group_index, :)+.2)*.5 )
+        %                 plot(number_of_levels, group_avg_results(this_group_index,5:8,this_roi_index),'-o', 'MarkerFaceColor', subject_color_matrix(this_group_index, :), 'MarkerEdgeColor', subject_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',3, 'Color', subject_color_matrix(this_group_index, :))
+        %             end
+        %
+        %             xticks([number_of_levels])
+        %             xlim([-1 4])
+        %             title([unique_rois(this_roi_index)],'interpreter','latex')
+        %             ylabel('beta value')
+        %             if this_figure_number > 1
+        %                 ylabel([])
+        %             end
+        %             this_figure_number = this_figure_number + 1;
+        %         end
     end
-    
-  
-    
-    
 end
 end
