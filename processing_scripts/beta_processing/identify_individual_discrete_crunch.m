@@ -1,5 +1,5 @@
 function identify_individual_discrete_crunch(varargin)
-%input task (1 for Motor 2 for nback), subject numbers [####], data path for where all subject folders are stoered 
+%input task folder, subject numbers {####}
 parser = inputParser;
 parser.KeepUnmatched = true;
 % setup defaults in case no arguments specified
@@ -14,7 +14,7 @@ task_folder = parser.Results.task_folder;
 Results_filename = parser.Results.Results_filename;
 save_variables = parser.Results.save_variables;
 
-data_path = pwd;
+data_path = pwd; %make sure to set the path tot he MiM_data folder
 
 if any(strcmp(task_folder, '05_MotorImagery'))
     task='MotorImagery';
@@ -49,7 +49,7 @@ for sub = 1:length(subjects)
     this_figure_number = 1;
     figure;
     
-    for this_roi_index = 1 : length(unique_rois) %1:4, l-pfc, r-pfc, l-acc, r-acc
+    for this_roi_index = 1 : length(unique_rois) %1:4, l-acc, l-pfc, r-acc, r-pfc (alphabetical)
         this_roi_indices = find(strcmp(roi_names, unique_rois{this_roi_index})); %find the index of when the current ROI occurs
         
         for k = 1:length(this_roi_indices)
