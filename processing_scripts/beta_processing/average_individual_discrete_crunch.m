@@ -96,8 +96,10 @@ for this_group_index = 1 : length(group_names)
     subject_ids_table = cellstr(subjects');
     summary_stats = table(subject_ids_table(this_group_subjectindices));
     summary_stats = renamevars(summary_stats,'Var1','Subject');
-    %     summary_stats. = table(this_group_and_roi_crunch_results(:,this_roi_index))
     
+    % makes logic easier below..
+    this_group_crunch_results = cell2mat(this_group_crunch_results);
+
     this_figure_number = 1;
     for this_roi_index = 1 : length(unique_rois)
         this_group_and_roi_beta_results = beta_results(this_group_subjectindices,:,this_roi_index);
@@ -120,11 +122,12 @@ for this_group_index = 1 : length(group_names)
         writetable(T2,filename,'Sheet',this_group_index)
         %     xlswrite('crunch_summary_statistics.xlsx', ROI_total)
         
-
+       
         number_of_levels = [0 : 3];
         
         if any(strcmp(task_folder, '05_MotorImagery'))
-            cruncher_indices = find(strcmp(this_group_crunch_results(:,this_roi_index), 'early_crunch') | strcmp(this_group_crunch_results(:,this_roi_index),'late_crunch'));
+%             cruncher_indices = find(strcmp(this_group_crunch_results(:,this_roi_index), 'early_crunch') | strcmp(this_group_crunch_results(:,this_roi_index),'late_crunch'));
+            cruncher_indices = find(this_group_crunch_results(:,this_roi_index) == 1 | this_group_crunch_results(:,this_roi_index) == 2);
             figure(this_group_index);
             subplot(4, 3, this_figure_number); hold on;
             if ~isempty(cruncher_indices)
@@ -142,9 +145,11 @@ for this_group_index = 1 : length(group_names)
                 ylabel([unique_rois(this_roi_index)],'interpreter','latex')
             end
         elseif any(strcmp(task_folder, '06_Nback'))
-            cruncher_indices_1500 = find(strcmp(this_group_crunch_results(:,this_roi_index), 'early_crunch') | strcmp(this_group_crunch_results(:,this_roi_index),'late_crunch'));
-            cruncher_indices_500 = find(strcmp(this_group_crunch_results(:,this_roi_index+4), 'early_crunch') | strcmp(this_group_crunch_results(:,this_roi_index),'late_crunch'));
-            
+            %             cruncher_indices_1500 = find(strcmp(this_group_crunch_results(:,this_roi_index), 'early_crunch') | strcmp(this_group_crunch_results(:,this_roi_index),'late_crunch'));
+            %             cruncher_indices_500 = find(strcmp(this_group_crunch_results(:,this_roi_index+4), 'early_crunch') | strcmp(this_group_crunch_results(:,this_roi_index),'late_crunch'));
+            cruncher_indices_1500 =  find(this_group_crunch_results(:,this_roi_index) == 1 | this_group_crunch_results(:,this_roi_index) == 2);
+            cruncher_indices_500 = find(this_group_crunch_results(:,this_roi_index+4) == 1 | this_group_crunch_results(:,this_roi_index+4) == 2);
+
             if ~isempty(cruncher_indices_1500)
                 figure(this_group_index*2-1); subplot(4, 3, this_figure_number); hold on;
                 for this_cruncher_index = 1 : length(cruncher_indices_1500)
@@ -186,7 +191,8 @@ for this_group_index = 1 : length(group_names)
         
         %increasing
         if any(strcmp(task_folder, '05_MotorImagery'))
-            nocruncher_increasing_indices = find(strcmp(this_group_crunch_results(:,this_roi_index), 'increasing'));
+%             nocruncher_increasing_indices = find(strcmp(this_group_crunch_results(:,this_roi_index), 'increasing'));
+            nocruncher_increasing_indices = find(this_group_crunch_results(:,this_roi_index) == 3);
             if ~isempty(nocruncher_increasing_indices)
                 figure(this_group_index);
                 subplot(4, 3, this_figure_number); hold on;
@@ -204,9 +210,10 @@ for this_group_index = 1 : length(group_names)
                 ylabel([unique_rois(this_roi_index)],'interpreter','latex')
             end
         elseif any(strcmp(task_folder, '06_Nback'))
-            nocruncher_increasing_indices_1500 = find(strcmp(this_group_crunch_results(:,this_roi_index), 'increasing'));
-            nocruncher_increasing_indices_500 = find(strcmp(this_group_crunch_results(:,this_roi_index+4), 'increasing'));
-            
+            %             nocruncher_increasing_indices_1500 = find(strcmp(this_group_crunch_results(:,this_roi_index), 'increasing'));
+            %             nocruncher_increasing_indices_500 = find(strcmp(this_group_crunch_results(:,this_roi_index+4), 'increasing'));
+            nocruncher_increasing_indices_1500 = find(this_group_crunch_results(:,this_roi_index) == 3);
+            nocruncher_increasing_indices_500 = find(this_group_crunch_results(:,this_roi_index+4) == 3);
             if ~isempty(nocruncher_increasing_indices_1500)
                 figure(this_group_index*2-1); subplot(4, 3, this_figure_number); hold on;
                 for this_cruncher_index = 1 : length(nocruncher_increasing_indices_1500)
@@ -249,7 +256,8 @@ for this_group_index = 1 : length(group_names)
         
         %decreasing
         if any(strcmp(task_folder, '05_MotorImagery'))
-            nocruncher_decreasing_indices = find(strcmp(this_group_crunch_results(:,this_roi_index), 'decreasing'));
+            %             nocruncher_decreasing_indices = find(strcmp(this_group_crunch_results(:,this_roi_index), 'decreasing'));
+            nocruncher_decreasing_indices = find(this_group_crunch_results(:,this_roi_index) == 0);
             if ~isempty(nocruncher_decreasing_indices)
                 figure(this_group_index);
                 subplot(4, 3, this_figure_number); hold on;
@@ -267,9 +275,10 @@ for this_group_index = 1 : length(group_names)
                 ylabel([unique_rois(this_roi_index)],'interpreter','latex')
             end
         elseif any(strcmp(task_folder, '06_Nback'))
-            nocruncher_decreasing_indices_1500 = find(strcmp(this_group_crunch_results(:,this_roi_index), 'decreasing'));
-            nocruncher_decreasing_indices_500 = find(strcmp(this_group_crunch_results(:,this_roi_index+4), 'decreasing'));
-            
+            %             nocruncher_decreasing_indices_1500 = find(strcmp(this_group_crunch_results(:,this_roi_index), 'decreasing'));
+            %             nocruncher_decreasing_indices_500 = find(strcmp(this_group_crunch_results(:,this_roi_index+4), 'decreasing'));
+            nocruncher_decreasing_indices_1500 = find(this_group_crunch_results(:,this_roi_index) == 0);
+            nocruncher_decreasing_indices_500 = find(this_group_crunch_results(:,this_roi_index+4) == 0);
             if ~isempty(nocruncher_decreasing_indices_1500)
                 figure(this_group_index*2-1); subplot(4, 3, this_figure_number); hold on;
                 for this_cruncher_index = 1 : length(nocruncher_decreasing_indices_1500)
