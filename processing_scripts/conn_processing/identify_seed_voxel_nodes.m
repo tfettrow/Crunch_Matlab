@@ -67,7 +67,7 @@ for this_seed_folder = 1:length(seed_names)
     end
     
     fclose(fid);
-    disp(strcat(num2str(size(ordered_voxel_coords_thresholded,2)),' ', 'nodes associated with ',' ', seed_names{this_seed_folder}, ' seed'))
+    disp(strcat(num2str(size(ordered_voxel_coords_thresholded,2)),{' '}, 'nodes associated with ',{' '}, seed_names{this_seed_folder}, ' seed'))
     
 end
 end
