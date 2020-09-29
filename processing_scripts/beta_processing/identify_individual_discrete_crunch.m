@@ -101,11 +101,12 @@ for sub = 1:length(subjects)
         hold off;
         xticks(number_of_levels)
         xlim([-1 4])
-        title(char(unique_rois(this_roi_index)))
+        title(char(unique_rois(this_roi_index)),'interpreter','latex')
         this_figure_number = this_figure_number + 1;
         ylabel('beta value')
         %         clearvars beta_values;
     end
+    suptitle(strcat(subjects{sub}, {' '}, 'Brain Activity'))
     hold off;
     
     if save_variables
