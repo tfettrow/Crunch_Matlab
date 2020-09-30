@@ -76,7 +76,11 @@ for sub = 1:length(subjects)
                 fittedX=linspace(min(number_of_levels_extrapolate), max(number_of_levels_extrapolate), 100);
                 fittedY=polyval(coeffs, fittedX);      
                 plot(fittedX,fittedY,'-b')
-                cr{this_roi_index} = round(max(fittedY));
+                if round(max(fittedY)) < 3.5
+                    cr{this_roi_index} = 3;
+                else
+                    cr{this_roi_index} = 4
+                end
                 
                 % deprecated
                 % cr{this_roi_index} = 3; %never CRUNCH point
@@ -99,7 +103,11 @@ for sub = 1:length(subjects)
                 fittedX=linspace(min(number_of_levels_extrapolate), max(number_of_levels_extrapolate), 100);
                 fittedY=polyval(coeffs, fittedX);
                 plot(fittedX,fittedY,'-b')
-                cr_1500{this_roi_index} = round(max(fittedY));
+                if round(max(fittedY)) < 3.5
+                    cr_1500{this_roi_index} = 3;
+                else
+                    cr_1500{this_roi_index} = 4
+                end
 %                 cr_1500{this_roi_index} = 3; %never CRUNCH point
             end
             max_beta_index = find(max(beta_values(5:8))==beta_values(5:8)); %CRUNCH for 500 ISI
@@ -115,7 +123,11 @@ for sub = 1:length(subjects)
                 fittedX=linspace(min(number_of_levels_extrapolate), max(number_of_levels_extrapolate), 100);
                 fittedY=polyval(coeffs, fittedX);
                 plot(fittedX,fittedY,'-b')
-                cr_500{this_roi_index} = round(max(fittedY));
+                if round(max(fittedY)) < 3.5
+                    cr_500{this_roi_index} = 3;
+                else
+                    cr_500{this_roi_index} = 4
+                end
 %                 cr_500{this_roi_index} = 3; %never CRUNCH point
             end
         end
