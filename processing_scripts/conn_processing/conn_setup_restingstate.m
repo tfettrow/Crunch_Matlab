@@ -62,22 +62,33 @@ for this_subject_index = 1:length(subjects)
     
     primary_smoothed_path = spm_select('FPList', this_subject_path, strcat('^',primary_smoothed,'$'));
     primary_unsmoothed_path = spm_select('FPList', this_subject_path, strcat('^',primary_unsmoothed,'$'));
-    % Beware... Hard coded for WU120 data
+
+    % Beware: Hard coded for WU120 data
     if ~exist(primary_smoothed_path)
-        primary_smoothed_path= spm_select('FPList', this_subject_path, '^smoothed_warpedToMNI_unwarpedRealigned_slicetimed_RestingState1.nii');
-        primary_unsmoothed_path = spm_select('FPList', this_subject_path, strcat('^','warpedToMNI_unwarpedRealigned_slicetimed_RestingState1.nii','$'));
+        primary_smoothed_corename = strsplit(primary_smoothed,'.');
+        primary_unsmoothed_corename = strsplit(primary_unsmoothed,'.');
+        primary_smoothed_path= spm_select('FPList', this_subject_path, strcat('^',primary_smoothed_corename{1},'1.nii'));
+        primary_unsmoothed_path = spm_select('FPList', this_subject_path, strcat('^',primary_unsmoothed_corename{1},'1.nii'));
     end
     
     structural_path = spm_select('FPList', this_subject_path, strcat('^',structural,'$'));
     
     if ~isempty(secondary_smoothed)
-        secondary_smoothed_path = spm_select('ExtFPList', this_subject_path, strcat('^',secondary_smoothed,'$'));
+        secondary_smoothed_path = spm_select('FPList', this_subject_path, strcat('^',secondary_smoothed,'$'));
     end
     if ~isempty(secondary_unsmoothed)
-        secondary_unsmoothed_path = spm_select('ExtFPList', this_subject_path, strcat('^',secondary_unsmoothed,'$'));
+        secondary_unsmoothed_path = spm_select('FPList', this_subject_path, strcat('^',secondary_unsmoothed,'$'));
     end
     if ~isempty(secondary_smoothed) && isempty(secondary_unsmoothed)
         error('need to specify unsmoothed secondary file name ')
+    end
+
+    % Beware: Hard coded for WU120 data
+    if ~exist(secondary_smoothed_path)
+        secondary_smoothed_corename = strsplit(secondary_smoothed,'.');
+        secondary_unsmoothed_corename = strsplit(secondary_unsmoothed,'.');
+        secondary_smoothed_path= spm_select('FPList', this_subject_path, strcat('^',secondary_smoothed_corename{1},'1.nii'));
+        secondary_unsmoothed_path = spm_select('FPList', this_subject_path, strcat('^',secondary_unsmoothed_corename{1},'1.nii'));
     end
      
     BATCH.Setup.nsubjects=length(subjects);
