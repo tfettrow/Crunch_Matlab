@@ -79,7 +79,7 @@ for sub = 1:length(subjects)
                 if round(max(fittedY)) < 3.5
                     cr{this_roi_index} = 3;
                 else
-                    cr{this_roi_index} = 4
+                    cr{this_roi_index} = 4;
                 end
                 
                 % deprecated
@@ -106,7 +106,7 @@ for sub = 1:length(subjects)
                 if round(max(fittedY)) < 3.5
                     cr_1500{this_roi_index} = 3;
                 else
-                    cr_1500{this_roi_index} = 4
+                    cr_1500{this_roi_index} = 4;
                 end
 %                 cr_1500{this_roi_index} = 3; %never CRUNCH point
             end
@@ -126,7 +126,7 @@ for sub = 1:length(subjects)
                 if round(max(fittedY)) < 3.5
                     cr_500{this_roi_index} = 3;
                 else
-                    cr_500{this_roi_index} = 4
+                    cr_500{this_roi_index} = 4;
                 end
 %                 cr_500{this_roi_index} = 3; %never CRUNCH point
             end
