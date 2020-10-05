@@ -14,11 +14,19 @@ T_threshold = parser.Results.T_threshold;
 distance_threshold = parser.Results.distance_threshold;
 seed_names = parser.Results.seed_names;
 
+% need to find out if this is cb to append to node name
+project_name_split = strsplit(conn_project_name,'_');
+    
 % some reason folders appending dir from two above what interested in??
 for this_seed_folder = 1:length(seed_names)
     
-    this_contrast_data = spm_vol(strcat(conn_project_name,filesep,'results',filesep,'secondlevel',filesep,'SBC_01',filesep,'AllSubjects',filesep,'rest',filesep,seed_names{this_seed_folder},filesep,'spmT_0001.nii'));
-
+    % make sure to grab the cb masked wb spmT file
+    if strcmp(project_name_split(end),'wb')
+        this_contrast_data = spm_vol(strcat(conn_project_name,filesep,'results',filesep,'secondlevel',filesep,'SBC_01',filesep,'AllSubjects',filesep,'rest',filesep,seed_names{this_seed_folder},filesep,'masked_spmT_0001.nii'));
+    else
+        this_contrast_data = spm_vol(strcat(conn_project_name,filesep,'results',filesep,'secondlevel',filesep,'SBC_01',filesep,'AllSubjects',filesep,'rest',filesep,seed_names{this_seed_folder},filesep,'spmT_0001.nii'));
+    end
+    
     this_contrast_betas = spm_read_vols(this_contrast_data);
     [x,y,z] = ind2sub(size(this_contrast_betas),1:(size(this_contrast_betas,1)*size(this_contrast_betas,2)*size(this_contrast_betas,3)));
     
@@ -29,13 +37,8 @@ for this_seed_folder = 1:length(seed_names)
     [sorted_betas, ordered_indices] = sort(betas_above_zero,'descend');
     
     % find betas or T values (should do z map conversion) above threshold
-%     split_filename = split(filename_to_load,'_');
-%     if strcmp(split_filename{1},'spmT')
-        indices_above_intensity_threshold = find(sorted_betas > T_threshold);
-%     elseif strcmp(split_filename{1},'con')
-%         indices_above_intensity_threshold = find(sorted_betas > 1);
-%     end
-%     
+    indices_above_intensity_threshold = find(sorted_betas > T_threshold);
+
     ordered_indices_above_intensity_threshold = ordered_indices(indices_above_intensity_threshold);
     
     this_index = 1;
@@ -63,7 +66,11 @@ for this_seed_folder = 1:length(seed_names)
     fid = fopen(strcat(conn_project_name,filesep,'results',filesep,'secondlevel',filesep,'SBC_01',filesep,'AllSubjects',filesep,'rest',filesep,seed_names{this_seed_folder},filesep,'ROI_settings_connNodeID_',seed_names{this_seed_folder},'.txt'),'wt');
     
     for this_node = 1:size(ordered_voxel_coords_thresholded,2)
-        fprintf(fid, '%f, %f, %f, %s, %s, %s\n', ordered_voxel_coords_thresholded(1,this_node), ordered_voxel_coords_thresholded(2,this_node), ordered_voxel_coords_thresholded(3,this_node), strcat(seed_names{this_seed_folder},'_node',num2str(this_node)), strcat(seed_names{this_seed_folder},'_network'), 'whole_brain_unsmoothed');
+        if strcmp(project_name_split(end),'cb')
+            fprintf(fid, '%f, %f, %f, %s, %s, %s\n', ordered_voxel_coords_thresholded(1,this_node), ordered_voxel_coords_thresholded(2,this_node), ordered_voxel_coords_thresholded(3,this_node), strcat(seed_names{this_seed_folder},'_node',num2str(this_node),'_cb'), strcat(seed_names{this_seed_folder},'_network'), 'whole_brain_unsmoothed');
+        else
+            fprintf(fid, '%f, %f, %f, %s, %s, %s\n', ordered_voxel_coords_thresholded(1,this_node), ordered_voxel_coords_thresholded(2,this_node), ordered_voxel_coords_thresholded(3,this_node), strcat(seed_names{this_seed_folder},'_node',num2str(this_node)), strcat(seed_names{this_seed_folder},'_network'), 'whole_brain_unsmoothed');
+        end
     end
     
     fclose(fid);
