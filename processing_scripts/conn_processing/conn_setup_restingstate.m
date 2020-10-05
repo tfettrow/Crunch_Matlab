@@ -78,17 +78,16 @@ for this_subject_index = 1:length(subjects)
     end
     if ~isempty(secondary_unsmoothed)
         secondary_unsmoothed_path = spm_select('FPList', this_subject_path, strcat('^',secondary_unsmoothed,'$'));
+         % Beware: Hard coded for WU120 data
+         if ~exist(secondary_smoothed_path)
+             secondary_smoothed_corename = strsplit(secondary_smoothed,'.');
+             secondary_unsmoothed_corename = strsplit(secondary_unsmoothed,'.');
+             secondary_smoothed_path= spm_select('FPList', this_subject_path, strcat('^',secondary_smoothed_corename{1},'1.nii'));
+             secondary_unsmoothed_path = spm_select('FPList', this_subject_path, strcat('^',secondary_unsmoothed_corename{1},'1.nii'));
+         end
     end
     if ~isempty(secondary_smoothed) && isempty(secondary_unsmoothed)
         error('need to specify unsmoothed secondary file name ')
-    end
-
-    % Beware: Hard coded for WU120 data
-    if ~exist(secondary_smoothed_path)
-        secondary_smoothed_corename = strsplit(secondary_smoothed,'.');
-        secondary_unsmoothed_corename = strsplit(secondary_unsmoothed,'.');
-        secondary_smoothed_path= spm_select('FPList', this_subject_path, strcat('^',secondary_smoothed_corename{1},'1.nii'));
-        secondary_unsmoothed_path = spm_select('FPList', this_subject_path, strcat('^',secondary_unsmoothed_corename{1},'1.nii'));
     end
      
     BATCH.Setup.nsubjects=length(subjects);
