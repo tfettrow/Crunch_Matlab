@@ -70,17 +70,18 @@ for sub = 1:length(subjects)
             elseif (max_beta_index  == 3) %if the subject has a CRUNCH point (on a scale of 1-4)
                 cr{this_roi_index} = 2; %late CRUNCH point
             elseif (max_beta_index  == 4) %if the subject has a CRUNCH point (on a scale of 1-4)
+                cr{this_roi_index} = 3; %late CRUNCH point
                 % TO DO: create a best fit for increasing crunchers
-                number_of_levels_extrapolate = 0:4;
-                coeffs=polyfit(number_of_levels, beta_values, 2);
-                fittedX=linspace(min(number_of_levels_extrapolate), max(number_of_levels_extrapolate), 100);
-                fittedY=polyval(coeffs, fittedX);      
-                plot(fittedX,fittedY,'-b')
-                if round(max(fittedY)) < 3.5
-                    cr{this_roi_index} = 3;
-                else
-                    cr{this_roi_index} = 4;
-                end
+%                 number_of_levels_extrapolate = 0:4;
+%                 coeffs=polyfit(number_of_levels, beta_values, 2);
+%                 fittedX=linspace(min(number_of_levels_extrapolate), max(number_of_levels_extrapolate), 100);
+%                 fittedY=polyval(coeffs, fittedX);      
+%                 plot(fittedX,fittedY,'-b')
+%                 if round(max(fittedY)) < 3.5
+%                     cr{this_roi_index} = 3;
+%                 else
+%                     cr{this_roi_index} = 4;
+%                 end
                 
                 % deprecated
                 % cr{this_roi_index} = 3; %never CRUNCH point
@@ -98,16 +99,17 @@ for sub = 1:length(subjects)
             elseif (max_beta_index  == 3) %if the subject has a CRUNCH point (on a scale of 1-4)
                 cr_1500{this_roi_index} = 2; %late CRUNCH point
             elseif (max_beta_index  == 4) %if the subject has a CRUNCH point (on a scale of 1-4)
-                number_of_levels_extrapolate = 0:4;
-                coeffs=polyfit(number_of_levels, beta_values(1:4), 2);
-                fittedX=linspace(min(number_of_levels_extrapolate), max(number_of_levels_extrapolate), 100);
-                fittedY=polyval(coeffs, fittedX);
-                plot(fittedX,fittedY,'-b')
-                if round(max(fittedY)) < 3.5
-                    cr_1500{this_roi_index} = 3;
-                else
-                    cr_1500{this_roi_index} = 4;
-                end
+                cr_1500{this_roi_index} = 3; %late CRUNCH point
+%                 number_of_levels_extrapolate = 0:4;
+%                 coeffs=polyfit(number_of_levels, beta_values(1:4), 2);
+%                 fittedX=linspace(min(number_of_levels_extrapolate), max(number_of_levels_extrapolate), 100);
+%                 fittedY=polyval(coeffs, fittedX);
+%                 plot(fittedX,fittedY,'-b')
+%                 if round(max(fittedY)) < 3.5
+%                     cr_1500{this_roi_index} = 3;
+%                 else
+%                     cr_1500{this_roi_index} = 4;
+%                 end
 %                 cr_1500{this_roi_index} = 3; %never CRUNCH point
             end
             max_beta_index = find(max(beta_values(5:8))==beta_values(5:8)); %CRUNCH for 500 ISI
@@ -118,16 +120,17 @@ for sub = 1:length(subjects)
             elseif (max_beta_index  == 3) %if the subject has a CRUNCH point (on a scale of 1-4)
                 cr_500{this_roi_index} = 2; %late CRUNCH point
             elseif (max_beta_index  == 4) %if the subject has a CRUNCH point (on a scale of 1-4)
-                number_of_levels_extrapolate = 0:4;
-                coeffs=polyfit(number_of_levels, beta_values(5:8), 2);
-                fittedX=linspace(min(number_of_levels_extrapolate), max(number_of_levels_extrapolate), 100);
-                fittedY=polyval(coeffs, fittedX);
-                plot(fittedX,fittedY,'-b')
-                if round(max(fittedY)) < 3.5
-                    cr_500{this_roi_index} = 3;
-                else
-                    cr_500{this_roi_index} = 4;
-                end
+                cr_500{this_roi_index} = 3; %late CRUNCH point
+%                 number_of_levels_extrapolate = 0:4;
+%                 coeffs=polyfit(number_of_levels, beta_values(5:8), 2);
+%                 fittedX=linspace(min(number_of_levels_extrapolate), max(number_of_levels_extrapolate), 100);
+%                 fittedY=polyval(coeffs, fittedX);
+%                 plot(fittedX,fittedY,'-b')
+%                 if round(max(fittedY)) < 3.5
+%                     cr_500{this_roi_index} = 3;
+%                 else
+%                     cr_500{this_roi_index} = 4;
+%                 end
 %                 cr_500{this_roi_index} = 3; %never CRUNCH point
             end
         end
