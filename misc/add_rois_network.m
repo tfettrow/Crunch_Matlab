@@ -19,7 +19,6 @@ addParameter(parser, 'roi_settings_filename', '')
 parse(parser, varargin{:})
 roi_settings_filename = parser.Results.roi_settings_filename;
 
-
 %% read roi settings file
 if ~isempty(roi_settings_filename)
     file_name = roi_settings_filename;
@@ -69,7 +68,7 @@ if ~isempty(roi_settings_filename)
         this_roi_core_name = this_roi_settings_split(these_rois_unique_network_indices,4);
         this_roi_file_name = strcat(strtrim(this_roi_core_name), '.nii');
         [fda, this_roi_index_in_available_files, asdf] = intersect(available_roi_file_name_list, this_roi_file_name);
-        % 2) for each netowk, fin the rois within that network assign it to the files for
+        % 2) for each network, find the rois within that network assign it to the files for
         % imcalc an add them all together
         % Make GM mask. i1==1.  
         
