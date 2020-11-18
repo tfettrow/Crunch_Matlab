@@ -1,4 +1,4 @@
-function convert_to_voxel_coordinates(roi_name, roi_x, roi_y, roi_z)
+function convert_to_mniVoxel_coordinates(roi_name, roi_x, roi_y, roi_z)
 % roi_name = 'caudate';
 % % roi_mni_coord = [-34 -32 66];
 % roi_x = '0';
