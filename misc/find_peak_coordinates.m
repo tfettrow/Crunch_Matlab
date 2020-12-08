@@ -1,4 +1,4 @@
-function find_roi_voxel_coordinates(filename)
+function find_peak_coordinates(filename)
 filename='spmT_0001.nii';
 
 this_contrast_data = spm_vol(filename);
