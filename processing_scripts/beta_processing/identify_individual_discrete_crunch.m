@@ -33,14 +33,28 @@ for sub = 1:length(subjects)
     data = textscan(fileID,'%s','delimiter',',');
     data = reshape(data{:},length(data{1})/2,2);
     
+    roi_names={};
+    
     for this_beta = 3:length(data)
-        split_difficulty = strsplit(data{this_beta,1},'_');%separate difficulty and brain region
+        split_roi_name = strsplit(data{this_beta,1},'_');%separate difficulty and brain region
         if any(strcmp(task_folder, '05_MotorImagery'))
-            ordered_conditions{this_beta-2} = split_difficulty{1}; %difficulty level = flat to high
-            roi_names{this_beta-2} = strcat(split_difficulty{2},'_',split_difficulty{3}); %brain region name, l-pfc, r-pfc, l-acc, r-acc
+            ordered_conditions{this_beta-2} = split_roi_name{1}; %difficulty level = flat to high
+            for this_roi_part = 2:length(split_roi_name)
+                if this_roi_part == 2
+                    roi_names{this_beta-2} = split_roi_name{this_roi_part};
+                else
+                    roi_names{this_beta-2} = strcat(roi_names{this_beta-2}, '_', split_roi_name{this_roi_part});
+                end
+            end
         elseif any(strcmp(task_folder, '06_Nback'))
-            ordered_conditions{this_beta-2} = strcat(split_difficulty{1},'_',split_difficulty{2}); % difficulty = 0 to 3 with long or short ISI
-            roi_names{this_beta-2} = strcat(split_difficulty{3},'_',split_difficulty{4}); %brain region name
+            ordered_conditions{this_beta-2} = strcat(split_roi_name{1},'_',split_roi_name{2}); % difficulty = 0 to 3 with long or short ISI
+           for this_roi_part = 3:length(split_roi_name)
+                if this_roi_part == 3
+                    roi_names{this_beta-2} = split_roi_name{this_roi_part};
+                else
+                    roi_names{this_beta-2} = strcat(roi_names{this_beta-2}, '_', split_roi_name{this_roi_part});
+                end
+            end
         end
     end
     
