@@ -24,7 +24,11 @@ for this_seed_folder = 1:length(seed_names)
     if strcmp(project_name_split(end),'wb')
         this_contrast_data = spm_vol(strcat(conn_project_name,filesep,'results',filesep,'secondlevel',filesep,'SBC_01',filesep,'AllSubjects',filesep,'rest',filesep,seed_names{this_seed_folder},filesep,'masked_spmT_0001.nii'));
     else
-        this_contrast_data = spm_vol(strcat(conn_project_name,filesep,'results',filesep,'secondlevel',filesep,'SBC_01',filesep,'AllSubjects',filesep,'rest',filesep,seed_names{this_seed_folder},filesep,'spmT_0001.nii'));
+        if exist(strcat(conn_project_name,filesep,'results',filesep,'secondlevel',filesep,'SBC_01',filesep,'AllSubjects',filesep,'rest',filesep,seed_names{this_seed_folder},filesep,'spmT_0001.nii'), 'file')
+            this_contrast_data = spm_vol(strcat(conn_project_name,filesep,'results',filesep,'secondlevel',filesep,'SBC_01',filesep,'AllSubjects',filesep,'rest',filesep,seed_names{this_seed_folder},filesep,'spmT_0001.nii'));
+        else
+            this_contrast_data = spm_vol(strcat(conn_project_name,filesep,'results',filesep,'secondlevel',filesep,'SBC_01',filesep,'AllSubjects',filesep,'rest',filesep,seed_names{this_seed_folder},filesep,'spmF_0001.nii'));
+        end
     end
     
     this_contrast_betas = spm_read_vols(this_contrast_data);
