@@ -141,15 +141,15 @@ for this_subject_index = 1:length(subjects)
         number_of_secondary_datasets = number_of_secondary_datasets + 1;
     end
 
-    BATCH.Setup.covariates.names = {'head_movement'};
-    
-    this_outlier_and_movement_file = spm_select('FPList', this_subject_path, strcat('^','art_regression_outliers_and_movement_unwarpedRealigned_slicetimed_RestingState.mat','$'));
-  
-   % Beware... Hard coded for WU120 data
-    if ~exist(this_outlier_and_movement_file)
-        this_outlier_and_movement_file = spm_select('FPList', this_subject_path, strcat('^','art_regression_outliers_and_movement_unwarpedRealigned_slicetimed_RestingState1.mat','$'));
+
+    BATCH.Setup.covariates.names = {'realignment'};
+    this_movement_file = spm_select('FPList', this_subject_path, strcat('^','rp_unwarpedRealigned_slicetimed_RestingState.txt','$'));
+ 
+%     Beware... Hard coded for WU120 data
+    if ~exist(this_movement_file)
+        this_movement_file = spm_select('FPList', this_subject_path, strcat('^','rp_unwarpedRealigned_slicetimed_RestingState1.txt','$'));
     end
-    BATCH.Setup.covariates.files{1}{this_subject_index}{1} = this_outlier_and_movement_file;
+    BATCH.Setup.covariates.files{1}{this_subject_index}{1} = this_movement_file;
     
 end
 
@@ -173,7 +173,12 @@ BATCH.Setup.overwrite=1;
 BATCH.Setup.RT=TR;
 BATCH.Setup.acquisitiontype=1;
 
-%% read roi settings file
+BATCH.Setup.preprocessing.steps = {'functional_art'};
+%     BATCH.filename = 'Conn_Art_Folder_Stuff';
+BATCH.Setup.preprocessing.art_thresholds(1)= 9;  % z threshold
+BATCH.Setup.preprocessing.art_thresholds(2)= 0.5;  % movement threshold
+
+% read roi settings file
  
 if ~isempty(roi_settings_filename)
     file_name = roi_settings_filename;
@@ -213,7 +218,7 @@ if ~isempty(roi_settings_filename)
     for this_roi_index = 1:length(settings_cell)
         this_roi_settings_line = strsplit(settings_cell{this_roi_index}, ',');
         this_roi_core_name = this_roi_settings_line{4};
-        this_roi_file_name = strcat(this_roi_core_name, '.nii');
+        this_roi_file_name = strtrim(strcat(this_roi_core_name, '.nii'));
         this_roi_dataset_target = this_roi_settings_line{6};
         
         % find the file that matches roi_core_name
@@ -251,10 +256,25 @@ if ~isempty(roi_settings_filename)
 end
 
 % 
-BATCH.Setup.analyses=[1,2,3];
-BATCH.Setup.outputfiles=[0,0,0,0,0,0];
+% BATCH.Setup.analyses=[1,2,3];
+% BATCH.Setup.outputfiles=[0,0,0,0,0,0];
+% 
 
+%% DENOISING step
+% CONN Denoising                                    % Default options (uses White Matter+CSF+realignment+scrubbing+conditions as confound regressors); see conn_batch for additional options 
+% batch.Denoising.filter=[0.01, 0.1];                 % frequency filter (band-pass values, in Hz)
 BATCH.Denoising.done=1;
+BATCH.Denoising.overwrite='Yes';
+
+%% save QA DENOISING
+BATCH.QA.foldename = strcat(project_name, filesep, 'results', filesep, 'qa');
+BATCH.QA.plots = {'QA_DENOISE_histogram', 'QA_DENOISE_FC-QC'};  %(11) : histogram of voxel-to-voxel correlation values (before and after denoising) 
+%  QA_DENOISE FC-QC      (13) : histogram of FC-QC associations; between-subject correlation between QC (Quality Control) 
+%                                       and FC (Functional Connectivity) measures
+
+% CONN Analysis                                         % Default options (uses all ROIs in conn/rois/ as connectivity sources); see conn_batch for additional options 
+% BATCH.Analysis.done=1;
+% BATCH.Analysis.overwrite='Yes';
 
 BATCH.Analysis.done =1;
 BATCH.Analysis.measure = 1; % 1 = 'correlation (bivariate)', 2 = 'correlation (semipartial)', 3 = 'regression (bivariate)', 4 = 'regression (multivariate)'; [1]
@@ -300,7 +320,7 @@ BATCH.Results.overwrite=1;
 BATCH.vvResults.done=1;
 BATCH.vvResults.overwrite=1;
 % BATCH.vvResults.name=1;
- 
+%  
 conn_batch(BATCH)
 
 disp('saving subject ids for later use...')
