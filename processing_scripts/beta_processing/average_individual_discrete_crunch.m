@@ -6,7 +6,7 @@ addParameter(parser, 'task_folder', '')
 addParameter(parser, 'subjects', '')
 addParameter(parser, 'group_names', '')
 addParameter(parser, 'group_ids', '')
-addParameter(parser, 'no_labels', 0)
+addParameter(parser, 'no_labels', 1)
 addParameter(parser, 'Results_filename', 'CRUNCH_discrete.mat')
 addParameter(parser, 'plot_groups_together',0)
 addParameter(parser, 'separate_by_crunch_type',1)
@@ -52,14 +52,26 @@ for this_subject_index = 1 : length(subjects)
             
             % loading and grabbing data
             ordered_conditions{this_beta-2} = split_condition_name{1};
-            roi_names{this_beta-2} = strcat(split_condition_name{2},'_',split_condition_name{3});
             ordered_beta{this_beta-2} = data{this_beta,2};
+            for this_roi_part = 2:length(split_condition_name)
+                if this_roi_part == 2
+                    roi_names{this_beta-2} = split_condition_name{this_roi_part};
+                else
+                    roi_names{this_beta-2} = strcat(roi_names{this_beta-2}, '_', split_condition_name{this_roi_part});
+                end
+            end
         elseif any(strcmp(task_folder, '06_Nback'))
             task='Nback';
             % loading and grabbing data
             ordered_conditions{this_beta-2} = strcat(split_condition_name{1},'_',split_condition_name{2});
-            roi_names{this_beta-2} = strcat(split_condition_name{3},'_',split_condition_name{4});
             ordered_beta{this_beta-2} = data{this_beta,2};
+            for this_roi_part = 3:length(split_condition_name)
+                if this_roi_part == 3
+                    roi_names{this_beta-2} = split_condition_name{this_roi_part};
+                else
+                    roi_names{this_beta-2} = strcat(roi_names{this_beta-2}, '_', split_condition_name{this_roi_part});
+                end
+            end
         end
     end
     unique_rois = unique(roi_names);
@@ -110,7 +122,7 @@ for this_group_index = 1 : length(group_names)
             summary_stats = renamevars(summary_stats,'crunch',unique_rois(this_roi_index));
         elseif any(strcmp(task_folder, '06_Nback'))
             % populating and renaming the new crunch column
-            summary_stats.crunch = table(this_group_crunch_results(:,[this_roi_index this_roi_index+4]));
+            summary_stats.crunch = table(this_group_crunch_results(:,[this_roi_index this_roi_index+length(unique_rois)]));
             summary_stats = renamevars(summary_stats,'crunch',unique_rois(this_roi_index));
         end
         
@@ -143,12 +155,23 @@ for this_group_index = 1 : length(group_names)
                 xlim([-1 4])
                 title('crunchers')
                 ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+                 if no_labels
+%                     set(get(gca, 'xaxis'), 'visible', 'off');
+%                     set(get(gca, 'yaxis'), 'visible', 'off');
+                    set(get(gca, 'xlabel'), 'visible', 'off');
+                    set(get(gca, 'ylabel'), 'visible', 'off');
+                    %         set(get(gca, 'title'), 'visible', 'off');
+                    %         set(gca, 'xticklabel', '');
+                    %         set(gca, 'yticklabel', '');
+                    %         set(gca, 'position', [0 0 1 1]);
+                    legend(gca, 'hide');
+                end
             end
         elseif any(strcmp(task_folder, '06_Nback'))
             %             cruncher_indices_1500 = find(strcmp(this_group_crunch_results(:,this_roi_index), 'early_crunch') | strcmp(this_group_crunch_results(:,this_roi_index),'late_crunch'));
             %             cruncher_indices_500 = find(strcmp(this_group_crunch_results(:,this_roi_index+4), 'early_crunch') | strcmp(this_group_crunch_results(:,this_roi_index),'late_crunch'));
             cruncher_indices_1500 =  find(this_group_crunch_results(:,this_roi_index) == 1 | this_group_crunch_results(:,this_roi_index) == 2);
-            cruncher_indices_500 = find(this_group_crunch_results(:,this_roi_index+4) == 1 | this_group_crunch_results(:,this_roi_index+4) == 2);
+            cruncher_indices_500 = find(this_group_crunch_results(:,this_roi_index+length(unique_rois)) == 1 | this_group_crunch_results(:,this_roi_index+length(unique_rois)) == 2);
 
             if ~isempty(cruncher_indices_1500)
                 figure(this_group_index*2-1); subplot(4, 3, this_figure_number); hold on;
@@ -165,6 +188,17 @@ for this_group_index = 1 : length(group_names)
                 xlim([-1 4])
                 title('crunchers')
                 ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+                 if no_labels
+%                     set(get(gca, 'xaxis'), 'visible', 'off');
+%                     set(get(gca, 'yaxis'), 'visible', 'off');
+                    set(get(gca, 'xlabel'), 'visible', 'off');
+                    set(get(gca, 'ylabel'), 'visible', 'off');
+                    %         set(get(gca, 'title'), 'visible', 'off');
+                    %         set(gca, 'xticklabel', '');
+                    %         set(gca, 'yticklabel', '');
+                    %         set(gca, 'position', [0 0 1 1]);
+                    legend(gca, 'hide');
+                end
             end
             if ~isempty(cruncher_indices_500)
                 figure(this_group_index*2); subplot(4, 3, this_figure_number); hold on;
@@ -182,6 +216,17 @@ for this_group_index = 1 : length(group_names)
                 xlim([-1 4])
                 title('crunchers')
                 ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+                if no_labels
+%                     set(get(gca, 'xaxis'), 'visible', 'off');
+%                     set(get(gca, 'yaxis'), 'visible', 'off');
+                    set(get(gca, 'xlabel'), 'visible', 'off');
+                    set(get(gca, 'ylabel'), 'visible', 'off');
+                    %         set(get(gca, 'title'), 'visible', 'off');
+                    %         set(gca, 'xticklabel', '');
+                    %         set(gca, 'yticklabel', '');
+                    %         set(gca, 'position', [0 0 1 1]);
+                    legend(gca, 'hide');
+                end
             end
             
         end
@@ -208,12 +253,23 @@ for this_group_index = 1 : length(group_names)
                 xlim([-1 4])
                 title('No crunchers (increasing)')
                 ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+                if no_labels
+%                     set(get(gca, 'xaxis'), 'visible', 'off');
+%                     set(get(gca, 'yaxis'), 'visible', 'off');
+                    set(get(gca, 'xlabel'), 'visible', 'off');
+                    set(get(gca, 'ylabel'), 'visible', 'off');
+                    %         set(get(gca, 'title'), 'visible', 'off');
+                    %         set(gca, 'xticklabel', '');
+                    %         set(gca, 'yticklabel', '');
+                    %         set(gca, 'position', [0 0 1 1]);
+                    legend(gca, 'hide');
+                end
             end
         elseif any(strcmp(task_folder, '06_Nback'))
             %             nocruncher_increasing_indices_1500 = find(strcmp(this_group_crunch_results(:,this_roi_index), 'increasing'));
             %             nocruncher_increasing_indices_500 = find(strcmp(this_group_crunch_results(:,this_roi_index+4), 'increasing'));
             nocruncher_increasing_indices_1500 = find(this_group_crunch_results(:,this_roi_index) == 3);
-            nocruncher_increasing_indices_500 = find(this_group_crunch_results(:,this_roi_index+4) == 3);
+            nocruncher_increasing_indices_500 = find(this_group_crunch_results(:,this_roi_index+length(unique_rois)) == 3);
             if ~isempty(nocruncher_increasing_indices_1500)
                 figure(this_group_index*2-1); subplot(4, 3, this_figure_number); hold on;
                 for this_cruncher_index = 1 : length(nocruncher_increasing_indices_1500)
@@ -229,6 +285,17 @@ for this_group_index = 1 : length(group_names)
                 xlim([-1 4])
                 title('No crunchers (increasing)')
                 ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+                if no_labels
+%                     set(get(gca, 'xaxis'), 'visible', 'off');
+%                     set(get(gca, 'yaxis'), 'visible', 'off');
+                    set(get(gca, 'xlabel'), 'visible', 'off');
+                    set(get(gca, 'ylabel'), 'visible', 'off');
+                    %         set(get(gca, 'title'), 'visible', 'off');
+                    %         set(gca, 'xticklabel', '');
+                    %         set(gca, 'yticklabel', '');
+                    %         set(gca, 'position', [0 0 1 1]);
+                    legend(gca, 'hide');
+                end
             end
             if ~isempty(nocruncher_increasing_indices_500)
                 figure(this_group_index*2); subplot(4, 3, this_figure_number); hold on;
@@ -246,6 +313,17 @@ for this_group_index = 1 : length(group_names)
                 xlim([-1 4])
                 title('No crunchers (increasing)')
                 ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+                if no_labels
+%                     set(get(gca, 'xaxis'), 'visible', 'off');
+%                     set(get(gca, 'yaxis'), 'visible', 'off');
+                    set(get(gca, 'xlabel'), 'visible', 'off');
+                    set(get(gca, 'ylabel'), 'visible', 'off');
+                    %         set(get(gca, 'title'), 'visible', 'off');
+                    %         set(gca, 'xticklabel', '');
+                    %         set(gca, 'yticklabel', '');
+                    %         set(gca, 'position', [0 0 1 1]);
+                    legend(gca, 'hide');
+                end
             end
         end
         
@@ -273,12 +351,23 @@ for this_group_index = 1 : length(group_names)
                 xlim([-1 4])
                 title('No crunchers (decreasing)')
                 ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+                if no_labels
+%                     set(get(gca, 'xaxis'), 'visible', 'off');
+%                     set(get(gca, 'yaxis'), 'visible', 'off');
+                    set(get(gca, 'xlabel'), 'visible', 'off');
+                    set(get(gca, 'ylabel'), 'visible', 'off');
+                    %         set(get(gca, 'title'), 'visible', 'off');
+                    %         set(gca, 'xticklabel', '');
+                    %         set(gca, 'yticklabel', '');
+                    %         set(gca, 'position', [0 0 1 1]);
+                    legend(gca, 'hide');
+                end
             end
         elseif any(strcmp(task_folder, '06_Nback'))
             %             nocruncher_decreasing_indices_1500 = find(strcmp(this_group_crunch_results(:,this_roi_index), 'decreasing'));
             %             nocruncher_decreasing_indices_500 = find(strcmp(this_group_crunch_results(:,this_roi_index+4), 'decreasing'));
             nocruncher_decreasing_indices_1500 = find(this_group_crunch_results(:,this_roi_index) == 0);
-            nocruncher_decreasing_indices_500 = find(this_group_crunch_results(:,this_roi_index+4) == 0);
+            nocruncher_decreasing_indices_500 = find(this_group_crunch_results(:,this_roi_index+length(unique_rois)) == 0);
             if ~isempty(nocruncher_decreasing_indices_1500)
                 figure(this_group_index*2-1); subplot(4, 3, this_figure_number); hold on;
                 for this_cruncher_index = 1 : length(nocruncher_decreasing_indices_1500)
@@ -294,6 +383,17 @@ for this_group_index = 1 : length(group_names)
                 xlim([-1 4])
                 title('No crunchers (decreasing)')
                 ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+                 if no_labels
+%                     set(get(gca, 'xaxis'), 'visible', 'off');
+%                     set(get(gca, 'yaxis'), 'visible', 'off');
+                    set(get(gca, 'xlabel'), 'visible', 'off');
+                    set(get(gca, 'ylabel'), 'visible', 'off');
+                    %         set(get(gca, 'title'), 'visible', 'off');
+                    %         set(gca, 'xticklabel', '');
+                    %         set(gca, 'yticklabel', '');
+                    %         set(gca, 'position', [0 0 1 1]);
+                    legend(gca, 'hide');
+                end
             end
             
             if ~isempty(nocruncher_decreasing_indices_500)
@@ -312,6 +412,18 @@ for this_group_index = 1 : length(group_names)
                 xlim([-1 4])
                 title('No crunchers (decreasing)')
                 ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+                 if no_labels
+%                     set(get(gca, 'xaxis'), 'visible', 'off');
+%                     set(get(gca, 'yaxis'), 'visible', 'off');
+                    set(get(gca, 'xlabel'), 'visible', 'off');
+                    set(get(gca, 'ylabel'), 'visible', 'off');
+                    %         set(get(gca, 'title'), 'visible', 'off');
+                    %         set(gca, 'xticklabel', '');
+                    %         set(gca, 'yticklabel', '');
+                    %         set(gca, 'position', [0 0 1 1]);
+                    legend(gca, 'hide');
+                end
+                
             end
         end
         % end
@@ -343,31 +455,7 @@ for this_group_index = 1 : length(group_names)
         else
             suptitle(strcat('All Groups ',{' '}, task))
         end
-        
-        
-        %         else
-        %             if strcmp(Results_filename, 'CRUNCH_discrete.mat')
-        %                 number_of_levels = [0 : 3];
-        %             end
-        %
-        %             subplot(1, 4, this_figure_number); hold on;
-        %
-        %             if any(strcmp(task_folder, '05_MotorImagery'))
-        %                 plot(number_of_levels, group_avg_results(this_group_index,:,this_roi_index),'-o', 'MarkerFaceColor', subject_color_matrix(this_group_index, :), 'MarkerEdgeColor', subject_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',3, 'Color', subject_color_matrix(this_group_index, :))
-        %             elseif any(strcmp(task_folder, '06_Nback'))
-        %                 plot(number_of_levels, group_avg_results(this_group_index,1:4,this_roi_index),'--o', 'MarkerFaceColor', (subject_color_matrix(this_group_index, :)+.2)*.5, 'MarkerEdgeColor', (subject_color_matrix(this_group_index, :)+.2)*.5,'MarkerSize', 5, 'LineWidth',3, 'Color',(subject_color_matrix(this_group_index, :)+.2)*.5 )
-        %                 plot(number_of_levels, group_avg_results(this_group_index,5:8,this_roi_index),'-o', 'MarkerFaceColor', subject_color_matrix(this_group_index, :), 'MarkerEdgeColor', subject_color_matrix(this_group_index, :),'MarkerSize', 5, 'LineWidth',3, 'Color', subject_color_matrix(this_group_index, :))
-        %             end
-        %
-        %             xticks([number_of_levels])
-        %             xlim([-1 4])
-        %             title([unique_rois(this_roi_index)],'interpreter','latex')
-        %             ylabel('beta value')
-        %             if this_figure_number > 1
-        %                 ylabel([])
-        %             end
-        %             this_figure_number = this_figure_number + 1;
-        %         end
     end
+    
 end
 end
