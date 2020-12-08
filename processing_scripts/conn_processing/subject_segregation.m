@@ -10,24 +10,46 @@
 % along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 function subject_segregation(varargin)
+close all
 parser = inputParser;
 parser.KeepUnmatched = true;
 % setup defaults in case no arguments specified
-addParameter(parser, 'project_name', 'conn_project')
-addParameter(parser, 'roi_settings', '')
-% addParameter(parser, 'group_names', '')
-% addParameter(parser, 'group_ids', '')
+addParameter(parser, 'conn_project_name', '')
+addParameter(parser, 'roi_settings_filename', '')
+addParameter(parser, 'seed_names', '') % 'mpc_and_pc','right_mouth','left_auditory','right_post_ips','left_insular','right_thalamus','dACC','visual_cortex','left_dlpfc','right_dflpfc'     % 'left_hand','left_mouth','medial_prefrontal_cortex','left_post_ips','left_insular','visual_cortex','left_ips','right_thalamus','left_rsc', 'post_cingulate', 'right_aud_cortex', 'right_post_ips', 'right_insular', 'right_ips', 'right_hand', 'right_mouth', 'right_leg', 'right_rsc', 'left_dlpfc','right_dlpfc', 'left_acc', 'right_acc', 'left_aud_cortex','dACC', 'mpc_and_pc'}
+addParameter(parser, 'group_names', '')
+addParameter(parser, 'group_ids', '')
+addParameter(parser, 'separate_groups', 0)
+addParameter(parser, 'save_figures', 0)
 parse(parser, varargin{:})
-project_name = parser.Results.project_name;
-roi_settings = parser.Results.roi_settings;
+conn_project_name = parser.Results.conn_project_name;
+roi_settings_filename = parser.Results.roi_settings_filename;
 % group_names = parser.Results.group_names;
 % group_ids = parser.Results.group_ids;
+separate_groups = parser.Results.separate_groups;
+seed_names = parser.Results.seed_names;
+save_figures = parser.Results.save_figures;
 
-load([project_name filesep 'subject_ids'])
+load([conn_project_name filesep 'subject_ids'])
 
 project_path = pwd;
 
-wdir = strcat(project_path, filesep, project_name, filesep, 'results', filesep, 'firstlevel');
+seed_to_network_map = {'left_hand','medial_prefrontal_cortex_post_cingulate','right_mouth','left_aud_cortex','right_post_ips','left_insular','dACC','visual_cortex','left_dlpfc','right_dlpfc','left_acc','right_acc'; ...
+    'Hand','Default', 'Mouth', 'Auditory', 'DAN', 'Salience', 'CinguloOperc', 'Visual', 'Left DLPFC', 'Right DLPFC', 'Left ACC', 'Right ACC'};
+
+% WARNING: this logic only works for MiM data
+if separate_groups
+    % find first number of subject id (1,2 or 3)
+    for this_subject = 1:length(subjects)
+        group_ids{this_subject} = subjects{:,this_subject}(1);
+    end
+    unique_groups = unique(group_ids);
+    
+    % identify colors based on number of unique groups ^^
+    color_groups = distinguishable_colors(length(unique_groups));
+end
+    
+wdir = strcat(project_path, filesep, conn_project_name, filesep, 'results', filesep, 'firstlevel');
 corr_net = 'SBC_01'; % WARNING: this may change
 
 first_level_corr_folder = strcat(wdir, filesep, corr_net);
@@ -36,10 +58,10 @@ corr_file_dir = dir([strcat(first_level_corr_folder, filesep, 'ResultsROI_Subjec
 clear roi_file_name_list;
 [available_subject_file_name_list{1:length(corr_file_dir)}] = deal(corr_file_dir.name);
 
-if isempty(roi_settings)
+if isempty(roi_settings_filename)
     error('need an roi settings file for this analysis')
 end
-file_name = roi_settings;
+file_name = roi_settings_filename;
 
 fileID = fopen(file_name, 'r');
 
@@ -83,57 +105,303 @@ clear roi_file_name_list;
 for this_roi_index = 1:length(settings_cell)
     this_roi_settings_line = strsplit(settings_cell{this_roi_index}, ',');
     roi_core_name_cell{this_roi_index} = this_roi_settings_line{1};
-    roi_network_cell{this_roi_index} = this_roi_settings_line{5};
+    roi_network_cell{this_roi_index} = strtrim(this_roi_settings_line{5});
 end
-
-unique_networks = unique(roi_network_cell);
-
 
 for i_subject = 1 : length(available_subject_file_name_list)
       this_subject_data = load(strcat(first_level_corr_folder, filesep, available_subject_file_name_list{i_subject}));
-      
-      average_total_conn(i_subject) = mean(nanmean(this_subject_data.Z));
        
-      for this_unique_network_index = 1:length(unique_networks)
-          this_unique_network_occurences = contains(roi_network_cell, unique_networks(this_unique_network_index));
-          this_unique_network_indices = find(this_unique_network_occurences);
-          roi_pairs_this_unique_network = nchoosek(this_unique_network_indices,2);
+       average_total_conn(i_subject) = mean(nanmean(this_subject_data.Z));
+      % for each seed (network) 
+      % % % WITHIN % % 
+      % 1) go into this subject data
+      % 2) identify the indices for this seed
+      % 3) find the pairs of rois within this seed/network
+      % 4) extract the correlation for each pair (if>0) and average
+      % % % BETWEEN % %
+      % 1) go into this subject data
+      % 2) identify the indices for this seed
+      % 3) find the pairs of rois between each index (within this seed) and
+      % all other indices
+      
+      roi_pairs_between_network = [];
+      for this_seed_name_index = 1:length(seed_names)
+          this_within_network_occurences = contains(roi_network_cell, strcat(seed_names{this_seed_name_index},'_network'));
+          this_within_network_indices = find(this_within_network_occurences);
+          roi_pairs_within_network = nchoosek(this_within_network_indices,2);
           
+          % find seed names outside of this_seed_name to generate
+          % this_outside_network_occurences
+          not_this_seed_name_index = 1:length(seed_names);
+          not_this_seed_name_index(this_seed_name_index) = [];
+          this_outside_network_occurences = contains(roi_network_cell, strcat(seed_names(not_this_seed_name_index)','_network'));
+          this_outside_network_indices = find(this_outside_network_occurences);
+            
+          for idx = 1 : length(this_within_network_indices)
+              this_within_network_index = this_within_network_indices(idx);
+              this_within_network_index_matrix = repmat(this_within_network_index, 1, length(this_outside_network_indices))';
+              this_within_network_index_pairs = [this_within_network_index_matrix, this_outside_network_indices'];
+              roi_pairs_between_network = [roi_pairs_between_network; this_within_network_index_pairs]; 
+          end
+              
           this_within_network_corr_vector=[];
-          for this_roi_pair = 1:size(roi_pairs_this_unique_network,1)
-              this_network_roi_value = this_subject_data.Z(roi_pairs_this_unique_network(this_roi_pair,1), roi_pairs_this_unique_network(this_roi_pair,2));
+          for this_roi_pair = 1:size(roi_pairs_within_network,1)
+              this_network_roi_value = this_subject_data.Z(roi_pairs_within_network(this_roi_pair,1), roi_pairs_within_network(this_roi_pair,2));
               % if anti-correlated set to 0
               if this_network_roi_value < 0
                   this_network_roi_value = 0;
               end
               this_within_network_corr_vector(this_roi_pair) = this_network_roi_value;
           end
-          avg_within_network_corr(this_unique_network_index,i_subject) = mean(this_within_network_corr_vector);
-      end
-        total_network_segregation(i_subject) = ((avg_within_network_corr(:,i_subject) - average_total_conn(i_subject))/(avg_within_network_corr(:,i_subject)));   %calculates total network segregation value by subtracting the total connectivity from each network's connectivity and displaying that value as a proportion of the within-network connectivity
+          avg_within_network_conn(this_seed_name_index, i_subject) = mean(this_within_network_corr_vector);
           
+          
+          this_between_network_corr_vector=[];
+          for this_roi_pair = 1:size(roi_pairs_between_network,1)
+              this_network_roi_value = this_subject_data.Z(roi_pairs_between_network(this_roi_pair,1), roi_pairs_between_network(this_roi_pair,2));
+              % if anti-correlated set to 0
+              if this_network_roi_value < 0
+                  this_network_roi_value = 0;
+              end
+              this_between_network_corr_vector(this_roi_pair) = this_network_roi_value;
+          end
+          avg_between_network_conn(this_seed_name_index, i_subject) = mean(this_between_network_corr_vector);
+         
+          
+          network_segregation(this_seed_name_index, i_subject) = (avg_within_network_conn(this_seed_name_index, i_subject) - avg_between_network_conn(this_seed_name_index, i_subject))/(avg_within_network_conn(this_seed_name_index, i_subject)); 
+%           network_segregation(this_seed_name, i_subject) = (avg_within_network_corr(this_seed_name, i_subject) - average_total_conn(i_subject))/(avg_within_network_corr(this_seed_name, i_subject));   %calculates total network segregation value by subtracting the total connectivity from each network's connectivity and displaying that value as a proportion of the within-network connectivity
+      end   
 end
 
-for this_unique_network_index = 1:length(unique_networks)
+for this_seed_name_index = 1:length(seed_names)
+    this_seed_to_network_index = contains(seed_to_network_map(1,:),seed_names{this_seed_name_index});
+    network_name = seed_to_network_map{2,this_seed_to_network_index};
+    %% within Network
+    figure; hold on;
+    if separate_groups
+        group_1_indices = contains(group_ids,'1');
+        group_2_indices = contains(group_ids,'2');
+        
+        bar(1:sum(group_1_indices), avg_within_network_conn(this_seed_name_index,group_1_indices), 'FaceColor', color_groups(1,:)); hold on;
+        bar(sum(group_1_indices)+1:sum(group_2_indices)+sum(group_1_indices), avg_within_network_conn(this_seed_name_index,group_2_indices), 'FaceColor', color_groups(2,:));hold on;
+
+        if length(unique_groups) > 2
+            group_3_indices = contains(group_ids,'3');
+            bar(sum(group_2_indices)+sum(group_1_indices)+1:sum(group_3_indices)+sum(group_2_indices)+sum(group_1_indices), avg_within_network_conn(this_seed_name_index,group_3_indices), 'FaceColor', color_groups(3,:));
+        end
+    else
+        bar(1:length(subjects), avg_within_network_conn(this_seed_name_index,:))
+    end
+
+    title(strcat('WITHIN Network Connectivity ', {' '}, network_name),'interpreter','latex')
+    ylabel('Individual Connectivity (?)')
+    set(gca,'XTick',1:length(subjects),'xticklabel',subjects,'TickLabelInterpreter','none')
+    xtickangle(45) 
+    set(gcf, 'ToolBar', 'none');
+    set(gcf, 'MenuBar', 'none');
+    if save_figures      
+        fig_title = strcat('subjects_', network_name, 'within_network_connectivity');
+        filename =  fullfile(project_path, 'figures', fig_title);
+        saveas(gca, filename, 'tiff')
+        
+        export_fig('-pdf','-append')
+    end
+    
+    figure; hold on;
+    if separate_groups
+        group_1_indices = contains(group_ids,'1');
+        group_2_indices = contains(group_ids,'2');
+        
+        bar(1, mean(avg_within_network_conn(this_seed_name_index,group_1_indices)), 'FaceColor', color_groups(1,:)); hold on;
+        bar(2, mean(avg_within_network_conn(this_seed_name_index,group_2_indices)), 'FaceColor', color_groups(2,:)); hold on;
+        if length(unique_groups) > 2
+            group_3_indices = contains(group_ids,'3');
+            bar(3, mean(avg_within_network_conn(this_seed_name_index,group_3_indices)), 'FaceColor', color_groups(3,:)); hold on;
+        end
+    else
+        bar(1:length(subjects), avg_within_network_conn(this_seed_name_index,:))
+    end
+    title(strcat('WITHIN Network Connectivity', {' '}, network_name),'interpreter','latex')
+    ylabel('Group Connectivity (?)')
+%     legend({'YA','high-OA','low-OA'})
+    set(gca,'XTick',1:length(unique_groups),'xticklabel',{'YA','high-OA','low-OA'},'TickLabelInterpreter','none')
+    xtickangle(45)
+    set(gcf, 'ToolBar', 'none');
+    set(gcf, 'MenuBar', 'none');
+    if save_figures
+        fig_title = strcat('groups_', network_name, 'within_network_connectivity');
+        filename =  fullfile(project_path, 'figures', fig_title);
+        saveas(gca, filename, 'tiff')
+        export_fig('-pdf','-append')
+    end
+    
+    %% between Network
+     figure;
+    if separate_groups
+        group_1_indices = contains(group_ids,'1');
+        group_2_indices = contains(group_ids,'2');
+        
+        bar(1:sum(group_1_indices), avg_between_network_conn(this_seed_name_index,group_1_indices), 'FaceColor', color_groups(1,:)); hold on;
+        bar(sum(group_1_indices)+1:sum(group_2_indices)+sum(group_1_indices), avg_between_network_conn(this_seed_name_index,group_2_indices), 'FaceColor', color_groups(2,:));hold on;
+
+        if length(unique_groups) > 2
+            group_3_indices = contains(group_ids,'3');
+            bar(sum(group_2_indices)+sum(group_1_indices)+1:sum(group_3_indices)+sum(group_2_indices)+sum(group_1_indices), avg_between_network_conn(this_seed_name_index,group_3_indices), 'FaceColor', color_groups(3,:));
+        end
+    else
+        bar(1:length(subjects), avg_between_network_conn(this_seed_name_index,:))
+    end
+ 
+    title(strcat('BETWEEN Network Connectivity', {' '}, network_name),'interpreter','latex')
+    ylabel('Individual Connectivity (?)')
+    set(gca,'XTick',1:length(subjects),'xticklabel',subjects,'TickLabelInterpreter','none')
+    xtickangle(45) 
+    set(gcf, 'ToolBar', 'none');
+    set(gcf, 'MenuBar', 'none');
+    if save_figures
+         fig_title = strcat('subjects_', network_name, 'between_network_connectivity');
+         filename =  fullfile(project_path, 'figures', fig_title);
+         saveas(gca, filename, 'tiff')
+         export_fig('-pdf','-append')
+    end
+    
+    figure; hold on;
+    if separate_groups
+        group_1_indices = contains(group_ids,'1');
+        group_2_indices = contains(group_ids,'2');
+        
+        bar(1, mean(avg_between_network_conn(this_seed_name_index,group_1_indices)), 'FaceColor', color_groups(1,:)); hold on;
+        bar(2, mean(avg_between_network_conn(this_seed_name_index,group_2_indices)), 'FaceColor', color_groups(2,:)); hold on;
+        if length(unique_groups) > 2
+            group_3_indices = contains(group_ids,'3');
+            bar(3, mean(avg_between_network_conn(this_seed_name_index,group_3_indices)), 'FaceColor', color_groups(3,:)); hold on;
+        end
+    else
+        bar(1:length(subjects), avg_between_network_conn(this_seed_name_index,:))
+    end
+    title(strcat('BETWEEN Network Connectivity', {' '}, network_name),'interpreter','latex')
+    ylabel('Group Connectivity (?)')
+%     legend({'YA','high-OA','low-OA'})
+    set(gca,'XTick',1:length(unique_groups),'xticklabel',{'YA','high-OA','low-OA'},'TickLabelInterpreter','none')
+    xtickangle(45)
+    set(gcf, 'ToolBar', 'none');
+    set(gcf, 'MenuBar', 'none');
+    if save_figures
+        fig_title = strcat('groups_', network_name, 'between_network_connectivity');
+        filename =  fullfile(project_path, 'figures', fig_title);
+        saveas(gca, filename, 'tiff')
+        export_fig('-pdf','-append')
+    end
+    
+    
+    %% Network Segregation
     figure;
-    bar(1:length(subjects), avg_within_network_corr(this_unique_network_index,:))
-    title(strcat(unique_networks{this_unique_network_index}, ' within Network Connectivity'))
-    ylabel('Average Connectivity (?)')
-    set(gca,'xticklabel',subjects)
+    if separate_groups
+        group_1_indices = contains(group_ids,'1');
+        group_2_indices = contains(group_ids,'2');
+        
+        bar(1:sum(group_1_indices), network_segregation(this_seed_name_index,group_1_indices), 'FaceColor', color_groups(1,:)); hold on;
+        bar(sum(group_1_indices)+1:sum(group_2_indices)+sum(group_1_indices), network_segregation(this_seed_name_index,group_2_indices), 'FaceColor', color_groups(2,:));hold on;
+        
+        if length(unique_groups) > 2
+            group_3_indices = contains(group_ids,'3');
+            bar(sum(group_2_indices)+sum(group_1_indices)+1:sum(group_3_indices)+sum(group_2_indices)+sum(group_1_indices), network_segregation(this_seed_name_index,group_3_indices), 'FaceColor', color_groups(3,:));
+        end
+    else
+        bar(1:length(subjects), network_segregation(this_seed_name_index,:))
+    end
+    title(strcat('Segregation', {' '}, network_name),'interpreter','latex')
+    ylabel('Individual Segregation (?)')
+    set(gca,'XTick',1:length(subjects), 'xticklabel',subjects,'TickLabelInterpreter','none')
+    xtickangle(45)
+    set(gcf, 'ToolBar', 'none');
+    set(gcf, 'MenuBar', 'none');
+    if save_figures
+        fig_title = strcat('subjects_', network_name, 'network_segregation');
+        filename =  fullfile(project_path, 'figures', fig_title);
+        saveas(gca, filename, 'tiff')
+        export_fig('-pdf','-append')
+    end
+    
+     figure; hold on;
+    if separate_groups
+        group_1_indices = contains(group_ids,'1');
+        group_2_indices = contains(group_ids,'2');
+        
+        bar(1, mean(network_segregation(this_seed_name_index,group_1_indices)), 'FaceColor', color_groups(1,:)); hold on;
+        bar(2, mean(network_segregation(this_seed_name_index,group_2_indices)), 'FaceColor', color_groups(2,:)); hold on;
+        if length(unique_groups) > 2
+            group_3_indices = contains(group_ids,'3');
+            bar(3, mean(network_segregation(this_seed_name_index,group_3_indices)), 'FaceColor', color_groups(3,:)); hold on;
+        end
+
+    end
+    title(strcat('Segregation', {' '}, network_name),'interpreter','latex')
+    ylabel('Group Segregation (?)')
+%     legend({'YA','high-OA','low-OA'})
+    set(gca,'XTick',1:length(unique_groups),'xticklabel',{'YA','high-OA','low-OA'},'TickLabelInterpreter','none')
+    xtickangle(45)    
+    set(gcf, 'ToolBar', 'none');
+    set(gcf, 'MenuBar', 'none');
+     if save_figures
+        fig_title = strcat('groups_', network_name, 'network_segregation');
+        filename =  fullfile(project_path, 'figures', fig_title);
+        saveas(gca, filename, 'tiff')
+        export_fig('-pdf','-append')
+    end
 end
 
-for this_unique_network_index = 1:length(unique_networks)
-    figure;
-    bar(1:length(subjects), total_network_segregation(this_unique_network_index,:))
-    title('Network Segregation by Subject')
-    ylabel('Network Segregation Value')
-    set(gca,'xticklabel',subjects)
-end
 
-
-figure;
-bar(1:length(subjects), average_total_conn)
-title('Total ROI Connectivity')
-ylabel('Average Connectivity (?)')
-set(gca,'xticklabel',subjects)
+%% Total Connectivity
+% figure;
+% if separate_groups
+%     group_1_indices = contains(group_ids,'1');
+%     group_2_indices = contains(group_ids,'2');
+%     
+%     bar(1:sum(group_1_indices), average_total_conn(group_1_indices), 'FaceColor', color_groups(1,:)); hold on;
+%     bar(sum(group_1_indices)+1:sum(group_2_indices)+sum(group_1_indices), average_total_conn(group_2_indices), 'FaceColor', color_groups(2,:));hold on;
+%     
+%     if length(unique_groups) > 2
+%         group_3_indices = contains(group_ids,'3');
+%         bar(sum(group_2_indices)+sum(group_1_indices)+1:sum(group_3_indices)+sum(group_2_indices)+sum(group_1_indices), average_total_conn(group_3_indices), 'FaceColor', color_groups(3,:));
+%     end
+% else
+%     bar(1:length(subjects), average_total_conn)
+% end
+% set(gcf, 'ToolBar', 'none');
+% set(gcf, 'MenuBar', 'none');
+% title('Total ROI Connectivity')
+% ylabel('Average Connectivity (?)')
+% set(gca,'XTick',1:length(subjects),'xticklabel',subjects,'TickLabelInterpreter','none')
+% xtickangle(45)
+% if save_figures
+%     fig_title = strcat('subjects_', seed_names{this_seed_name}, 'total_connectivity');
+%     filename =  fullfile(project_path, 'figures', fig_title);
+%     saveas(gca, filename, 'tiff')
+% end
+% 
+% figure;
+% if separate_groups
+%     group_1_indices = contains(group_ids,'1');
+%     group_2_indices = contains(group_ids,'2');
+%     
+%     bar(1, mean(average_total_conn(group_1_indices)), 'FaceColor', color_groups(1,:)); hold on;
+%     bar(2, mean(average_total_conn(group_2_indices)), 'FaceColor', color_groups(2,:));hold on;
+%     
+%     if length(unique_groups) > 2
+%         group_3_indices = contains(group_ids,'3');
+%         bar(3, mean(average_total_conn(group_3_indices)), 'FaceColor', color_groups(3,:));
+%     end
+% end
+% set(gcf, 'ToolBar', 'none');
+% set(gcf, 'MenuBar', 'none');
+% title('Total ROI Connectivity')
+% ylabel('Average Connectivity (?)')
+% set(gca,'XTick',1:length(unique_groups),'xticklabel',{'YA','high-OA','low-OA'},'TickLabelInterpreter','none')
+% xtickangle(45)
+% if save_figures
+%     fig_title = strcat('groups_', 'total_connectivity');
+%     filename =  fullfile(project_path, 'figures', fig_title);
+%     saveas(gca, filename, 'tiff')
+% end
 end
