@@ -194,7 +194,11 @@ function level_one_stats(create_model_and_estimate, TR_from_json, file_to_test_p
         
     end
     
-    
+%     error('fix this')
+    % XXX TO DO: implement microtime resolution XXX 
+%     matlabbatch{1}.spm.stats.fmri_spec.timing.fmri_t = 16;
+%     matlabbatch{1}.spm.stats.fmri_spec.timing.fmri_t0 = 8;
+
     matlabbatch{1}.spm.stats.fmri_spec.fact = struct('name', {}, 'levels', {});
     matlabbatch{1}.spm.stats.fmri_spec.bases.hrf.derivs = [1 0];
     matlabbatch{1}.spm.stats.fmri_spec.volt = 1;
@@ -203,28 +207,12 @@ function level_one_stats(create_model_and_estimate, TR_from_json, file_to_test_p
     matlabbatch{1}.spm.stats.fmri_spec.mask = {''};  %  gets rid of errors outside of brain but should only be run if mthresh is -inf
     matlabbatch{1}.spm.stats.fmri_spec.cvi = 'AR(1)';
     
+%     error('confirm this is working')
     if create_model_and_estimate
-          % unlink beta and other analysis files
-          if exist(fullfile(level1_results_dir,'SPM.mat'),'file')
+        % unlink beta and other analysis files
+        if exist(fullfile(level1_results_dir,'SPM.mat'),'file')
             rmdir(level1_results_dir, 's')
-          end
-%     
-%         files = {'^mask\..{3}$','^ResMS\..{3}$','^RPV\..{3}$',...
-%             '^beta_.{4}\..{3}$','^con_.{4}\..{3}$','^ResI_.{4}\..{3}$',...
-%             '^ess_.{4}\..{3}$', '^spm\w{1}_.{4}\..{3}$'};
-%         for i=1:length(files)
-%             j = spm_select('List',pwd,files{i});
-%             for k=1:size(j,1)
-%                 spm_unlink(deblank(j(k,:)));
-%             end
-%         end
-            %-Delete old analysis files
-    %--------------------------------------------------------------------------
-    
-    
-%         delete(fullfile(level2_results_dir,'SPM.mat'))
-%     end
-
+        end
         spm_jobman('run',matlabbatch);
     end
     clear matlabbatch
