@@ -79,16 +79,20 @@ if ~isempty(roi_settings_filename)
             % function
             
             expression = strcat(expression,'i',num2str(this_roi_index));
-            if this_roi_index ~= length(this_roi_index_in_available_files)
+            
+            if length(this_roi_index_in_available_files) == 1
+                expression = strcat(expression,'+','i',num2str(this_roi_index));
+            end
+            if this_roi_index ~= length(this_roi_index_in_available_files) % just a sanity check to make sure 
                 expression = strcat(expression,'+');
             end
         end
         % create an expresion i1 + i2 ... length of this_roi_index_in_available_files
         
         matlabbatch{1}.spm.util.imcalc.input = these_rois_file_names;
-        matlabbatch{1}.spm.util.imcalc.output = strcat('ROIs',filesep,this_file_unique_networks{this_unique_network_index}, '_mask');
+        matlabbatch{1}.spm.util.imcalc.output = strcat('ROIs',filesep,'Gordon2016_',this_file_unique_networks{this_unique_network_index}, '_mask');
         matlabbatch{1}.spm.util.imcalc.outdir = {''};
-        matlabbatch{1}.spm.util.imcalc.expression = expression;
+        matlabbatch{1}.spm.util.imcalc.expression = strcat('(',expression,')>0');
         matlabbatch{1}.spm.util.imcalc.var = struct('name', {}, 'value', {});
         matlabbatch{1}.spm.util.imcalc.options.dmtx = 0;
         matlabbatch{1}.spm.util.imcalc.options.mask = 0;
@@ -97,6 +101,19 @@ if ~isempty(roi_settings_filename)
         
         spm_jobman('run',matlabbatch);
         clear matlabbatch
+        
+%         matlabbatch{1}.spm.util.imcalc.input = cellstr(strcat('ROIs',filesep,this_file_unique_networks{this_unique_network_index}, '_CBmask.nii'));
+%         matlabbatch{1}.spm.util.imcalc.output = strcat('ROIs',filesep,this_file_unique_networks{this_unique_network_index}, '_CBmask');
+%         matlabbatch{1}.spm.util.imcalc.outdir = {''};
+%         matlabbatch{1}.spm.util.imcalc.expression = 'i1>0';
+%         matlabbatch{1}.spm.util.imcalc.var = struct('name', {}, 'value', {});
+%         matlabbatch{1}.spm.util.imcalc.options.dmtx = 0;
+%         matlabbatch{1}.spm.util.imcalc.options.mask = 0;
+%         matlabbatch{1}.spm.util.imcalc.options.interp = 1;
+%         matlabbatch{1}.spm.util.imcalc.options.dtype = 4;
+%         
+%         spm_jobman('run',matlabbatch);
+%         clear matlabbatch
     end
 end
 end
