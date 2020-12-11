@@ -25,7 +25,7 @@ function level_one_stats(create_model_and_estimate, TR_from_json, file_to_test_p
     spm_get_defaults('cmdline',true);
 
     % TO DO: need more specific prefix check to decipher between ANTS and
-    % SPM norm files (need to be able to exclude smothed T1)
+    % SPM norm files (need to be able to exclude smoothed T1)
     files_to_test = spm_select('FPList', data_path, strcat('^',file_to_test_prefix,'.*\.nii$'));
     art_regression_outlier_files  = spm_select('FPList',  data_path,'^art_regression_outliers_and_movement.*.mat');
     condition_onset_files = spm_select('FPList', data_path, '^Condition_Onsets_.*.csv');
