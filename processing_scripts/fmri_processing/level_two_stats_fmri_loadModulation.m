@@ -1,4 +1,4 @@
-function level_two_stats_loadModulation(create_model_and_estimate, task_folder, group_subject_codes, group_name)
+function level_two_stats_fmri_loadModulation(create_model_and_estimate, task_folder, group_subject_codes, group_name)
 
 create_model_and_estimate=1;
 task_folder='05_MotorImagery';
@@ -21,7 +21,7 @@ headers={'subject_id', 'flat', 'low', 'medium', 'high'};
 imageryvividness_data = xlsread('imageryvividness_data.xlsx');
 cd ..
 
-level2_results_dir = fullfile(data_path, 'Group_Results_loadModulation', 'MRI_files', task_folder, group_name);
+level2_results_dir = fullfile(data_path, 'Results_fmri_loadModulation', 'MRI_files', task_folder, group_name);
 
 if strcmp(task_folder, '05_MotorImagery')
     for this_subject_index = 1 : length(subject_codes)

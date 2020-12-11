@@ -24,7 +24,7 @@ spm('Defaults','fMRI');
 spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
-level2_results_dir = fullfile(data_path, 'Leve2_Results_3FacsweNP', 'MRI_files', task_folder);
+level2_results_dir = fullfile(data_path, 'Results_fmri_3FacSWENP', 'MRI_files', task_folder);
 
 matlabbatch{1}.spm.tools.swe.smodel.dir = {level2_results_dir}; % results directory
 

@@ -10,7 +10,7 @@
 % along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-function level_two_stats_betweenGroup(create_model_and_estimate, task_folder, group_one_subject_codes, group_two_subject_codes)
+function level_two_stats_fmri_twosampTtest(create_model_and_estimate, task_folder, group_one_subject_codes, group_two_subject_codes)
 create_model_and_estimate=1;
 task_folder = '05_MotorImagery';
 condition='all'; % need to run once per condition (all,flat,low,medium,high)
@@ -29,7 +29,7 @@ spm_get_defaults('cmdline',true);
 headers={'subject_id', 'flat', 'low', 'medium', 'high'};
 imageryvividness_data = xlsread(strcat('spreadsheet_data', filesep, 'imagery_data', filesep, 'imageryvividness_data.xlsx'));
 
-level2_results_dir = fullfile(data_path, 'twosampTtest_Results', 'MRI_files', task_folder, condition);
+level2_results_dir = fullfile(data_path, 'Results_fmri_twosampTtest', 'MRI_files', task_folder, condition);
 
 matlabbatch{1}.spm.stats.factorial_design.dir = {level2_results_dir};
 matlabbatch{1}.spm.stats.factorial_design.des.t2.dept = 0;

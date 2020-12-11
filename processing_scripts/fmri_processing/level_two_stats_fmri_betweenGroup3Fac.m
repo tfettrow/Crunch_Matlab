@@ -10,7 +10,7 @@
 % along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-function level_two_stats_betweenGroup(create_model_and_estimate, task_folder, group_one_subject_codes, group_two_subject_codes)
+function level_two_stats_fmri_betweenGroup3Fac(create_model_and_estimate, task_folder, group_one_subject_codes, group_two_subject_codes)
 create_model_and_estimate=1;
 task_folder = '05_MotorImagery';
 
@@ -26,7 +26,7 @@ spm('Defaults','fMRI');
 spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
-level2_results_dir = fullfile(data_path, 'betweenGroup_Results_3Fac', 'MRI_files', task_folder);
+level2_results_dir = fullfile(data_path, 'Results_fmri_betweenGroup3Fac', 'MRI_files', task_folder);
 % 
 matlabbatch{1}.spm.stats.factorial_design.dir = {level2_results_dir};
 matlabbatch{1}.spm.stats.factorial_design.des.fblock.fac(1).name = 'subject';

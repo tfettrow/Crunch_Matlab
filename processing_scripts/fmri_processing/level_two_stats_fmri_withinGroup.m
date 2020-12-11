@@ -10,7 +10,7 @@
 % along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-function level_two_stats_withinGroup(create_model_and_estimate, task_folder, subject_codes, group_name)
+function level_two_stats_fmri_withinGroup(create_model_and_estimate, task_folder, subject_codes, group_name)
 
 % RUN THIS FUNCTION ONCE PER GROUP (youngAdult, oldAdult) AND TASK (Motor Imagery, Nback)
 
@@ -36,7 +36,7 @@ spm('Defaults','fMRI');
 spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
-level2_results_dir = fullfile(data_path, 'Level2_Results', 'MRI_files', task_folder, group_name);
+level2_results_dir = fullfile(data_path, 'Results_fmri_withinGroup', 'MRI_files', task_folder, group_name);
 
 matlabbatch{1}.spm.stats.factorial_design.dir = {level2_results_dir};
 % matlabbatch{1}.spm.stats.factorial_design.des.fblock.fac(1).name = 'subject';
