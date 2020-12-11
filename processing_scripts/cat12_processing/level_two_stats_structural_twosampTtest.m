@@ -26,34 +26,20 @@ spm('Defaults','fMRI');
 spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
-% level2_results_dir = fullfile(data_path, 'twosampTtest_Results', 'MRI_files', task_folder, condition); 
-% matlabbatch{1}.spm.stats.factorial_design.des.t2.scans1 = cellstr(group_one_scans);
-% matlabbatch{1}.spm.stats.factorial_design.des.t2.scans2 = cellstr(group_two_scans);
-% matlabbatch{1}.spm.stats.factorial_design.dir = {level2_results_dir};
-% matlabbatch{1}.spm.stats.factorial_design.des.t2.dept = 0;
-% matlabbatch{1}.spm.stats.factorial_design.des.t2.variance = 1;
-% matlabbatch{1}.spm.stats.factorial_design.des.t2.gmsca = 0;
-% matlabbatch{1}.spm.stats.factorial_design.des.t2.ancova = 0;
-% matlabbatch{1}.spm.stats.factorial_design.cov = struct('files', {}, 'iCFI', {}, 'iCC', {});
-% matlabbatch{1}.spm.stats.factorial_design.multi_cov = struct('files', {}, 'iCFI', {}, 'iCC', {});
-% matlabbatch{1}.spm.stats.factorial_design.masking.tm.tm_none = 1;
-% matlabbatch{1}.spm.stats.factorial_design.masking.im = 0;
-% matlabbatch{1}.spm.stats.factorial_design.masking.em = {''};
-% matlabbatch{1}.spm.stats.factorial_design.globalc.g_omit = 1;
-% matlabbatch{1}.spm.stats.factorial_design.globalm.gmsca.gmsca_no = 1;
-% matlabbatch{1}.spm.stats.factorial_design.globalm.glonorm = 1;
-% 
-% if create_model_and_estimate
-%     if exist(fullfile(level2_results_dir,'SPM.mat'),'file')
-%         rmdir(level2_results_dir, 's')
-%     end
-%     spm_jobman('run',matlabbatch);
-% end
-% clear matlabbatch
+for this_subject_index = 1 : length(group_one_subject_codes)
+     this_subject_path = strcat([data_path filesep group_one_subject_codes{this_subject_index} filesep 'Processed' filesep 'MRI_files' filesep t1_folder filesep 'CAT12_Analysis']);
+     group_one_scans{this_subject_index,:} = spm_select('ExtFPList', strcat(this_subject_path,filesep,'mri',filesep), strcat('^','smoothed_mwp1T1.nii','$'));
+end
 
-matlabbatch{1}.spm.stats.factorial_design.dir = '<UNDEFINED>';
-matlabbatch{1}.spm.stats.factorial_design.des.t2.scans1 = '<UNDEFINED>';
-matlabbatch{1}.spm.stats.factorial_design.des.t2.scans2 = '<UNDEFINED>';
+for this_subject_index = 1 : length(group_two_subject_codes)
+    this_subject_path = strcat([data_path filesep group_two_subject_codes{this_subject_index} filesep 'Processed' filesep 'MRI_files' filesep t1_folder filesep 'CAT12_Analysis']);
+    group_two_scans{this_subject_index,:} = spm_select('ExtFPList', strcat(this_subject_path,filesep,'mri',filesep), strcat('^','smoothed_mwp1T1.nii','$'));
+end
+
+level2_results_dir = fullfile(data_path, 'Results_structural_twosampTtest'); 
+matlabbatch{1}.spm.stats.factorial_design.dir = {level2_results_dir};
+matlabbatch{1}.spm.stats.factorial_design.des.t2.scans1 = cellstr(group_one_scans);
+matlabbatch{1}.spm.stats.factorial_design.des.t2.scans2 = cellstr(group_two_scans);
 matlabbatch{1}.spm.stats.factorial_design.des.t2.dept = 0;
 matlabbatch{1}.spm.stats.factorial_design.des.t2.variance = 1;
 matlabbatch{1}.spm.stats.factorial_design.des.t2.gmsca = 0;
@@ -66,12 +52,51 @@ matlabbatch{1}.spm.stats.factorial_design.masking.em = {''};
 matlabbatch{1}.spm.stats.factorial_design.globalc.g_omit = 1;
 matlabbatch{1}.spm.stats.factorial_design.globalm.gmsca.gmsca_no = 1;
 matlabbatch{1}.spm.stats.factorial_design.globalm.glonorm = 1;
-matlabbatch{2}.spm.tools.cat.tools.check_SPM.spmmat(1) = cfg_dep('Factorial design specification: SPM.mat File', substruct('.','val', '{}',{1}, '.','val', '{}',{1}, '.','val', '{}',{1}), substruct('.','spmmat'));
-matlabbatch{2}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.use_unsmoothed_data = 1;
-matlabbatch{2}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.adjust_data = 1;
-matlabbatch{2}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.outdir = {''};
-matlabbatch{2}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.fname = 'CATcheckdesign_';
-matlabbatch{2}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.save = 0;
-matlabbatch{2}.spm.tools.cat.tools.check_SPM.check_SPM_ortho = 1;
+% matlabbatch{2}.spm.tools.cat.tools.check_SPM.spmmat(1) = cfg_dep('Factorial design specification: SPM.mat File', substruct('.','val', '{}',{1}, '.','val', '{}',{1}, '.','val', '{}',{1}), substruct('.','spmmat'));
+% matlabbatch{2}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.use_unsmoothed_data = 1;
+% matlabbatch{2}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.adjust_data = 1;
+% matlabbatch{2}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.outdir = {''};
+% matlabbatch{2}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.fname = 'CATcheckdesign_';
+% matlabbatch{2}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.save = 0;
+% matlabbatch{2}.spm.tools.cat.tools.check_SPM.check_SPM_ortho = 1;
+
+if create_model_and_estimate
+    if exist(fullfile(level2_results_dir,'SPM.mat'),'file')
+        rmdir(level2_results_dir, 's')
+    end
+    spm_jobman('run',matlabbatch);
+end
+clear matlabbatch
+
+
+a = spm_select('FPList', level2_results_dir,'SPM.mat');%SPM.mat file
+matlabbatch{1}.spm.stats.fmri_est.spmmat = cellstr(a);
+matlabbatch{1}.spm.stats.fmri_est.write_residuals = 0;
+matlabbatch{1}.spm.stats.fmri_est.method.Classical = 1;
+
+if create_model_and_estimate
+    spm_jobman('run',matlabbatch);
+end
+clear matlabbatch
+
+
+load(fullfile(level2_results_dir,'SPM.mat'))
+
+b = spm_select('FPList', level2_results_dir,'SPM.mat');%SPM.mat file
+matlabbatch{1}.spm.stats.con.spmmat = cellstr(b);
+
+
+matlabbatch{1}.spm.stats.con.consess{1}.tcon.name = 'young>old';
+matlabbatch{1}.spm.stats.con.consess{1}.tcon.weights = [1 -1];
+matlabbatch{1}.spm.stats.con.consess{1}.tcon.sessrep = 'none';
+
+matlabbatch{1}.spm.stats.con.consess{2}.tcon.name = 'old>young';
+matlabbatch{1}.spm.stats.con.consess{2}.tcon.weights = [-1 1];
+matlabbatch{1}.spm.stats.con.consess{2}.tcon.sessrep = 'none';
+
+matlabbatch{1}.spm.stats.con.delete = 1; %this deletes the previously existing contrasts; set to 0 if you do not want to delete previous contrasts!
+% 
+spm_jobman('run',matlabbatch);
+clear matlabbatch
 
 end
