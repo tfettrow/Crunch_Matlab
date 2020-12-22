@@ -4,9 +4,10 @@ create_model_and_estimate=1;
 task_folder='05_MotorImagery';
 % task_folder = '06_Nback';
 %  subject_codes =  {'1002','1004','1010','1011','1013'};
-subject_codes =  {'2002','2007','2008','2012','2013','2015','2018','2020','2021','2022','2023','2025','2026'};
+% subject_codes =  {'2002','2007','2008','2012','2013','2015','2018','2020','2021','2022','2023','2025','2026'};
+subject_codes =  {'1002','1004','1007','1009','1010','1013','1020','1022','1027','2021','2015','2002','2018','2017','2012','2025','2020','2026','2023','2022','2007','2013','2008','2033','2034','2037','2052','2042'};
 % group_name='youngAdult';
-group_name='oldAdult';
+group_name='all_subjects';
 
 subject_codes = split(subject_codes,",");
 
@@ -16,17 +17,16 @@ spm('Defaults','fMRI');
 spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
-cd 'spreadsheet_data'
-headers={'subject_id', 'flat', 'low', 'medium', 'high'};
-imageryvividness_data = xlsread('imageryvividness_data.xlsx');
-cd ..
+% cd(strcat('spreadsheet_data',filesep,'imagery_data'))
+imageryvividness_data = xlsread(strcat('spreadsheet_data',filesep,'imagery_data',filesep,'imageryvividness_data.xlsx'));
+% cd ..
 
 level2_results_dir = fullfile(data_path, 'Results_fmri_loadModulation', 'MRI_files', task_folder, group_name);
 
 if strcmp(task_folder, '05_MotorImagery')
     for this_subject_index = 1 : length(subject_codes)
        
-        this_subject_SPM_path = fullfile(data_path, subject_codes(this_subject_index), 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_Results', 'SPM.mat');
+        this_subject_SPM_path = fullfile(data_path, subject_codes(this_subject_index), 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_WholeBrain', 'SPM.mat');
         this_subject_info_path = fullfile(data_path, subject_codes(this_subject_index), 'subject_info.csv');
         
         this_subject_info = readtable(char(this_subject_info_path));
@@ -46,7 +46,7 @@ if strcmp(task_folder, '05_MotorImagery')
         
         number_of_conditions = length([Flat_greaterthan_Rest_contrast_index Low_greaterthan_Rest_contrast_index Moderate_greaterthan_Rest_contrast_index High_greaterthan_Rest_index]);
         
-        this_subject_conn_images = dir(char(fullfile(data_path, subject_codes(this_subject_index), 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_Results', 'con_*')));
+        this_subject_conn_images = dir(char(fullfile(data_path, subject_codes(this_subject_index), 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_WholeBrain', 'con_*')));
          
 %         matlabbatch{1}.spm.stats.factorial_design.des.anova.icell(this_subject_index).scans = {
 %             fullfile(this_subject_conn_images(Flat_greaterthan_Rest_contrast_index).folder, this_subject_conn_images(Flat_greaterthan_Rest_contrast_index).name)
@@ -269,9 +269,13 @@ load(fullfile(level2_results_dir,'SPM.mat'))
 b = spm_select('FPList', level2_results_dir,'SPM.mat');%SPM.mat file
 matlabbatch{1}.spm.stats.con.spmmat = cellstr(b);
 
-matlabbatch{1}.spm.stats.con.consess{1}.fcon.name = 'linear';
+matlabbatch{1}.spm.stats.con.consess{1}.fcon.name = 'linear increase';
 matlabbatch{1}.spm.stats.con.consess{1}.fcon.weights = [1 -1 0 0 zeros(1,length(subject_codes)); 0 1 -1 0 zeros(1,length(subject_codes)); 0 0 1 -1 zeros(1,length(subject_codes))];
 matlabbatch{1}.spm.stats.con.consess{1}.fcon.sessrep = 'none';
+
+matlabbatch{1}.spm.stats.con.consess{2}.fcon.name = 'linear decrease';
+matlabbatch{1}.spm.stats.con.consess{2}.fcon.weights = [-1 1 0 0 zeros(1,length(subject_codes)); 0 -1 1 0 zeros(1,length(subject_codes)); 0 0 -1 1 zeros(1,length(subject_codes))];
+matlabbatch{1}.spm.stats.con.consess{2}.fcon.sessrep = 'none';
 
 matlabbatch{1}.spm.stats.con.delete = 1; %this deletes the previously existing contrasts; set to 0 if you do not want to delete previous contrasts!
 % 

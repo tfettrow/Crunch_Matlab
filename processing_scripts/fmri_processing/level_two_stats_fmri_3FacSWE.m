@@ -11,9 +11,13 @@
 
 create_model_and_estimate=1;
 task_folder = '05_MotorImagery';
+nonparametric = 1;
 
-group_one_subject_codes = {'1002', '1004', '1010', '1011','1013'}; % need to figure out how to pass cell from shell
-group_two_subject_codes =  {'2002','2007','2008','2012','2013','2015','2018','2020','2021','2022','2023','2025','2026'};
+group_one_subject_codes =  {'1002','1004','1007','1009','1010','1013','1020','1022','1027'};
+group_two_subject_codes =  {'2021','2015','2002','2018','2017','2012','2025','2020','2026','2023','2022','2007','2013','2008','2033','2034','2037','2052','2042'};
+
+% group_one_subject_codes = {'1002', '1004', '1010', '1011','1013'}; % need to figure out how to pass cell from shell
+% group_two_subject_codes =  {'2002','2007','2008','2012','2013','2015','2018','2020','2021','2022','2023','2025','2026'};
 
 group_one_subject_codes = split(group_one_subject_codes,",");
 group_two_subject_codes = split(group_two_subject_codes,",");
@@ -24,10 +28,13 @@ spm('Defaults','fMRI');
 spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
-level2_results_dir = fullfile(data_path, 'Results_fmri_3FacSWENP', 'MRI_files', task_folder);
+if nonparametric
+    level2_results_dir = fullfile(data_path, 'Results_fmri_3FacSWENP2', 'MRI_files', task_folder);
+else
+    level2_results_dir = fullfile(data_path, 'Results_fmri_3FacSWE', 'MRI_files', task_folder);
+end
 
 matlabbatch{1}.spm.tools.swe.smodel.dir = {level2_results_dir}; % results directory
-
 
 % seems a bit redundant but lets go with it for now
 if strcmp(task_folder, '05_MotorImagery')
@@ -36,7 +43,7 @@ if strcmp(task_folder, '05_MotorImagery')
     number_of_subjects = 1;
     for this_subject_index = 1 : length(group_one_subject_codes)
         
-        this_subject_SPM_path = fullfile(data_path, group_one_subject_codes(this_subject_index), 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_Results', 'SPM.mat');
+        this_subject_SPM_path = fullfile(data_path, group_one_subject_codes(this_subject_index), 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_WholeBrain', 'SPM.mat');
         this_subject_info_path = fullfile(data_path, group_one_subject_codes(this_subject_index), 'subject_info.csv');
         
         this_subject_info = readtable(char(this_subject_info_path));
@@ -54,7 +61,7 @@ if strcmp(task_folder, '05_MotorImagery')
         Moderate_greaterthan_Rest_contrast_index = find(contains(contrasts, 'medium>Rest'));
         High_greaterthan_Rest_index = find(contains(contrasts, 'high>Rest'));
         
-        this_subject_conn_images = dir(char(fullfile(data_path, group_one_subject_codes(this_subject_index), 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_Results', 'con*')));
+        this_subject_conn_images = dir(char(fullfile(data_path, group_one_subject_codes(this_subject_index), 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_WholeBrain', 'con*')));
         number_of_conditions = length([Flat_greaterthan_Rest_contrast_index Low_greaterthan_Rest_contrast_index Moderate_greaterthan_Rest_contrast_index High_greaterthan_Rest_index]);
         this_subject_condition_list = {fullfile(this_subject_conn_images(Flat_greaterthan_Rest_contrast_index).folder, this_subject_conn_images(Flat_greaterthan_Rest_contrast_index).name); ...
             fullfile(this_subject_conn_images(Low_greaterthan_Rest_contrast_index).folder, this_subject_conn_images(Low_greaterthan_Rest_contrast_index).name); ....
@@ -72,7 +79,7 @@ if strcmp(task_folder, '05_MotorImagery')
 
     for this_subject_index = 1 : length(group_two_subject_codes)
         
-        this_subject_SPM_path = fullfile(data_path, group_two_subject_codes(this_subject_index), 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_Results', 'SPM.mat');
+        this_subject_SPM_path = fullfile(data_path, group_two_subject_codes(this_subject_index), 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_WholeBrain', 'SPM.mat');
         this_subject_info_path = fullfile(data_path, group_two_subject_codes(this_subject_index), 'subject_info.csv');
         this_subject_info = readtable(char(this_subject_info_path));
         
@@ -89,7 +96,7 @@ if strcmp(task_folder, '05_MotorImagery')
         Moderate_greaterthan_Rest_contrast_index = find(contains(contrasts, 'medium>Rest'));
         High_greaterthan_Rest_index = find(contains(contrasts, 'high>Rest'));
         
-        this_subject_conn_images = dir(char(fullfile(data_path, group_two_subject_codes(this_subject_index), 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_Results', 'con*')));
+        this_subject_conn_images = dir(char(fullfile(data_path, group_two_subject_codes(this_subject_index), 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_WholeBrain', 'con*')));
         number_of_conditions = length([Flat_greaterthan_Rest_contrast_index Low_greaterthan_Rest_contrast_index Moderate_greaterthan_Rest_contrast_index High_greaterthan_Rest_index]);
        
         this_subject_condition_list = {fullfile(this_subject_conn_images(Flat_greaterthan_Rest_contrast_index).folder, this_subject_conn_images(Flat_greaterthan_Rest_contrast_index).name); ...
@@ -129,12 +136,12 @@ matlabbatch{1}.spm.tools.swe.smodel.cov(3).c = kron([0 0 1 0], ones(1,length(gro
 matlabbatch{1}.spm.tools.swe.smodel.cov(3).cname = 'medium';
 matlabbatch{1}.spm.tools.swe.smodel.cov(4).c = kron([0 0 0 1], ones(1,length(group_one_subject_codes) + length(group_two_subject_codes)));
 matlabbatch{1}.spm.tools.swe.smodel.cov(4).cname = 'high';
-matlabbatch{1}.spm.tools.swe.smodel.cov(5).c = kron([ones(1,length(group_one_subject_codes)), zeros(1,length(group_two_subject_codes)) ], [1 1 1 1] );
-matlabbatch{1}.spm.tools.swe.smodel.cov(5).cname = 'young';
-matlabbatch{1}.spm.tools.swe.smodel.cov(6).c = kron([zeros(1,length(group_one_subject_codes)), ones(1,length(group_two_subject_codes)) ], [1 1 1 1] );
-matlabbatch{1}.spm.tools.swe.smodel.cov(6).cname = 'old';
-matlabbatch{1}.spm.tools.swe.smodel.cov(7).c = kron( [1 1 1 1],ones(1,length(group_one_subject_codes)+length(group_two_subject_codes)));
-matlabbatch{1}.spm.tools.swe.smodel.cov(7).cname = 'global';
+% matlabbatch{1}.spm.tools.swe.smodel.cov(5).c = kron([ones(1,length(group_one_subject_codes)), zeros(1,length(group_two_subject_codes)) ], [1 1 1 1] );
+% matlabbatch{1}.spm.tools.swe.smodel.cov(5).cname = 'young';
+% matlabbatch{1}.spm.tools.swe.smodel.cov(6).c = kron([zeros(1,length(group_one_subject_codes)), ones(1,length(group_two_subject_codes)) ], [1 1 1 1] );
+% matlabbatch{1}.spm.tools.swe.smodel.cov(6).cname = 'old';
+matlabbatch{1}.spm.tools.swe.smodel.cov(5).c = kron( [1 1 1 1],ones(1,length(group_one_subject_codes)+length(group_two_subject_codes)));
+matlabbatch{1}.spm.tools.swe.smodel.cov(5).cname = 'global';
 
 
 
@@ -142,14 +149,19 @@ matlabbatch{1}.spm.tools.swe.smodel.multi_cov = struct('files', {});
 matlabbatch{1}.spm.tools.swe.smodel.masking.tm.tm_none = 1;
 matlabbatch{1}.spm.tools.swe.smodel.masking.im = 1;
 matlabbatch{1}.spm.tools.swe.smodel.masking.em = {''};
-% parametric
-% matlabbatch{1}.spm.tools.swe.smodel.WB.WB_no = 0;
-% non-parametric
-matlabbatch{1}.spm.tools.swe.smodel.WB.WB_yes.WB_ss = 4;
-matlabbatch{1}.spm.tools.swe.smodel.WB.WB_yes.WB_nB = 999;
-matlabbatch{1}.spm.tools.swe.smodel.WB.WB_yes.WB_SwE = 0;
-matlabbatch{1}.spm.tools.swe.smodel.WB.WB_yes.WB_stat.WB_T.WB_T_con = [-3 -1 1 3 -1 1 0];
-matlabbatch{1}.spm.tools.swe.smodel.WB.WB_yes.WB_infType.WB_voxelwise = 0;
+% %
+if ~nonparametric
+    % parametric
+    matlabbatch{1}.spm.tools.swe.smodel.WB.WB_no = 0;
+else
+    % non-parametric
+    matlabbatch{1}.spm.tools.swe.smodel.WB.WB_yes.WB_ss = 4;
+    matlabbatch{1}.spm.tools.swe.smodel.WB.WB_yes.WB_nB = 99; %default is 999
+    matlabbatch{1}.spm.tools.swe.smodel.WB.WB_yes.WB_SwE = 0;
+    matlabbatch{1}.spm.tools.swe.smodel.WB.WB_yes.WB_stat.WB_T.WB_T_con = [-3 -1 1 3 0];
+    matlabbatch{1}.spm.tools.swe.smodel.WB.WB_yes.WB_infType.WB_voxelwise = 0;
+    % %
+end
 matlabbatch{1}.spm.tools.swe.smodel.globalc.g_omit = 1;
 matlabbatch{1}.spm.tools.swe.smodel.globalm.gmsca.gmsca_no = 1;
 matlabbatch{1}.spm.tools.swe.smodel.globalm.glonorm = 1;
