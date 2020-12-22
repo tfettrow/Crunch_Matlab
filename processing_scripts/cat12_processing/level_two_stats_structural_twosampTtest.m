@@ -29,11 +29,22 @@ spm_get_defaults('cmdline',true);
 for this_subject_index = 1 : length(group_one_subject_codes)
      this_subject_path = strcat([data_path filesep group_one_subject_codes{this_subject_index} filesep 'Processed' filesep 'MRI_files' filesep t1_folder filesep 'CAT12_Analysis']);
      group_one_scans{this_subject_index,:} = spm_select('ExtFPList', strcat(this_subject_path,filesep,'mri',filesep), strcat('^','smoothed_mwp1T1.nii','$'));
+     this_subject_tiv_file = spm_select('FPList', strcat(this_subject_path,filesep), strcat('^','TIV.txt','$'));
+     
+     % read tiv info
+     volume_data = load(this_subject_tiv_file);
+     group_one_tiv(this_subject_index) = volume_data(1);
 end
 
 for this_subject_index = 1 : length(group_two_subject_codes)
     this_subject_path = strcat([data_path filesep group_two_subject_codes{this_subject_index} filesep 'Processed' filesep 'MRI_files' filesep t1_folder filesep 'CAT12_Analysis']);
     group_two_scans{this_subject_index,:} = spm_select('ExtFPList', strcat(this_subject_path,filesep,'mri',filesep), strcat('^','smoothed_mwp1T1.nii','$'));
+    group_two_xml_files{this_subject_index,:} = spm_select('FPList', strcat(this_subject_path,filesep,'report',filesep), strcat('^','cat_T1.xml','$'));
+    this_subject_tiv_file = spm_select('FPList', strcat(this_subject_path,filesep), strcat('^','TIV.txt','$'));
+    
+     % read tiv info
+     volume_data = load(this_subject_tiv_file);
+     group_two_tiv(this_subject_index) = volume_data(1);
 end
 
 level2_results_dir = fullfile(data_path, 'Results_structural_twosampTtest'); 
@@ -44,11 +55,24 @@ matlabbatch{1}.spm.stats.factorial_design.des.t2.dept = 0;
 matlabbatch{1}.spm.stats.factorial_design.des.t2.variance = 1;
 matlabbatch{1}.spm.stats.factorial_design.des.t2.gmsca = 0;
 matlabbatch{1}.spm.stats.factorial_design.des.t2.ancova = 0;
-matlabbatch{1}.spm.stats.factorial_design.cov = struct('c', {}, 'cname', {}, 'iCFI', {}, 'iCC', {});
+
+% populating TIV as first cov
+% need to read the TIV out of each xml file
+matlabbatch{1}.spm.stats.factorial_design.cov(1).c = [group_one_tiv group_two_tiv];
+matlabbatch{1}.spm.stats.factorial_design.cov(1).cname = 'TIV';
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+matlabbatch{1}.spm.stats.factorial_design.cov(1).iCFI = 1; % what is this??
+matlabbatch{1}.spm.stats.factorial_design.cov(1).iCC = 1; % what is this??
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% matlabbatch{1}.spm.stats.factorial_design.cov = struct('c', {}, 'cname', {}, 'iCFI', {}, 'iCC', {});
+
 matlabbatch{1}.spm.stats.factorial_design.multi_cov = struct('files', {}, 'iCFI', {}, 'iCC', {});
-matlabbatch{1}.spm.stats.factorial_design.masking.tm.tm_none = 1;
+% matlabbatch{1}.spm.stats.factorial_design.masking.tm.tmr.rthresh = 0.1; % relative threshold of .1
+% matlabbatch{1}.spm.stats.factorial_design.masking.tm.tma.athresh = .1; % absolute threshold of .1
+matlabbatch{1}.spm.stats.factorial_design.masking.tm.tm_none = 1; % no threshold
 matlabbatch{1}.spm.stats.factorial_design.masking.im = 1;
-matlabbatch{1}.spm.stats.factorial_design.masking.em = {''};
+matlabbatch{1}.spm.stats.factorial_design.masking.em = {''}; % no explicity mask
+% matlabbatch{1}.spm.stats.factorial_design.masking.em = {'\\exasmb.rc.ufl.edu\blue\rachaelseidler\tfettrow\Crunch_Code\MR_Templates\mask_ICV.nii,1'};
 matlabbatch{1}.spm.stats.factorial_design.globalc.g_omit = 1;
 matlabbatch{1}.spm.stats.factorial_design.globalm.gmsca.gmsca_no = 1;
 matlabbatch{1}.spm.stats.factorial_design.globalm.glonorm = 1;
@@ -84,7 +108,6 @@ load(fullfile(level2_results_dir,'SPM.mat'))
 
 b = spm_select('FPList', level2_results_dir,'SPM.mat');%SPM.mat file
 matlabbatch{1}.spm.stats.con.spmmat = cellstr(b);
-
 
 matlabbatch{1}.spm.stats.con.consess{1}.tcon.name = 'young>old';
 matlabbatch{1}.spm.stats.con.consess{1}.tcon.weights = [1 -1];
