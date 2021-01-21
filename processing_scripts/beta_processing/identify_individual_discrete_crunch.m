@@ -6,15 +6,17 @@ parser.KeepUnmatched = true;
 addParameter(parser, 'task_folder', '')
 addParameter(parser, 'subjects', '')
 addParameter(parser, 'no_labels', 0)
-addParameter(parser, 'Results_filename', 'CRUNCH_discrete.mat')
+addParameter(parser, 'output_filename', 'CRUNCH_discrete.mat')
+addParameter(parser, 'beta_filename_extension', '_fmri_roi_betas')
 addParameter(parser, 'save_variables', 1)
 parse(parser, varargin{:})
 subjects = parser.Results.subjects;
 task_folder = parser.Results.task_folder;
-Results_filename = parser.Results.Results_filename;
+output_filename = parser.Results.output_filename;
+beta_filename_extension = parser.Results.beta_filename_extension;
 save_variables = parser.Results.save_variables;
 
-data_path = pwd; %make sure to set the path tot he MiM_data folder
+data_path = pwd; %make sure to set the path to the MiM_data folder
 
 if any(strcmp(task_folder, '05_MotorImagery'))
     task='MotorImagery';
@@ -25,7 +27,7 @@ end
 for sub = 1:length(subjects)
     %create file path for beta values
     subj_results_dir = fullfile(data_path, subjects{sub}, 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_WholeBrain');
-    this_subject_roiResults_path = fullfile(subj_results_dir, strcat(subjects{sub},'_fmri_redcap.csv'));
+    this_subject_roiResults_path = fullfile(subj_results_dir, strcat(subjects{sub},beta_filename_extension,'.csv'));
     delete(fullfile(subj_results_dir, '*.mat'))
     fileID = fopen(this_subject_roiResults_path);
     
@@ -162,10 +164,10 @@ for sub = 1:length(subjects)
     if save_variables
         if any(strcmp(task_folder, '05_MotorImagery'))
             task='MotorImagery';
-            save(char(strcat(subj_results_dir,filesep,strcat(subjects{sub},'_',task,'_',Results_filename))),'cr*','data','unique_rois');
+            save(char(strcat(subj_results_dir,filesep,strcat(subjects{sub},'_',task,'_',output_filename))),'cr*','data','unique_rois');
         elseif any(strcmp(task_folder, '06_Nback'))
             task='Nback';
-            save(char(strcat(subj_results_dir,filesep,strcat(subjects{sub},'_',task,'_',Results_filename))),'cr*','data','unique_rois');
+            save(char(strcat(subj_results_dir,filesep,strcat(subjects{sub},'_',task,'_',output_filename))),'cr*','data','unique_rois');
         end
     end
     fclose(fileID);
