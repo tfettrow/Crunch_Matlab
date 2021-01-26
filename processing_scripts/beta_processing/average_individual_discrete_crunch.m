@@ -7,8 +7,8 @@ addParameter(parser, 'subjects', '')
 addParameter(parser, 'group_names', '')
 addParameter(parser, 'group_ids', '')
 addParameter(parser, 'no_labels', 1)
-addParameter(parser, 'output_filename', 'CRUNCH_wholebrain.mat')
-addParameter(parser, 'beta_filename_extension', '_fmri_wholebrain_betas')
+addParameter(parser, 'output_filename', '')
+addParameter(parser, 'beta_filename_extension', '')
 addParameter(parser, 'plot_groups_together',0)
 addParameter(parser, 'separate_by_crunch_type',1)
 parse(parser, varargin{:})
@@ -104,36 +104,42 @@ for this_group_index = 1 : length(group_names)
             figure; subplot(length(unique_rois), 3, 1);
         end
     end
-    summary_stats = [];
+%     summary_stats = [];
     % stuff for crunch tables
     this_group_crunch_results = cr_results(this_group_subjectindices,:,:);
     subject_ids_table = cellstr(subjects');
-    summary_stats = table(subject_ids_table(this_group_subjectindices));
-    summary_stats = renamevars(summary_stats,'Var1','Subject');
+    subject_table = table(subject_ids_table(this_group_subjectindices));
+    subject_table = renamevars(subject_table,'Var1','Subject');
     
     % makes logic easier below..
     this_group_crunch_results = cell2mat(this_group_crunch_results);
 
+    % write the table to xlsx
+    split_output_filename = strsplit(output_filename,'.');
+    filename = strcat('crunch_summary_statistics_',task,'_',split_output_filename{1},'_',group_names{this_group_index},'.xlsx');
+    %     ROI_total={num2str(length(this_group_subjectindices)+1),'1',strcat('=sum(b2,b',num2str(length(this_group_subjectindices)),')')};
+    if exist(filename)
+        delete(filename)
+    end
     this_figure_number = 1;
     for this_roi_index = 1 : length(unique_rois)
         this_group_and_roi_beta_results = beta_results(this_group_subjectindices,:,this_roi_index);
         
         if any(strcmp(task_folder, '05_MotorImagery'))
             % populating and renaming the new crunch column
-            summary_stats.crunch = table(this_group_crunch_results(:,this_roi_index));
-            summary_stats = renamevars(summary_stats,'crunch',unique_rois(this_roi_index));
+%             summary_stats.crunch = table(this_group_crunch_results(:,this_roi_index));
+%             summary_stats = renamevars(summary_stats,'crunch',unique_rois(this_roi_index));
+            crunch_table = table(this_group_crunch_results(:,this_roi_index));
+            crunch_table = renamevars(crunch_table,'Var1',unique_rois{this_roi_index});
         elseif any(strcmp(task_folder, '06_Nback'))
             % populating and renaming the new crunch column
-            summary_stats.crunch = table(this_group_crunch_results(:,[this_roi_index this_roi_index+length(unique_rois)]));
-            summary_stats = renamevars(summary_stats,'crunch',unique_rois(this_roi_index));
+            crunch_table = table(this_group_crunch_results(:,[this_roi_index this_roi_index+length(unique_rois)]));
+            crunch_table = renamevars(crunch_table,'Var1',unique_rois{this_roi_index});
         end
         
-        % write the table to xlsx
-        filename = strcat('crunch_summary_statistics_',task,'.xlsx');
-        %     ROI_total={num2str(length(this_group_subjectindices)+1),'1',strcat('=sum(b2,b',num2str(length(this_group_subjectindices)),')')};
-        
+        summary_stats = [subject_table crunch_table]
         T2=splitvars(summary_stats);
-        writetable(T2,filename,'Sheet',this_group_index)
+        writetable(T2,filename) %,'Sheet',this_group_index)
         %     xlswrite('crunch_summary_statistics.xlsx', ROI_total)
         
        
@@ -162,7 +168,7 @@ for this_group_index = 1 : length(group_names)
 %                     set(get(gca, 'yaxis'), 'visible', 'off');
                     set(get(gca, 'xlabel'), 'visible', 'off');
                     set(get(gca, 'ylabel'), 'visible', 'off');
-                    %         set(get(gca, 'title'), 'visible', 'off');
+                    set(get(gca, 'title'), 'visible', 'off');
                     %         set(gca, 'xticklabel', '');
                     %         set(gca, 'yticklabel', '');
                     %         set(gca, 'position', [0 0 1 1]);
@@ -195,7 +201,7 @@ for this_group_index = 1 : length(group_names)
 %                     set(get(gca, 'yaxis'), 'visible', 'off');
                     set(get(gca, 'xlabel'), 'visible', 'off');
                     set(get(gca, 'ylabel'), 'visible', 'off');
-                    %         set(get(gca, 'title'), 'visible', 'off');
+                    set(get(gca, 'title'), 'visible', 'off');
                     %         set(gca, 'xticklabel', '');
                     %         set(gca, 'yticklabel', '');
                     %         set(gca, 'position', [0 0 1 1]);
@@ -223,7 +229,7 @@ for this_group_index = 1 : length(group_names)
 %                     set(get(gca, 'yaxis'), 'visible', 'off');
                     set(get(gca, 'xlabel'), 'visible', 'off');
                     set(get(gca, 'ylabel'), 'visible', 'off');
-                    %         set(get(gca, 'title'), 'visible', 'off');
+                    set(get(gca, 'title'), 'visible', 'off');
                     %         set(gca, 'xticklabel', '');
                     %         set(gca, 'yticklabel', '');
                     %         set(gca, 'position', [0 0 1 1]);
@@ -260,7 +266,7 @@ for this_group_index = 1 : length(group_names)
 %                     set(get(gca, 'yaxis'), 'visible', 'off');
                     set(get(gca, 'xlabel'), 'visible', 'off');
                     set(get(gca, 'ylabel'), 'visible', 'off');
-                    %         set(get(gca, 'title'), 'visible', 'off');
+                    set(get(gca, 'title'), 'visible', 'off');
                     %         set(gca, 'xticklabel', '');
                     %         set(gca, 'yticklabel', '');
                     %         set(gca, 'position', [0 0 1 1]);
@@ -292,7 +298,7 @@ for this_group_index = 1 : length(group_names)
 %                     set(get(gca, 'yaxis'), 'visible', 'off');
                     set(get(gca, 'xlabel'), 'visible', 'off');
                     set(get(gca, 'ylabel'), 'visible', 'off');
-                    %         set(get(gca, 'title'), 'visible', 'off');
+                    set(get(gca, 'title'), 'visible', 'off');
                     %         set(gca, 'xticklabel', '');
                     %         set(gca, 'yticklabel', '');
                     %         set(gca, 'position', [0 0 1 1]);
@@ -320,7 +326,7 @@ for this_group_index = 1 : length(group_names)
 %                     set(get(gca, 'yaxis'), 'visible', 'off');
                     set(get(gca, 'xlabel'), 'visible', 'off');
                     set(get(gca, 'ylabel'), 'visible', 'off');
-                    %         set(get(gca, 'title'), 'visible', 'off');
+                    set(get(gca, 'title'), 'visible', 'off');
                     %         set(gca, 'xticklabel', '');
                     %         set(gca, 'yticklabel', '');
                     %         set(gca, 'position', [0 0 1 1]);
@@ -358,7 +364,7 @@ for this_group_index = 1 : length(group_names)
 %                     set(get(gca, 'yaxis'), 'visible', 'off');
                     set(get(gca, 'xlabel'), 'visible', 'off');
                     set(get(gca, 'ylabel'), 'visible', 'off');
-                    %         set(get(gca, 'title'), 'visible', 'off');
+                    set(get(gca, 'title'), 'visible', 'off');
                     %         set(gca, 'xticklabel', '');
                     %         set(gca, 'yticklabel', '');
                     %         set(gca, 'position', [0 0 1 1]);
@@ -390,7 +396,7 @@ for this_group_index = 1 : length(group_names)
 %                     set(get(gca, 'yaxis'), 'visible', 'off');
                     set(get(gca, 'xlabel'), 'visible', 'off');
                     set(get(gca, 'ylabel'), 'visible', 'off');
-                    %         set(get(gca, 'title'), 'visible', 'off');
+                    set(get(gca, 'title'), 'visible', 'off');
                     %         set(gca, 'xticklabel', '');
                     %         set(gca, 'yticklabel', '');
                     %         set(gca, 'position', [0 0 1 1]);
@@ -419,7 +425,7 @@ for this_group_index = 1 : length(group_names)
 %                     set(get(gca, 'yaxis'), 'visible', 'off');
                     set(get(gca, 'xlabel'), 'visible', 'off');
                     set(get(gca, 'ylabel'), 'visible', 'off');
-                    %         set(get(gca, 'title'), 'visible', 'off');
+                    set(get(gca, 'title'), 'visible', 'off');
                     %         set(gca, 'xticklabel', '');
                     %         set(gca, 'yticklabel', '');
                     %         set(gca, 'position', [0 0 1 1]);
@@ -436,28 +442,36 @@ for this_group_index = 1 : length(group_names)
         % % TO DO: iron out potential bugs with plot_groups_together..
         % probably not functioning atm
         if ~plot_groups_together
-            suptitle(group_names{this_group_index})
+            if ~no_labels
+                suptitle(group_names{this_group_index})
+            end
             if any(strcmp(task_folder, '05_MotorImagery'))
                 figure(this_group_index);
-                suptitle(strcat(group_names{this_group_index},{' '},task))        
+                if ~no_labels
+                    suptitle(strcat(group_names{this_group_index},{' '},task))
+                end
                 filename = strcat('figures',filesep,group_names{this_group_index},'_',task,'_CRseparated');
                 saveas(gca, filename, 'tiff')
             elseif any(strcmp(task_folder, '06_Nback'))
                 figure(this_group_index*2-1);
-                suptitle(strcat(group_names{this_group_index},{' '},task, {' '}, 'isi-1500'))
+                if ~no_labels
+                    suptitle(strcat(group_names{this_group_index},{' '},task, {' '}, 'isi-1500'))
+                end
                 filename = strcat('figures',filesep,group_names{this_group_index},'_',task,'isi-1500_CRseparated');
                 saveas(gca, filename, 'tiff')
 
                 figure(this_group_index*2);
-                suptitle(strcat(group_names{this_group_index},{' '},task, {' '}, 'isi-500'))
+                if ~no_labels
+                    suptitle(strcat(group_names{this_group_index},{' '},task, {' '}, 'isi-500'))
+                end
                 filename = strcat('figures',filesep,group_names{this_group_index},'_',task,'isi-500_CRseparated');
                 saveas(gca, filename, 'tiff')
-
             end
         else
-            suptitle(strcat('All Groups ',{' '}, task))
+            if ~no_labels
+                suptitle(strcat('All Groups ',{' '}, task))
+            end
         end
     end
-    
 end
 end
