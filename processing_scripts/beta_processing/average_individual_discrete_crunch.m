@@ -6,7 +6,8 @@ addParameter(parser, 'task_folder', '')
 addParameter(parser, 'subjects', '')
 addParameter(parser, 'group_names', '')
 addParameter(parser, 'group_ids', '')
-addParameter(parser, 'no_labels', 1)
+addParameter(parser, 'no_labels', 0)
+addParameter(parser, 'save_figures', 0)
 addParameter(parser, 'output_filename', '')
 addParameter(parser, 'beta_filename_extension', '')
 addParameter(parser, 'plot_groups_together',0)
@@ -451,21 +452,26 @@ for this_group_index = 1 : length(group_names)
                     suptitle(strcat(group_names{this_group_index},{' '},task))
                 end
                 filename = strcat('figures',filesep,group_names{this_group_index},'_',task,'_CRseparated');
-                saveas(gca, filename, 'tiff')
+                if save_figures
+                    saveas(gca, filename, 'tiff')
+                end
             elseif any(strcmp(task_folder, '06_Nback'))
                 figure(this_group_index*2-1);
                 if ~no_labels
                     suptitle(strcat(group_names{this_group_index},{' '},task, {' '}, 'isi-1500'))
                 end
                 filename = strcat('figures',filesep,group_names{this_group_index},'_',task,'isi-1500_CRseparated');
-                saveas(gca, filename, 'tiff')
-
+                if save_figures
+                    saveas(gca, filename, 'tiff')
+                end
                 figure(this_group_index*2);
                 if ~no_labels
                     suptitle(strcat(group_names{this_group_index},{' '},task, {' '}, 'isi-500'))
                 end
                 filename = strcat('figures',filesep,group_names{this_group_index},'_',task,'isi-500_CRseparated');
-                saveas(gca, filename, 'tiff')
+                if save_figures
+                    saveas(gca, filename, 'tiff')
+                end
             end
         else
             if ~no_labels
