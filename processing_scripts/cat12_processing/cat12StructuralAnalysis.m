@@ -16,11 +16,13 @@ parser.KeepUnmatched = true;
 addParameter(parser, 'subjects', '')
 addParameter(parser, 't1_folder', '')
 addParameter(parser, 't1_filename', '')
+addParameter(parser, 'template_dir' , '')
 addParameter(parser, 'steps_to_run_vector', '')
 parse(parser, varargin{:})
 subjects = parser.Results.subjects;
 t1_folder = parser.Results.t1_folder;
 t1_filename = parser.Results.t1_filename;
+template_dir = parser.Results.template_dir;
 steps_to_run_vector = parser.Results.steps_to_run_vector; %steps_to_run_vector should be a vector the length of the number of steps that are present in this function
 
 %steps to run
@@ -47,15 +49,21 @@ if (steps_to_run_vector(1) == 1)
     for this_subject_index = 1:length(subjects)
         this_subject = subjects(this_subject_index);
         %WARNING: this assumes a particular folder structure
-        this_subject_path = strcat([study_dir filesep this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep t1_folder filesep 'CAT12_Analysis']);
-        this_subject_structural_file = spm_select('ExtFPList', this_subject_path, strcat('^',t1_filename,'$'));
-        cd(this_subject_path)
+        this_t1_path = strcat([study_dir filesep this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep t1_folder]);
+        this_cat12_path = strcat([this_t1_path filesep 'CAT12_Analysis']);
+        if ~exist(this_cat12_path, 'dir')
+            mkdir(this_cat12_path);
+        end
+        copyfile(fullfile(this_t1_path,'T1*'), fullfile(this_t1_path,'CAT12_Analysis'));
+%         copyfile(fullfile(this_t1_path,'T1.json'), fullfile(this_t1_path,'CAT12_Analysis'));
+        this_subject_structural_file = spm_select('ExtFPList', this_cat12_path, strcat('^',t1_filename,'$'));
+        cd(this_cat12_path)
         
         matlabbatch{1}.spm.tools.cat.estwrite.data = cellstr(this_subject_structural_file);
         matlabbatch{1}.spm.tools.cat.estwrite.data_wmh = {''};
-        matlabbatch{1}.spm.tools.cat.estwrite.nproc = 3;
+        matlabbatch{1}.spm.tools.cat.estwrite.nproc = 0;
         matlabbatch{1}.spm.tools.cat.estwrite.useprior = '';
-        matlabbatch{1}.spm.tools.cat.estwrite.opts.tpm = {'TPM.nii'};
+        matlabbatch{1}.spm.tools.cat.estwrite.opts.tpm = {fullfile(template_dir,'TPM.nii')};
         matlabbatch{1}.spm.tools.cat.estwrite.opts.affreg = 'mni';
         matlabbatch{1}.spm.tools.cat.estwrite.opts.biasacc = 0.5;
         matlabbatch{1}.spm.tools.cat.estwrite.extopts.APP = 1070;
@@ -63,7 +71,7 @@ if (steps_to_run_vector(1) == 1)
         matlabbatch{1}.spm.tools.cat.estwrite.extopts.LASstr = 0.5;
         matlabbatch{1}.spm.tools.cat.estwrite.extopts.gcutstr = 2;
         matlabbatch{1}.spm.tools.cat.estwrite.extopts.WMHC = 1;
-        matlabbatch{1}.spm.tools.cat.estwrite.extopts.registration.shooting.shootingtpm =  {'Template_0_IXI555_MNI152_GS.nii'};
+        matlabbatch{1}.spm.tools.cat.estwrite.extopts.registration.shooting.shootingtpm =  {fullfile(template_dir,'Template_0_IXI555_MNI152_GS.nii')};
         matlabbatch{1}.spm.tools.cat.estwrite.extopts.registration.shooting.regstr = 0.5;
         matlabbatch{1}.spm.tools.cat.estwrite.extopts.vox = 1.5;
         matlabbatch{1}.spm.tools.cat.estwrite.extopts.restypes.optimal = [1 0.1];
@@ -75,17 +83,17 @@ if (steps_to_run_vector(1) == 1)
         matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.atlases.cobra = 1;
         matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.atlases.hammers = 0;
         matlabbatch{1}.spm.tools.cat.estwrite.output.ROImenu.atlases.ownatlas = {''};
-        matlabbatch{1}.spm.tools.cat.estwrite.output.GM.native = 0;
+        matlabbatch{1}.spm.tools.cat.estwrite.output.GM.native = 1;
         matlabbatch{1}.spm.tools.cat.estwrite.output.GM.mod = 1;
         matlabbatch{1}.spm.tools.cat.estwrite.output.GM.dartel = 0;
-        matlabbatch{1}.spm.tools.cat.estwrite.output.WM.native = 0;
+        matlabbatch{1}.spm.tools.cat.estwrite.output.WM.native = 1;
         matlabbatch{1}.spm.tools.cat.estwrite.output.WM.mod = 1;
         matlabbatch{1}.spm.tools.cat.estwrite.output.WM.dartel = 0;
-        matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.native = 0;
-        matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.warped = 0;
-        matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.mod = 0;
+        matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.native = 1;
+        matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.warped = 1;
+        matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.mod = 1;
         matlabbatch{1}.spm.tools.cat.estwrite.output.CSF.dartel = 0;
-        matlabbatch{1}.spm.tools.cat.estwrite.output.ct.native = 0;
+        matlabbatch{1}.spm.tools.cat.estwrite.output.ct.native = 1;
         matlabbatch{1}.spm.tools.cat.estwrite.output.ct.warped = 0;
         matlabbatch{1}.spm.tools.cat.estwrite.output.ct.dartel = 0;
         matlabbatch{1}.spm.tools.cat.estwrite.output.pp.native = 0;
@@ -130,8 +138,8 @@ if (steps_to_run_vector(2) == 1)
         this_subject = subjects(this_subject_index);
         study_dir = pwd;
         %WARNING: this assumes a particular folder structure
-        this_subject_path = strcat([study_dir filesep this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep t1_folder filesep 'CAT12_Analysis']);
-        normalized_biascorrected_T1_files{this_subject_index,:} = spm_select('ExtFPList', strcat(this_subject_path,filesep,'mri',filesep), strcat('^','wmT1.nii','$'));
+        this_cat12_path = strcat([study_dir filesep this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep t1_folder filesep 'CAT12_Analysis']);
+        normalized_biascorrected_T1_files{this_subject_index,:} = spm_select('ExtFPList', strcat(this_cat12_path,filesep,'mri',filesep), strcat('^','wmT1.nii','$'));
     end
     matlabbatch{1}.spm.tools.cat.tools.showslice.data_vol = cellstr(normalized_biascorrected_T1_files);
     matlabbatch{1}.spm.tools.cat.tools.showslice.scale = 1;
@@ -146,9 +154,9 @@ if (steps_to_run_vector(3) == 1)
         this_subject = subjects(this_subject_index);
         study_dir = pwd;
         %WARNING: this assumes a particular folder structure
-        this_subject_path = strcat([study_dir filesep this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep t1_folder filesep 'CAT12_Analysis']);
-        this_subject_xml_files = spm_select('FPList', strcat(this_subject_path,filesep,'report',filesep), strcat('^','cat_T1.xml','$'));
-        cd(this_subject_path)
+        this_cat12_path = strcat([study_dir filesep this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep t1_folder filesep 'CAT12_Analysis']);
+        this_subject_xml_files = spm_select('FPList', strcat(this_cat12_path,filesep,'report',filesep), strcat('^','cat_T1.xml','$'));
+        cd(this_cat12_path)
         %% calculate TIV and other volumes
         matlabbatch{1}.spm.tools.cat.tools.calcvol.data_xml = cellstr(this_subject_xml_files);
         matlabbatch{1}.spm.tools.cat.tools.calcvol.calcvol_TIV = 0; % 0 is TIV, GM, WM, CSF, WMH
@@ -166,8 +174,8 @@ if (steps_to_run_vector(4) == 1)
         this_subject = subjects(this_subject_index);
         study_dir = pwd;
         %WARNING: this assumes a particular folder structure
-        this_subject_path = strcat([study_dir filesep this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep t1_folder filesep 'CAT12_Analysis']);
-        grey_matter_segments{this_subject_index,:} = spm_select('ExtFPList', strcat(this_subject_path,filesep,'mri',filesep), strcat('^','mwp1T1.nii','$'));
+        this_cat12_path = strcat([study_dir filesep this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep t1_folder filesep 'CAT12_Analysis']);
+        grey_matter_segments{this_subject_index,:} = spm_select('ExtFPList', strcat(this_cat12_path,filesep,'mri',filesep), strcat('^','mwp1T1.nii','$'));
     end
     matlabbatch{1}.spm.tools.cat.tools.check_cov.data_vol = {grey_matter_segments};
     matlabbatch{1}.spm.tools.cat.tools.check_cov.data_xml = {''};
@@ -183,13 +191,13 @@ if (steps_to_run_vector(5) == 1)
         this_subject = subjects(this_subject_index);
         study_dir = pwd;
         %WARNING: this assumes a particular folder structure
-        this_subject_path = strcat([study_dir filesep this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep t1_folder filesep 'CAT12_Analysis']);
-        grey_matter_segments{this_subject_index,:} = spm_select('ExtFPList', strcat(this_subject_path,filesep,'mri',filesep), strcat('^','mwp1T1.nii','$'));
+        this_cat12_path = strcat([study_dir filesep this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep t1_folder filesep 'CAT12_Analysis']);
+        grey_matter_segments{this_subject_index,:} = spm_select('ExtFPList', strcat(this_cat12_path,filesep,'mri',filesep), strcat('^','mwp1T1.nii','$'));
     end
     for i_file = 1 : size(grey_matter_segments,1)
         this_file_with_volumes = spm_select('expand', grey_matter_segments(i_file,:));
         matlabbatch{1}.spm.spatial.smooth.data = cellstr(this_file_with_volumes);
-        matlabbatch{1}.spm.spatial.smooth.fwhm = [6 6 6];
+        matlabbatch{1}.spm.spatial.smooth.fwhm = [4 4 4];
         matlabbatch{1}.spm.spatial.smooth.prefix = 'smoothed_';
         spm_jobman('run',matlabbatch);
         clear matlabbatch

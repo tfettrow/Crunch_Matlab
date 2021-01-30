@@ -14,8 +14,14 @@ function level_two_stats_structural_twosampTtest(create_model_and_estimate, task
 create_model_and_estimate=1;
 t1_folder = '02_T1';
 % condition='all'; % need to run once per condition (all,flat,low,medium,high)
-group_one_subject_codes = {'1002', '1004'}; % need to figure out how to pass cell from shell
-group_two_subject_codes =  {'2007','2008'};
+% group_one_subject_codes = {'1002','1004','1007','1009'}; % need to figure out how to pass cell from shell
+% group_two_subject_codes =  {'2007','2008','2012','2013'};
+% 
+% group_one_subject_codes = {'1002','1004','1007','1009','1010','1011','1013','1020','1022','1024','1027'}; % need to figure out how to pass cell from shell
+% group_two_subject_codes =  {'2002','2007','2008','2012','2013','2015','2017','2018','2020','2021','2022','2023','2025','2026','2033','2034','2037','2042','2052'};
+
+group_one_subject_codes = {'2002','2007','2008','2012','2013','2015','2017','2018','2020','2021','2022','2023','2025','2026','2033','2034','2037','2042','2052'}; % need to figure out how to pass cell from shell
+group_two_subject_codes =  {'3004', '3006', '3007', '3008'};
 
 group_one_subject_codes = split(group_one_subject_codes,",");
 group_two_subject_codes = split(group_two_subject_codes,",");
@@ -47,7 +53,7 @@ for this_subject_index = 1 : length(group_two_subject_codes)
      group_two_tiv(this_subject_index) = volume_data(1);
 end
 
-level2_results_dir = fullfile(data_path, 'Results_structural_twosampTtest'); 
+level2_results_dir = fullfile(data_path, 'Results_structural_twosampTtest_hOA_lOA'); 
 matlabbatch{1}.spm.stats.factorial_design.dir = {level2_results_dir};
 matlabbatch{1}.spm.stats.factorial_design.des.t2.scans1 = cellstr(group_one_scans);
 matlabbatch{1}.spm.stats.factorial_design.des.t2.scans2 = cellstr(group_two_scans);
@@ -68,10 +74,10 @@ matlabbatch{1}.spm.stats.factorial_design.cov(1).iCC = 1; % what is this??
 
 matlabbatch{1}.spm.stats.factorial_design.multi_cov = struct('files', {}, 'iCFI', {}, 'iCC', {});
 % matlabbatch{1}.spm.stats.factorial_design.masking.tm.tmr.rthresh = 0.1; % relative threshold of .1
-% matlabbatch{1}.spm.stats.factorial_design.masking.tm.tma.athresh = .1; % absolute threshold of .1
-matlabbatch{1}.spm.stats.factorial_design.masking.tm.tm_none = 1; % no threshold
+matlabbatch{1}.spm.stats.factorial_design.masking.tm.tma.athresh = .1; % absolute threshold of .1
+% matlabbatch{1}.spm.stats.factorial_design.masking.tm.tm_none = 1; % no threshold
 matlabbatch{1}.spm.stats.factorial_design.masking.im = 1;
-matlabbatch{1}.spm.stats.factorial_design.masking.em = {''}; % no explicity mask
+matlabbatch{1}.spm.stats.factorial_design.masking.em = {fullfile(data_path, 'ROIs', 'MNI_2mm_gmMask.nii')}; % no explicit mask
 % matlabbatch{1}.spm.stats.factorial_design.masking.em = {'\\exasmb.rc.ufl.edu\blue\rachaelseidler\tfettrow\Crunch_Code\MR_Templates\mask_ICV.nii,1'};
 matlabbatch{1}.spm.stats.factorial_design.globalc.g_omit = 1;
 matlabbatch{1}.spm.stats.factorial_design.globalm.gmsca.gmsca_no = 1;
@@ -104,22 +110,38 @@ end
 clear matlabbatch
 
 
-load(fullfile(level2_results_dir,'SPM.mat'))
+% load(fullfile(level2_results_dir,'SPM.mat'))
 
 b = spm_select('FPList', level2_results_dir,'SPM.mat');%SPM.mat file
 matlabbatch{1}.spm.stats.con.spmmat = cellstr(b);
 
-matlabbatch{1}.spm.stats.con.consess{1}.tcon.name = 'young>old';
+matlabbatch{1}.spm.stats.con.consess{1}.tcon.name = 'grp1>gpr2';
 matlabbatch{1}.spm.stats.con.consess{1}.tcon.weights = [1 -1];
 matlabbatch{1}.spm.stats.con.consess{1}.tcon.sessrep = 'none';
 
-matlabbatch{1}.spm.stats.con.consess{2}.tcon.name = 'old>young';
+matlabbatch{1}.spm.stats.con.consess{2}.tcon.name = 'gpr2>grp1';
 matlabbatch{1}.spm.stats.con.consess{2}.tcon.weights = [-1 1];
 matlabbatch{1}.spm.stats.con.consess{2}.tcon.sessrep = 'none';
 
 matlabbatch{1}.spm.stats.con.delete = 1; %this deletes the previously existing contrasts; set to 0 if you do not want to delete previous contrasts!
 % 
 spm_jobman('run',matlabbatch);
+clear matlabbatch
+
+% load(fullfile(level2_results_dir,'SPM.mat'))
+% b = spm_select('FPList', level2_results_dir,'SPM.mat');%SPM.mat file
+% matlabbatch{1}.spm.stats.con.spmmat = cellstr(b);
+% 
+% matlabbatch{1}.spm.tools.tfce_estimate.mask = '';
+% matlabbatch{1}.spm.tools.tfce_estimate.conspec.titlestr = '';
+% matlabbatch{1}.spm.tools.tfce_estimate.conspec.contrasts = Inf;
+% matlabbatch{1}.spm.tools.tfce_estimate.conspec.n_perm = 5000;
+% matlabbatch{1}.spm.tools.tfce_estimate.nuisance_method = 2;
+% matlabbatch{1}.spm.tools.tfce_estimate.tbss = 0;
+% matlabbatch{1}.spm.tools.tfce_estimate.E_weight = 0.5;
+% matlabbatch{1}.spm.tools.tfce_estimate.singlethreaded = 1;
+% 
+% spm_jobman('run',matlabbatch);
 clear matlabbatch
 
 end
