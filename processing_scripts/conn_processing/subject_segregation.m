@@ -197,8 +197,8 @@ if plot_figures
             bar(1:length(subjects), avg_within_network_conn(this_seed_name_index,:))
         end
         
-        title(strcat('WITHIN Network Connectivity ', {' '}, network_name),'interpreter','latex')
-        ylabel('Individual Connectivity (?)')
+        title(strcat('WITHIN Network Connectivity ', {' '}, network_name),'interpreter','none', 'FontSize',18)
+        ylabel('Connectivity')
         set(gca,'XTick',1:length(subjects),'xticklabel',subjects,'TickLabelInterpreter','none')
         xtickangle(45)
         set(gcf, 'ToolBar', 'none');
@@ -218,16 +218,19 @@ if plot_figures
             group_2_indices = contains(group_ids,'2');
             
             bar(1, mean(avg_within_network_conn(this_seed_name_index,group_1_indices)), 'FaceColor', color_groups(1,:)); hold on;
+            errorbar(1, mean(avg_within_network_conn(this_seed_name_index,group_1_indices)), std(avg_within_network_conn(this_seed_name_index,group_1_indices))/nnz(group_1_indices), 'k'); hold on;
             bar(2, mean(avg_within_network_conn(this_seed_name_index,group_2_indices)), 'FaceColor', color_groups(2,:)); hold on;
+            errorbar(2, mean(avg_within_network_conn(this_seed_name_index,group_2_indices)), std(avg_within_network_conn(this_seed_name_index,group_2_indices))/nnz(group_2_indices), 'k'); hold on;
             if length(unique_groups) > 2
                 group_3_indices = contains(group_ids,'3');
                 bar(3, mean(avg_within_network_conn(this_seed_name_index,group_3_indices)), 'FaceColor', color_groups(3,:)); hold on;
+                errorbar(3, mean(avg_within_network_conn(this_seed_name_index,group_3_indices)), std(avg_within_network_conn(this_seed_name_index,group_3_indices))/nnz(group_3_indices), 'k'); hold on;
             end
         else
             bar(1:length(subjects), avg_within_network_conn(this_seed_name_index,:))
         end
-        title(strcat('WITHIN Network Connectivity', {' '}, network_name),'interpreter','latex')
-        ylabel('Group Connectivity (?)')
+        title(strcat('WITHIN Network Connectivity', {' '}, network_name),'interpreter','none', 'FontSize',18)
+        ylabel('Connectivity')
         %     legend({'YA','high-OA','low-OA'})
         set(gca,'XTick',1:length(unique_groups),'xticklabel',{'YA','high-OA','low-OA'},'TickLabelInterpreter','none')
         xtickangle(45)
@@ -259,8 +262,8 @@ if plot_figures
             bar(1:length(subjects), avg_between_network_conn(this_seed_name_index,:))
         end
         
-        title(strcat('BETWEEN Network Connectivity', {' '}, network_name),'interpreter','latex')
-        ylabel('Individual Connectivity (?)')
+        title(strcat('BETWEEN Network Connectivity', {' '}, network_name),'interpreter','none', 'FontSize',18)
+        ylabel('Connectivity')
         set(gca,'XTick',1:length(subjects),'xticklabel',subjects,'TickLabelInterpreter','none')
         xtickangle(45)
         set(gcf, 'ToolBar', 'none');
@@ -280,16 +283,19 @@ if plot_figures
             group_2_indices = contains(group_ids,'2');
             
             bar(1, mean(avg_between_network_conn(this_seed_name_index,group_1_indices)), 'FaceColor', color_groups(1,:)); hold on;
+            errorbar(1, mean(avg_between_network_conn(this_seed_name_index,group_1_indices)), std(avg_between_network_conn(this_seed_name_index,group_1_indices))/nnz(group_1_indices), 'k'); hold on;
             bar(2, mean(avg_between_network_conn(this_seed_name_index,group_2_indices)), 'FaceColor', color_groups(2,:)); hold on;
+            errorbar(2, mean(avg_between_network_conn(this_seed_name_index,group_2_indices)), std(avg_between_network_conn(this_seed_name_index,group_2_indices))/nnz(group_2_indices), 'k'); hold on;
             if length(unique_groups) > 2
                 group_3_indices = contains(group_ids,'3');
                 bar(3, mean(avg_between_network_conn(this_seed_name_index,group_3_indices)), 'FaceColor', color_groups(3,:)); hold on;
+                errorbar(3, mean(avg_between_network_conn(this_seed_name_index,group_3_indices)), std(avg_between_network_conn(this_seed_name_index,group_3_indices))/nnz(group_3_indices), 'k'); hold on;
             end
         else
             bar(1:length(subjects), avg_between_network_conn(this_seed_name_index,:))
         end
-        title(strcat('BETWEEN Network Connectivity', {' '}, network_name),'interpreter','latex')
-        ylabel('Group Connectivity (?)')
+        title(strcat('BETWEEN Network Connectivity', {' '}, network_name),'interpreter','none', 'FontSize',18)
+        ylabel('Connectivity')
         %     legend({'YA','high-OA','low-OA'})
         set(gca,'XTick',1:length(unique_groups),'xticklabel',{'YA','high-OA','low-OA'},'TickLabelInterpreter','none')
         xtickangle(45)
@@ -321,8 +327,8 @@ if plot_figures
         else
             bar(1:length(subjects), network_segregation(this_seed_name_index,:))
         end
-        title(strcat('Segregation', {' '}, network_name),'interpreter','latex')
-        ylabel('Individual Segregation (?)')
+        title(strcat('Segregation', {' '}, network_name),'interpreter','none', 'FontSize',18)
+        ylabel('Segregation')
         set(gca,'XTick',1:length(subjects), 'xticklabel',subjects,'TickLabelInterpreter','none')
         xtickangle(45)
         set(gcf, 'ToolBar', 'none');
@@ -342,15 +348,18 @@ if plot_figures
             group_2_indices = contains(group_ids,'2');
             
             bar(1, mean(network_segregation(this_seed_name_index,group_1_indices)), 'FaceColor', color_groups(1,:)); hold on;
+            errorbar(1, mean(network_segregation(this_seed_name_index,group_1_indices)), std(network_segregation(this_seed_name_index,group_1_indices))/nnz(group_1_indices), 'k'); hold on;
             bar(2, mean(network_segregation(this_seed_name_index,group_2_indices)), 'FaceColor', color_groups(2,:)); hold on;
+            errorbar(2, mean(network_segregation(this_seed_name_index,group_2_indices)), std(network_segregation(this_seed_name_index,group_2_indices))/nnz(group_2_indices), 'k'); hold on;
             if length(unique_groups) > 2
                 group_3_indices = contains(group_ids,'3');
                 bar(3, mean(network_segregation(this_seed_name_index,group_3_indices)), 'FaceColor', color_groups(3,:)); hold on;
+                errorbar(3, mean(network_segregation(this_seed_name_index,group_3_indices)), std(network_segregation(this_seed_name_index,group_3_indices))/nnz(group_3_indices), 'k'); hold on;
             end
             
         end
-        title(strcat('Segregation', {' '}, network_name),'interpreter','latex')
-        ylabel('Group Segregation (?)')
+        title(strcat('Segregation', {' '}, network_name),'interpreter','none', 'FontSize',18)
+        ylabel('Segregation')
         %     legend({'YA','high-OA','low-OA'})
         set(gca,'XTick',1:length(unique_groups),'xticklabel',{'YA','high-OA','low-OA'},'TickLabelInterpreter','none')
         xtickangle(45)
