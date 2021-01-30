@@ -28,7 +28,7 @@ for sub = 1:length(subjects)
     %create file path for beta values
     subj_results_dir = fullfile(data_path, subjects{sub}, 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_WholeBrain');
     this_subject_roiResults_path = fullfile(subj_results_dir, strcat(subjects{sub},beta_filename_extension,'.csv'));
-    delete(fullfile(subj_results_dir, '*.mat'))
+%     delete(fullfile(subj_results_dir, '*.mat'))
     fileID = fopen(this_subject_roiResults_path);
     
     %read the csv file and reshape to have separate headers and values
