@@ -1,5 +1,7 @@
 function identify_individual_discrete_crunch(varargin)
-%input task folder, subject numbers {####}
+%%this function calculates the individual crunch curves for the subjects specified. Please see the emaple command line
+%%input to run the code
+%%Example command line: identify_individual_discrete_crunch('subjects',{'1002','1004','1007','1009','1010','1011','1013','1020','1022','1024','1027','2002','2007','2008','2012','2013','2015','2017','2018','2020','2021','2022','2023','2025','2026','2033','2034','2037','2042','2052'},'task_folder','05_MotorImagery','output_filename','CRUNCH_discete_roi_newacc.mat','beta_filename_extension','_fmri_roi_betas_newacc')
 parser = inputParser;
 parser.KeepUnmatched = true;
 % setup defaults in case no arguments specified
