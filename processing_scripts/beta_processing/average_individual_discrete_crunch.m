@@ -1,6 +1,6 @@
 function average_individual_discrete_crunch(varargin)
 %%This function plots the average crunch curves. Please see the example input command to run the function
-%Example command: 
+%Example command:
 %average_individual_discrete_crunch('subjects',{'1002','1004','1007','1009','1010','1011','1013','1020','1022','1024','1027','2002','2007','2008','2012','2013','2015','2017','2018','2020','2021','2022','2023','2025','2026','2033','2034','2037','2042','2052'},'group_names',{'YA','OA'},'group_ids',[1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],'task_folder','05_MotorImagery','output_filename','CRUNCH_discete_roi_newacc.mat','beta_filename_extension','_fmri_roi_betas_newacc')
 %change one of the plot_* commads to 1 to plot the specified graphs
 parser = inputParser;
@@ -11,13 +11,13 @@ addParameter(parser, 'subjects', '')
 addParameter(parser, 'group_names', '')
 addParameter(parser, 'group_ids', '')
 addParameter(parser, 'no_labels', 0)
-addParameter(parser, 'save_figures', 0)
+addParameter(parser, 'save_figures', 1)
 addParameter(parser, 'plot_subjects', 0)
 addParameter(parser, 'plot_percents', 0)
 addParameter(parser, 'plot_averages', 0)
 addParameter(parser, 'output_filename', '')
 addParameter(parser, 'beta_filename_extension', '')
-addParameter(parser, 'plot_groups_together',0)
+addParameter(parser, 'plot_groups_together',1)
 addParameter(parser, 'separate_by_crunch_type',1)
 parse(parser, varargin{:})
 subjects = parser.Results.subjects;
@@ -426,14 +426,14 @@ if plot_averages
     close all;
     for this_group_index = 1 : length(group_names)
         this_group_subjectindices = find(group_ids==this_group_index);
-        if ~plot_groups_together
-            if any(strcmp(task_folder, '05_MotorImagery'))
-                figure; subplot(length(unique_rois), 3, 1);
-            elseif any(strcmp(task_folder, '06_Nback'))
-                figure; subplot(length(unique_rois), 3, 1);
-                figure; subplot(length(unique_rois), 3, 1);
-            end
+        
+        if any(strcmp(task_folder, '05_MotorImagery'))
+            figure; subplot(length(unique_rois), 3, 1);
+        elseif any(strcmp(task_folder, '06_Nback'))
+            figure; subplot(length(unique_rois), 3, 1);
+            figure; subplot(length(unique_rois), 3, 1);
         end
+        
         this_group_crunch_results = cr_results(this_group_subjectindices,:,:);
         
         this_group_crunch_results = cell2mat(this_group_crunch_results);
@@ -709,15 +709,15 @@ if plot_percents
             figure; subplot(1, 3, 1);
         end
         this_group_crunch_results = cr_results(this_group_subjectindices,:,:);
-%         subject_ids_table = cellstr(subjects');
-%         subject_table = table(subject_ids_table(this_group_subjectindices));
-%         subject_table = renamevars(subject_table,'Var1','Subject');
-%         
+        %         subject_ids_table = cellstr(subjects');
+        %         subject_table = table(subject_ids_table(this_group_subjectindices));
+        %         subject_table = renamevars(subject_table,'Var1','Subject');
+        %
         % makes logic easier below..
         this_group_crunch_results = cell2mat(this_group_crunch_results);
         
         % write the table to xlsx
-%         split_output_filename = strsplit(output_filename,'.');
+        %         split_output_filename = strsplit(output_filename,'.');
         
         this_figure_number = 1;
         for this_roi_index = 1 : length(unique_rois)
@@ -840,6 +840,251 @@ if plot_percents
                     saveas(gca, filename, 'tiff')
                 end
             end
+        end
+    end
+end
+
+%% Plot averages together
+if (plot_groups_together)
+    close all;
+    cmat = [1 0 0; 0 0 1];
+    for this_group_index = 1 : length(group_names)
+        this_group_subjectindices = find(group_ids==this_group_index);
+        if any(strcmp(task_folder, '05_MotorImagery'))
+            h1 = figure(1); subplot(length(unique_rois), 3, 1); hold on;
+        elseif any(strcmp(task_folder, '06_Nback'))
+            h1 = figure(1); subplot(length(unique_rois), 3, 1); hold on;
+            h2 = figure(2); subplot(length(unique_rois), 3, 1); hold on;
+        end
+        this_group_crunch_results = cr_results(this_group_subjectindices,:,:);
+        
+        this_group_crunch_results = cell2mat(this_group_crunch_results);
+        
+        this_figure_number = 1;
+        for this_roi_index = 1 : length(unique_rois)
+            this_group_and_roi_beta_results = beta_results(this_group_subjectindices,:,this_roi_index);
+            
+            number_of_levels = [(0 : 3);(0 : 3)+.15];
+            
+            if any(strcmp(task_folder, '05_MotorImagery'))
+                cruncher_indices = find(this_group_crunch_results(:,this_roi_index) == 1 | this_group_crunch_results(:,this_roi_index) == 2);
+                if ~isempty(cruncher_indices)
+                    figure(h1);subplot(length(unique_rois), 3, this_figure_number); hold on;
+                    if length(cruncher_indices)>1
+                        p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(cruncher_indices,:)),std(this_group_and_roi_beta_results(cruncher_indices,:))./sqrt(length(cruncher_indices)), '-s', 'MarkerFaceColor', cmat(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', group_color_matrix(this_group_index, :));
+                        p1.Color(4) = 0.6;
+                    end
+                    xticks([number_of_levels(1,:)])
+                    xlim([-1 4])
+                    title('crunchers')
+                    ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+                    if no_labels
+                        set(get(gca, 'xlabel'), 'visible', 'off');
+                        set(get(gca, 'ylabel'), 'visible', 'off');
+                        set(get(gca, 'title'), 'visible', 'off');
+                        legend(gca, 'hide');
+                    end
+                end
+            elseif any(strcmp(task_folder, '06_Nback'))
+                cruncher_indices_1500 =  find(this_group_crunch_results(:,this_roi_index) == 1 | this_group_crunch_results(:,this_roi_index) == 2);
+                cruncher_indices_500 = find(this_group_crunch_results(:,this_roi_index+length(unique_rois)) == 1 | this_group_crunch_results(:,this_roi_index+length(unique_rois)) == 2);
+                if ~isempty(cruncher_indices_1500)
+                    figure(h1); subplot(length(unique_rois), 3, this_figure_number); hold on;
+                    if length(cruncher_indices_1500)>1
+                        p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(cruncher_indices_1500,1:4)),std(this_group_and_roi_beta_results(cruncher_indices_1500,1:4))./sqrt(length(cruncher_indices_1500)), '-s', 'MarkerFaceColor', cmat(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', group_color_matrix(this_group_index, :));
+                        p1.Color(4) = 0.6;
+                    end
+                    figure(h1);
+                    xticks([number_of_levels(1,:)])
+                    xlim([-1 4])
+                    title('crunchers')
+                    ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+                    if no_labels
+                        set(get(gca, 'xlabel'), 'visible', 'off');
+                        set(get(gca, 'ylabel'), 'visible', 'off');
+                        set(get(gca, 'title'), 'visible', 'off');
+                        legend(gca, 'hide');
+                    end
+                end
+                if ~isempty(cruncher_indices_500)
+                    figure(h2); subplot(length(unique_rois), 3, this_figure_number); hold on;
+                    if length(cruncher_indices_500)>1
+                        p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(cruncher_indices_500,5:8)),std(this_group_and_roi_beta_results(cruncher_indices_500,5:8))./sqrt(length(cruncher_indices_500)), '-s', 'MarkerFaceColor', cmat(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', group_color_matrix(this_group_index, :));
+                        p1.Color(4) = 0.6;
+                    end
+                    figure(h2);
+                    xticks([number_of_levels(1,:)])
+                    xlim([-1 4])
+                    title('crunchers')
+                    ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+                    if no_labels
+                        set(get(gca, 'xlabel'), 'visible', 'off');
+                        set(get(gca, 'ylabel'), 'visible', 'off');
+                        set(get(gca, 'title'), 'visible', 'off');
+                        legend(gca, 'hide');
+                    end
+                end
+                
+            end
+            
+            % on to the next subplot
+            this_figure_number = this_figure_number + 1;
+            
+            %increasing
+            if any(strcmp(task_folder, '05_MotorImagery'))
+                nocruncher_increasing_indices = find(this_group_crunch_results(:,this_roi_index) == 3);
+                if ~isempty(nocruncher_increasing_indices)
+                    figure(h1);subplot(length(unique_rois), 3, this_figure_number); hold on;
+                    if length(nocruncher_increasing_indices)>1
+                        p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(nocruncher_increasing_indices,:)),std(this_group_and_roi_beta_results(nocruncher_increasing_indices,:))./sqrt(length(nocruncher_increasing_indices)), '-s', 'MarkerFaceColor', cmat(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', group_color_matrix(this_group_index, :));
+                        p1.Color(4) = 0.6;
+                    end
+                    xticks([number_of_levels(1,:)])
+                    xlim([-1 4])
+                    title('No crunchers (increasing)')
+                    ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+                    if no_labels
+                        set(get(gca, 'xlabel'), 'visible', 'off');
+                        set(get(gca, 'ylabel'), 'visible', 'off');
+                        set(get(gca, 'title'), 'visible', 'off');
+                        legend(gca, 'hide');
+                    end
+                end
+            elseif any(strcmp(task_folder, '06_Nback'))
+                nocruncher_increasing_indices_1500 = find(this_group_crunch_results(:,this_roi_index) == 3);
+                nocruncher_increasing_indices_500 = find(this_group_crunch_results(:,this_roi_index+length(unique_rois)) == 3);
+                if ~isempty(nocruncher_increasing_indices_1500)
+                    figure(h1); subplot(length(unique_rois), 3, this_figure_number); hold on;
+                    if length(nocruncher_increasing_indices_1500)>1
+                        p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(nocruncher_increasing_indices_1500,1:4)),std(this_group_and_roi_beta_results(nocruncher_increasing_indices_1500,1:4))./sqrt(length(nocruncher_increasing_indices_1500)), '-s', 'MarkerFaceColor', cmat(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', group_color_matrix(this_group_index, :));
+                        p1.Color(4) = 0.6;
+                    end
+                    figure(h1);
+                    xticks([number_of_levels(1,:)])
+                    xlim([-1 4])
+                    title('No crunchers (increasing)')
+                    ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+                    if no_labels
+                        set(get(gca, 'xlabel'), 'visible', 'off');
+                        set(get(gca, 'ylabel'), 'visible', 'off');
+                        set(get(gca, 'title'), 'visible', 'off');
+                        legend(gca, 'hide');
+                    end
+                end
+                if ~isempty(nocruncher_increasing_indices_500)
+                    figure(h2); subplot(length(unique_rois), 3, this_figure_number); hold on;
+                    if length(nocruncher_increasing_indices_500)>1
+                        p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(nocruncher_increasing_indices_500,5:8)),std(this_group_and_roi_beta_results(nocruncher_increasing_indices_500,5:8))./sqrt(length(nocruncher_increasing_indices_500)), '-s', 'MarkerFaceColor', cmat(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', group_color_matrix(this_group_index, :));
+                        p1.Color(4) = 0.6;
+                    end
+                    figure(h2);
+                    xticks([number_of_levels(1,:)])
+                    xlim([-1 4])
+                    title('No crunchers (increasing)')
+                    ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+                    if no_labels
+                        set(get(gca, 'xlabel'), 'visible', 'off');
+                        set(get(gca, 'ylabel'), 'visible', 'off');
+                        set(get(gca, 'title'), 'visible', 'off');
+                        legend(gca, 'hide');
+                    end
+                end
+            end
+            
+            % on to the next subplot
+            this_figure_number = this_figure_number + 1;
+            
+            
+            %decreasing
+            if any(strcmp(task_folder, '05_MotorImagery'))
+                nocruncher_decreasing_indices = find(this_group_crunch_results(:,this_roi_index) == 0);
+                if ~isempty(nocruncher_decreasing_indices)
+                    figure(h1); subplot(length(unique_rois), 3, this_figure_number); hold on;
+                    if length(nocruncher_decreasing_indices)>1
+                        p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(nocruncher_decreasing_indices,:)), std(this_group_and_roi_beta_results(nocruncher_decreasing_indices,:))./sqrt(length(nocruncher_decreasing_indices)), '-s', 'MarkerFaceColor', cmat(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', group_color_matrix(this_group_index, :));
+                        p1.Color(4) = 0.6;
+                    end
+                    xticks([number_of_levels(1,:)])
+                    xlim([-1 4])
+                    title('No crunchers (decreasing)')
+                    ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+                    if no_labels
+                        set(get(gca, 'xlabel'), 'visible', 'off');
+                        set(get(gca, 'ylabel'), 'visible', 'off');
+                        set(get(gca, 'title'), 'visible', 'off');
+                        legend(gca, 'hide');
+                    end
+                end
+            elseif any(strcmp(task_folder, '06_Nback'))
+                nocruncher_decreasing_indices_1500 = find(this_group_crunch_results(:,this_roi_index) == 0);
+                nocruncher_decreasing_indices_500 = find(this_group_crunch_results(:,this_roi_index+length(unique_rois)) == 0);
+                if ~isempty(nocruncher_decreasing_indices_1500)
+                    figure(h1); subplot(length(unique_rois), 3, this_figure_number); hold on;
+                    if length(nocruncher_decreasing_indices_1500)>1
+                        p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(nocruncher_decreasing_indices_1500,1:4)), std(this_group_and_roi_beta_results(nocruncher_decreasing_indices_1500,1:4))./sqrt(length(nocruncher_decreasing_indices_1500)), '-s', 'MarkerFaceColor', cmat(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', group_color_matrix(this_group_index, :));
+                        p1.Color(4) = 0.6;
+                    end
+                    figure(h1);
+                    xticks([number_of_levels(1,:)])
+                    xlim([-1 4])
+                    title('No crunchers (decreasing)')
+                    ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+                    if no_labels
+                        set(get(gca, 'xlabel'), 'visible', 'off');
+                        set(get(gca, 'ylabel'), 'visible', 'off');
+                        set(get(gca, 'title'), 'visible', 'off');
+                        legend(gca, 'hide');
+                    end
+                end
+                if ~isempty(nocruncher_decreasing_indices_500)
+                    figure(h2); subplot(length(unique_rois), 3, this_figure_number); hold on;
+                    if length(nocruncher_decreasing_indices_500)>1
+                        p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(nocruncher_decreasing_indices_500,5:8)), std(this_group_and_roi_beta_results(nocruncher_decreasing_indices_500,5:8))./sqrt(length(nocruncher_decreasing_indices_500)), '-s', 'MarkerFaceColor', cmat(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', group_color_matrix(this_group_index, :));
+                        p1.Color(4) = 0.6;
+                    end
+                    figure(h2);
+                    xticks([number_of_levels(1,:)])
+                    xlim([-1 4])
+                    title('No crunchers (decreasing)')
+                    ylabel([unique_rois(this_roi_index)],'interpreter','latex')
+                    if no_labels
+                        set(get(gca, 'xlabel'), 'visible', 'off');
+                        set(get(gca, 'ylabel'), 'visible', 'off');
+                        set(get(gca, 'title'), 'visible', 'off');
+                        legend(gca, 'hide');
+                    end
+                end
+            end
+            
+            % on to the next subplot
+            this_figure_number = this_figure_number + 1;
+        end
+    end
+    if any(strcmp(task_folder, '05_MotorImagery'))
+        figure(h1);
+        if ~no_labels
+            suptitle(strcat('All Groups ',{' '}, task))
+        end
+        filename = strcat(data_path,'/figures',filesep,'All_Groups_',task,'_CRseparated');
+        if save_figures
+            saveas(gca, filename, 'tiff')
+        end
+    elseif any(strcmp(task_folder, '06_Nback'))
+        figure(h1);
+        if ~no_labels
+            suptitle(strcat('All Groups ',{' '}, task))
+        end
+        filename = strcat(data_path,'/figures',filesep,'All_Groups_',task,'isi-1500_CRseparated');
+        if save_figures
+            saveas(gca, filename, 'tiff')
+        end
+        figure(h2);
+        if ~no_labels
+            suptitle(strcat('All Groups ',{' '}, task))
+        end
+        filename = strcat(data_path,'/figures',filesep,'All_Groups_',task,'isi-500_CRseparated');
+        if save_figures
+            saveas(gca, filename, 'tiff')
         end
     end
 end
