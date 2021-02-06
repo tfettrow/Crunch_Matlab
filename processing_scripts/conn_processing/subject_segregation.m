@@ -19,6 +19,7 @@ addParameter(parser, 'roi_settings_filename', '')
 addParameter(parser, 'seed_names', '') % 'mpc_and_pc','right_mouth','left_auditory','right_post_ips','left_insular','right_thalamus','dACC','visual_cortex','left_dlpfc','right_dflpfc'     % 'left_hand','left_mouth','medial_prefrontal_cortex','left_post_ips','left_insular','visual_cortex','left_ips','right_thalamus','left_rsc', 'post_cingulate', 'right_aud_cortex', 'right_post_ips', 'right_insular', 'right_ips', 'right_hand', 'right_mouth', 'right_leg', 'right_rsc', 'left_dlpfc','right_dlpfc', 'left_acc', 'right_acc', 'left_aud_cortex','dACC', 'mpc_and_pc'}
 addParameter(parser, 'group_names', '')
 addParameter(parser, 'group_ids', '')
+addParameter(parser, 'no_labels', '')
 addParameter(parser, 'separate_groups', 0)
 addParameter(parser, 'plot_figures', 0)
 addParameter(parser, 'save_figures', 0)
@@ -35,7 +36,7 @@ seed_names = parser.Results.seed_names;
 save_figures = parser.Results.save_figures;
 export_figures = parser.Results.export_figures;
 correlate_outcomes = parser.Results.correlate_outcomes;
-
+no_labels = parser.Results.no_labels;
 load([conn_project_name filesep 'subject_ids'])
 
 project_path = pwd;
@@ -115,65 +116,97 @@ for this_roi_index = 1:length(settings_cell)
 end
 
 for i_subject = 1 : length(available_subject_file_name_list)
-      this_subject_data = load(strcat(first_level_corr_folder, filesep, available_subject_file_name_list{i_subject}));
-       
-       average_total_conn(i_subject) = mean(nanmean(this_subject_data.Z));
-      % for each seed (network) 
-      % % % WITHIN % % 
-      % 1) go into this subject data
-      % 2) identify the indices for this seed
-      % 3) find the pairs of rois within this seed/network
-      % 4) extract the correlation for each pair (if>0) and average
-      % % % BETWEEN % %
-      % 1) go into this subject data
-      % 2) identify the indices for this seed
-      % 3) find the pairs of rois between each index (within this seed) and
-      % all other indices
-      
-      roi_pairs_between_network = [];
-      for this_seed_name_index = 1:length(seed_names)
-          this_within_network_occurences = contains(roi_network_cell, strcat(seed_names{this_seed_name_index},'_network'));
-          this_within_network_indices = find(this_within_network_occurences);
-          roi_pairs_within_network = nchoosek(this_within_network_indices,2);
-          
-          % find seed names outside of this_seed_name to generate
-          % this_outside_network_occurences
-          not_this_seed_name_index = 1:length(seed_names);
-          not_this_seed_name_index(this_seed_name_index) = [];
-          this_outside_network_occurences = contains(roi_network_cell, strcat(seed_names(not_this_seed_name_index)','_network'));
-          this_outside_network_indices = find(this_outside_network_occurences);
-            
-          for idx = 1 : length(this_within_network_indices)
-              this_within_network_index = this_within_network_indices(idx);
-              this_within_network_index_matrix = repmat(this_within_network_index, 1, length(this_outside_network_indices))';
-              this_within_and_between_network_index_pairs = [this_within_network_index_matrix, this_outside_network_indices'];
-              roi_pairs_between_network = [roi_pairs_between_network; this_within_and_between_network_index_pairs]; 
-          end
-              
-          this_within_network_corr_vector=[];
-          for this_roi_pair = 1:size(roi_pairs_within_network,1)
-              this_network_roi_value = this_subject_data.Z(roi_pairs_within_network(this_roi_pair,1), roi_pairs_within_network(this_roi_pair,2));
-              % if anti-correlated set to 0
-              if this_network_roi_value < 0
-                  this_network_roi_value = 0;
-              end
-              this_within_network_corr_vector(this_roi_pair) = this_network_roi_value;
-          end
-          avg_within_network_conn(this_seed_name_index, i_subject) = mean(this_within_network_corr_vector);
-          
-          this_between_network_corr_vector=[];
-          for this_roi_pair = 1:size(roi_pairs_between_network,1)
-              this_network_roi_value = this_subject_data.Z(roi_pairs_between_network(this_roi_pair,1), roi_pairs_between_network(this_roi_pair,2));
-              % if anti-correlated set to 0
-              if this_network_roi_value < 0
-                  this_network_roi_value = 0;
-              end
-              this_between_network_corr_vector(this_roi_pair) = this_network_roi_value;
-          end
-          avg_between_network_conn(this_seed_name_index, i_subject) = mean(this_between_network_corr_vector);
-         
-          network_segregation(this_seed_name_index, i_subject) = (avg_within_network_conn(this_seed_name_index, i_subject) - avg_between_network_conn(this_seed_name_index, i_subject))/(avg_within_network_conn(this_seed_name_index, i_subject)); 
-      end   
+    this_subject_data = load(strcat(first_level_corr_folder, filesep, available_subject_file_name_list{i_subject}));
+    
+    average_total_conn(i_subject) = mean(nanmean(this_subject_data.Z));
+    % for each seed (network)
+    % % % WITHIN % %
+    % 1) go into this subject data
+    % 2) identify the indices for this seed
+    % 3) find the pairs of rois within this seed/network
+    % 4) extract the correlation for each pair (if>0) and average
+    % % % BETWEEN % %
+    % 1) go into this subject data
+    % 2) identify the indices for this seed
+    % 3) find the pairs of rois between each index (within this seed) and
+    % all other indices
+    
+    roi_pairs_between_network = [];
+    for this_seed_name_index = 1:length(seed_names)
+        this_within_network_occurences = contains(roi_network_cell, strcat(seed_names{this_seed_name_index},'_network'));
+        this_within_network_indices = find(this_within_network_occurences);
+        roi_pairs_within_network = nchoosek(this_within_network_indices,2);
+        
+        % find seed names outside of this_seed_name to generate
+        % this_outside_network_occurences
+        not_this_seed_name_index = 1:length(seed_names);
+        not_this_seed_name_index(this_seed_name_index) = [];
+        this_outside_network_occurences = contains(roi_network_cell, strcat(seed_names(not_this_seed_name_index)','_network'));
+        this_outside_network_indices = find(this_outside_network_occurences);
+        
+        for idx = 1 : length(this_within_network_indices)
+            this_within_network_index = this_within_network_indices(idx);
+            this_within_network_index_matrix = repmat(this_within_network_index, 1, length(this_outside_network_indices))';
+            this_within_and_between_network_index_pairs = [this_within_network_index_matrix, this_outside_network_indices'];
+            roi_pairs_between_network = [roi_pairs_between_network; this_within_and_between_network_index_pairs];
+        end
+        
+        this_within_network_corr_vector=[];
+        for this_roi_pair = 1:size(roi_pairs_within_network,1)
+            this_network_roi_value = this_subject_data.Z(roi_pairs_within_network(this_roi_pair,1), roi_pairs_within_network(this_roi_pair,2));
+            % if anti-correlated set to 0
+            if this_network_roi_value < 0
+                this_network_roi_value = 0;
+            end
+            this_within_network_corr_vector(this_roi_pair) = this_network_roi_value;
+        end
+        avg_within_network_conn(this_seed_name_index, i_subject) = mean(this_within_network_corr_vector);
+        
+        this_between_network_corr_vector=[];
+        for this_roi_pair = 1:size(roi_pairs_between_network,1)
+            this_network_roi_value = this_subject_data.Z(roi_pairs_between_network(this_roi_pair,1), roi_pairs_between_network(this_roi_pair,2));
+            % if anti-correlated set to 0
+            if this_network_roi_value < 0
+                this_network_roi_value = 0;
+            end
+            this_between_network_corr_vector(this_roi_pair) = this_network_roi_value;
+        end
+        avg_between_network_conn(this_seed_name_index, i_subject) = mean(this_between_network_corr_vector);
+        
+        network_segregation(this_seed_name_index, i_subject) = (avg_within_network_conn(this_seed_name_index, i_subject) - avg_between_network_conn(this_seed_name_index, i_subject))/(avg_within_network_conn(this_seed_name_index, i_subject));
+    end
+    
+    % 1) for each subject i want to export the last 4? seed_indices of
+    % network_segregation
+    % 2) write to csv (see the resulting 1013_fmri_roi_betas.csv in fmri
+    % Level1 folder) 
+%     example:
+% record_id, redcap_event_name,flat_neurosynth_dlpfc_left_gmMasked,low_neurosynth_dlpfc_left_gmMasked,med_neurosynth_dlpfc_left_gmMasked,high_neurosynth_dlpfc_left_gmMasked,flat_neurosynth_dlpfc_right_gmMasked,low_neurosynth_dlpfc_right_gmMasked,med_neurosynth_dlpfc_right_gmMasked,high_neurosynth_dlpfc_right_gmMasked,flat_neurosynth_acc_gmMasked,low_neurosynth_acc_gmMasked,med_neurosynth_acc_gmMasked,high_neurosynth_acc_gmMasked
+% 1013, base_v4_mri_arm_1,0.321409 ,0.440705 ,0.929578 ,0.257719  ​,0.049928 ,0.237883 ,0.515291 ,-0.031890  ​,-0.064096 ,0.343579 ,0.125681 ,-0.187217  ​
+    % 3) write this into subject/rsfmri/Level1 
+%         example:
+% record_id, redcap_event_name, seed_name1, seed_name2, etc
+
+% only gather the left_dlpfc, right_dlpfc, left_acc, and right_acc
+networks_of_interest_indices = find(contains(seed_names,{'left_dlpfc', 'right_dlpfc', 'left_acc', 'right_acc'}));
+this_table_cell = {subjects{i_subject}, 'base_v4_mri_arm_1'};
+seed_names_cell = {'record_id', 'redcap_event_name'};
+for i_net = 1:length(networks_of_interest_indices)
+    this_table_cell{i_net+2} = network_segregation(networks_of_interest_indices(i_net));
+    seed_names_cell(i_net+2) = strcat('conn_',seed_names(networks_of_interest_indices(i_net)));
+end
+
+seed_names_cell{end+1} = 'conn_complete';
+this_table_cell{end+1} = '2';
+
+T = cell2table(this_table_cell, 'VariableNames', seed_names_cell);
+
+% 1) need to identify study folder then create a this_subject processed rsfMRI folder Level1 folder then write T 
+
+subject_folder = subjects{i_subject};
+mkdir(fullfile(project_path, subject_folder, 'Processed', 'MRI_files','04_rsfMRI','ANTS_Normalization','Level1'));
+writetable(T, fullfile(project_path, subject_folder, 'Processed', 'MRI_files','04_rsfMRI','ANTS_Normalization','Level1', strcat(subjects{i_subject},'_rsfmri_segregation.csv')))
+
 end
 
 if plot_figures
@@ -203,6 +236,12 @@ if plot_figures
         xtickangle(45)
         set(gcf, 'ToolBar', 'none');
         set(gcf, 'MenuBar', 'none');
+        if no_labels
+            set(get(gca, 'xlabel'), 'visible', 'off');
+            set(get(gca, 'ylabel'), 'visible', 'off');
+            set(get(gca, 'title'), 'visible', 'off');
+            legend(gca, 'hide');
+        end
         if save_figures
             fig_title = strcat('subjects_', network_name, 'within_network_connectivity');
             filename =  fullfile(project_path, 'figures', fig_title);
@@ -217,25 +256,40 @@ if plot_figures
             group_1_indices = contains(group_ids,'1');
             group_2_indices = contains(group_ids,'2');
             
-            bar(1, mean(avg_within_network_conn(this_seed_name_index,group_1_indices)), 'FaceColor', color_groups(1,:)); hold on;
-            errorbar(1, mean(avg_within_network_conn(this_seed_name_index,group_1_indices)), std(avg_within_network_conn(this_seed_name_index,group_1_indices))/nnz(group_1_indices), 'k'); hold on;
-            bar(2, mean(avg_within_network_conn(this_seed_name_index,group_2_indices)), 'FaceColor', color_groups(2,:)); hold on;
-            errorbar(2, mean(avg_within_network_conn(this_seed_name_index,group_2_indices)), std(avg_within_network_conn(this_seed_name_index,group_2_indices))/nnz(group_2_indices), 'k'); hold on;
+            singleBoxPlot(avg_within_network_conn(this_seed_name_index,group_1_indices),'abscissa', 1, 'EdgeColor', color_groups(1,:), 'MarkerColor', color_groups(1,:),'WiskColor',  color_groups(1,:), 'MeanColor', color_groups(1,:))
+            singleBoxPlot(avg_within_network_conn(this_seed_name_index,group_2_indices),'abscissa', 2, 'EdgeColor', color_groups(2,:), 'MarkerColor', color_groups(2,:),'WiskColor',  color_groups(2,:), 'MeanColor', color_groups(2,:))
+            xlim([0 3])
             if length(unique_groups) > 2
                 group_3_indices = contains(group_ids,'3');
-                bar(3, mean(avg_within_network_conn(this_seed_name_index,group_3_indices)), 'FaceColor', color_groups(3,:)); hold on;
-                errorbar(3, mean(avg_within_network_conn(this_seed_name_index,group_3_indices)), std(avg_within_network_conn(this_seed_name_index,group_3_indices))/nnz(group_3_indices), 'k'); hold on;
+                singleBoxPlot(avg_within_network_conn(this_seed_name_index,group_3_indices),'abscissa', 3, 'EdgeColor', color_groups(3,:), 'MarkerColor', color_groups(3,:),'WiskColor',  color_groups(3,:), 'MeanColor', color_groups(3,:))
+                xlim([0 4])
             end
+            %             bar(1, mean(avg_within_network_conn(this_seed_name_index,group_1_indices)), 'FaceColor', color_groups(1,:)); hold on;
+%             errorbar(1, mean(avg_within_network_conn(this_seed_name_index,group_1_indices)), std(avg_within_network_conn(this_seed_name_index,group_1_indices))/nnz(group_1_indices), 'k'); hold on;
+%             bar(2, mean(avg_within_network_conn(this_seed_name_index,group_2_indices)), 'FaceColor', color_groups(2,:)); hold on;
+%             errorbar(2, mean(avg_within_network_conn(this_seed_name_index,group_2_indices)), std(avg_within_network_conn(this_seed_name_index,group_2_indices))/nnz(group_2_indices), 'k'); hold on;
+%             if length(unique_groups) > 2
+%                  bar(3, mean(avg_within_network_conn(this_seed_name_index,group_3_indices)), 'FaceColor', color_groups(3,:)); hold on;
+%                 errorbar(3, mean(avg_within_network_conn(this_seed_name_index,group_3_indices)), std(avg_within_network_conn(this_seed_name_index,group_3_indices))/nnz(group_3_indices), 'k'); hold on;
+%             end
+ 
         else
             bar(1:length(subjects), avg_within_network_conn(this_seed_name_index,:))
         end
+        ylim([0 .3])
         title(strcat('WITHIN Network Connectivity', {' '}, network_name),'interpreter','none', 'FontSize',18)
         ylabel('Connectivity')
         %     legend({'YA','high-OA','low-OA'})
-        set(gca,'XTick',1:length(unique_groups),'xticklabel',{'YA','high-OA','low-OA'},'TickLabelInterpreter','none')
+        set(gca,'XTick',1:length(unique_groups),'xticklabel',{'YA','high-OA','low-OA'},'TickLabelInterpreter','none','FontSize',16)
         xtickangle(45)
         set(gcf, 'ToolBar', 'none');
         set(gcf, 'MenuBar', 'none');
+        if no_labels
+            set(get(gca, 'xlabel'), 'visible', 'off');
+            set(get(gca, 'ylabel'), 'visible', 'off');
+            set(get(gca, 'title'), 'visible', 'off');
+            legend(gca, 'hide');
+        end
         if save_figures
             fig_title = strcat('groups_', network_name, 'within_network_connectivity');
             filename =  fullfile(project_path, 'figures', fig_title);
@@ -268,6 +322,12 @@ if plot_figures
         xtickangle(45)
         set(gcf, 'ToolBar', 'none');
         set(gcf, 'MenuBar', 'none');
+        if no_labels
+            set(get(gca, 'xlabel'), 'visible', 'off');
+            set(get(gca, 'ylabel'), 'visible', 'off');
+            set(get(gca, 'title'), 'visible', 'off');
+            legend(gca, 'hide');
+        end
         if save_figures
             fig_title = strcat('subjects_', network_name, 'between_network_connectivity');
             filename =  fullfile(project_path, 'figures', fig_title);
@@ -282,25 +342,41 @@ if plot_figures
             group_1_indices = contains(group_ids,'1');
             group_2_indices = contains(group_ids,'2');
             
-            bar(1, mean(avg_between_network_conn(this_seed_name_index,group_1_indices)), 'FaceColor', color_groups(1,:)); hold on;
-            errorbar(1, mean(avg_between_network_conn(this_seed_name_index,group_1_indices)), std(avg_between_network_conn(this_seed_name_index,group_1_indices))/nnz(group_1_indices), 'k'); hold on;
-            bar(2, mean(avg_between_network_conn(this_seed_name_index,group_2_indices)), 'FaceColor', color_groups(2,:)); hold on;
-            errorbar(2, mean(avg_between_network_conn(this_seed_name_index,group_2_indices)), std(avg_between_network_conn(this_seed_name_index,group_2_indices))/nnz(group_2_indices), 'k'); hold on;
+            singleBoxPlot(avg_between_network_conn(this_seed_name_index,group_1_indices),'abscissa', 1, 'EdgeColor', color_groups(1,:), 'MarkerColor', color_groups(1,:),'WiskColor',  color_groups(1,:), 'MeanColor', color_groups(1,:))
+            singleBoxPlot(avg_between_network_conn(this_seed_name_index,group_2_indices),'abscissa', 2, 'EdgeColor', color_groups(2,:), 'MarkerColor', color_groups(2,:),'WiskColor',  color_groups(2,:), 'MeanColor', color_groups(2,:))
+            xlim([0 3])
             if length(unique_groups) > 2
                 group_3_indices = contains(group_ids,'3');
-                bar(3, mean(avg_between_network_conn(this_seed_name_index,group_3_indices)), 'FaceColor', color_groups(3,:)); hold on;
-                errorbar(3, mean(avg_between_network_conn(this_seed_name_index,group_3_indices)), std(avg_between_network_conn(this_seed_name_index,group_3_indices))/nnz(group_3_indices), 'k'); hold on;
+                singleBoxPlot(avg_between_network_conn(this_seed_name_index,group_3_indices),'abscissa', 3, 'EdgeColor', color_groups(3,:), 'MarkerColor', color_groups(3,:),'WiskColor',  color_groups(3,:), 'MeanColor', color_groups(3,:))
+                xlim([0 4])
             end
+            
+%             bar(1, mean(avg_between_network_conn(this_seed_name_index,group_1_indices)), 'FaceColor', color_groups(1,:)); hold on;
+%             errorbar(1, mean(avg_between_network_conn(this_seed_name_index,group_1_indices)), std(avg_between_network_conn(this_seed_name_index,group_1_indices))/nnz(group_1_indices), 'k'); hold on;
+%             bar(2, mean(avg_between_network_conn(this_seed_name_index,group_2_indices)), 'FaceColor', color_groups(2,:)); hold on;
+%             errorbar(2, mean(avg_between_network_conn(this_seed_name_index,group_2_indices)), std(avg_between_network_conn(this_seed_name_index,group_2_indices))/nnz(group_2_indices), 'k'); hold on;
+%             if length(unique_groups) > 2
+%                 group_3_indices = contains(group_ids,'3');
+%                 bar(3, mean(avg_between_network_conn(this_seed_name_index,group_3_indices)), 'FaceColor', color_groups(3,:)); hold on;
+%                 errorbar(3, mean(avg_between_network_conn(this_seed_name_index,group_3_indices)), std(avg_between_network_conn(this_seed_name_index,group_3_indices))/nnz(group_3_indices), 'k'); hold on;
+%             end
         else
             bar(1:length(subjects), avg_between_network_conn(this_seed_name_index,:))
         end
+        ylim([0 .1])
         title(strcat('BETWEEN Network Connectivity', {' '}, network_name),'interpreter','none', 'FontSize',18)
         ylabel('Connectivity')
         %     legend({'YA','high-OA','low-OA'})
-        set(gca,'XTick',1:length(unique_groups),'xticklabel',{'YA','high-OA','low-OA'},'TickLabelInterpreter','none')
+        set(gca,'XTick',1:length(unique_groups),'xticklabel',{'YA','high-OA','low-OA'},'TickLabelInterpreter','none','FontSize',16)
         xtickangle(45)
         set(gcf, 'ToolBar', 'none');
         set(gcf, 'MenuBar', 'none');
+        if no_labels
+            set(get(gca, 'xlabel'), 'visible', 'off');
+            set(get(gca, 'ylabel'), 'visible', 'off');
+            set(get(gca, 'title'), 'visible', 'off');
+            legend(gca, 'hide');
+        end
         if save_figures
             fig_title = strcat('groups_', network_name, 'between_network_connectivity');
             filename =  fullfile(project_path, 'figures', fig_title);
@@ -333,6 +409,12 @@ if plot_figures
         xtickangle(45)
         set(gcf, 'ToolBar', 'none');
         set(gcf, 'MenuBar', 'none');
+        if no_labels
+            set(get(gca, 'xlabel'), 'visible', 'off');
+            set(get(gca, 'ylabel'), 'visible', 'off');
+            set(get(gca, 'title'), 'visible', 'off');
+            legend(gca, 'hide');
+        end
         if save_figures
             fig_title = strcat('subjects_', network_name, 'network_segregation');
             filename =  fullfile(project_path, 'figures', fig_title);
@@ -347,24 +429,40 @@ if plot_figures
             group_1_indices = contains(group_ids,'1');
             group_2_indices = contains(group_ids,'2');
             
-            bar(1, mean(network_segregation(this_seed_name_index,group_1_indices)), 'FaceColor', color_groups(1,:)); hold on;
-            errorbar(1, mean(network_segregation(this_seed_name_index,group_1_indices)), std(network_segregation(this_seed_name_index,group_1_indices))/nnz(group_1_indices), 'k'); hold on;
-            bar(2, mean(network_segregation(this_seed_name_index,group_2_indices)), 'FaceColor', color_groups(2,:)); hold on;
-            errorbar(2, mean(network_segregation(this_seed_name_index,group_2_indices)), std(network_segregation(this_seed_name_index,group_2_indices))/nnz(group_2_indices), 'k'); hold on;
+            singleBoxPlot(network_segregation(this_seed_name_index,group_1_indices),'abscissa', 1, 'EdgeColor', color_groups(1,:), 'MarkerColor', color_groups(1,:),'WiskColor',  color_groups(1,:), 'MeanColor', color_groups(1,:))
+            singleBoxPlot(network_segregation(this_seed_name_index,group_2_indices),'abscissa', 2, 'EdgeColor', color_groups(2,:), 'MarkerColor', color_groups(2,:),'WiskColor',  color_groups(2,:), 'MeanColor', color_groups(2,:))
+            xlim([0 3])
             if length(unique_groups) > 2
                 group_3_indices = contains(group_ids,'3');
-                bar(3, mean(network_segregation(this_seed_name_index,group_3_indices)), 'FaceColor', color_groups(3,:)); hold on;
-                errorbar(3, mean(network_segregation(this_seed_name_index,group_3_indices)), std(network_segregation(this_seed_name_index,group_3_indices))/nnz(group_3_indices), 'k'); hold on;
+                singleBoxPlot(network_segregation(this_seed_name_index,group_3_indices),'abscissa', 3, 'EdgeColor', color_groups(3,:), 'MarkerColor', color_groups(3,:),'WiskColor',  color_groups(3,:), 'MeanColor', color_groups(3,:))
+                xlim([0 4])
             end
             
+%             bar(1, mean(network_segregation(this_seed_name_index,group_1_indices)), 'FaceColor', color_groups(1,:)); hold on;
+%             errorbar(1, mean(network_segregation(this_seed_name_index,group_1_indices)), std(network_segregation(this_seed_name_index,group_1_indices))/nnz(group_1_indices), 'k'); hold on;
+%             bar(2, mean(network_segregation(this_seed_name_index,group_2_indices)), 'FaceColor', color_groups(2,:)); hold on;
+%             errorbar(2, mean(network_segregation(this_seed_name_index,group_2_indices)), std(network_segregation(this_seed_name_index,group_2_indices))/nnz(group_2_indices), 'k'); hold on;
+%             if length(unique_groups) > 2
+%                 group_3_indices = contains(group_ids,'3');
+%                 bar(3, mean(network_segregation(this_seed_name_index,group_3_indices)), 'FaceColor', color_groups(3,:)); hold on;
+%                 errorbar(3, mean(network_segregation(this_seed_name_index,group_3_indices)), std(network_segregation(this_seed_name_index,group_3_indices))/nnz(group_3_indices), 'k'); hold on;
+%             end
+            
         end
+        ylim([0 .85])
         title(strcat('Segregation', {' '}, network_name),'interpreter','none', 'FontSize',18)
         ylabel('Segregation')
         %     legend({'YA','high-OA','low-OA'})
-        set(gca,'XTick',1:length(unique_groups),'xticklabel',{'YA','high-OA','low-OA'},'TickLabelInterpreter','none')
+        set(gca,'XTick',1:length(unique_groups),'xticklabel',{'YA','high-OA','low-OA'},'TickLabelInterpreter','none','FontSize',16)
         xtickangle(45)
         set(gcf, 'ToolBar', 'none');
         set(gcf, 'MenuBar', 'none');
+        if no_labels
+            set(get(gca, 'xlabel'), 'visible', 'off');
+            set(get(gca, 'ylabel'), 'visible', 'off');
+            set(get(gca, 'title'), 'visible', 'off');
+            legend(gca, 'hide');
+        end
         if save_figures
             fig_title = strcat('groups_', network_name, 'network_segregation');
             filename =  fullfile(project_path, 'figures', fig_title);
