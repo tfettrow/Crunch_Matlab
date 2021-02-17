@@ -125,12 +125,6 @@ if plot_subjects
         % makes logic easier below..
         this_group_crunch_results = cell2mat(this_group_crunch_results);
         
-        % write the table to xlsx
-        split_output_filename = strsplit(output_filename,'.');
-        filename = strcat('crunch_summary_statistics_',task,'_',split_output_filename{1},'_',group_names{this_group_index},'.xlsx');
-        if exist(filename)
-            delete(filename)
-        end
         this_figure_number = 1;
         for this_roi_index = 1 : length(unique_rois)
             this_group_and_roi_beta_results = beta_results(this_group_subjectindices,:,this_roi_index);
