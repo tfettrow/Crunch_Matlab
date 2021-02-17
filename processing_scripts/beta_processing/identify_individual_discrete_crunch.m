@@ -74,7 +74,7 @@ for sub = 1:length(subjects)
             temp(1,k) = textscan(data{this_roi_indices(k)+2,2},'%f'); %temporary hold the beta value
         end
         beta_values = cell2mat(temp)'; %covert from cell to matrix
-        subplot(1, 4, this_figure_number);
+        subplot(1, length(unique_rois), this_figure_number);
         hold on;
         
         if any(strcmp(task_folder, '05_MotorImagery'))
@@ -104,6 +104,7 @@ for sub = 1:length(subjects)
                 % deprecated
                 % cr{this_roi_index} = 3; %never CRUNCH point
             end
+            max_beta_cr{this_roi_index} = beta_values(max_beta_index);
         elseif any(strcmp(task_folder, '06_Nback'))
             number_of_levels = 0:3;
             
@@ -130,6 +131,7 @@ for sub = 1:length(subjects)
 %                 end
 %                 cr_1500{this_roi_index} = 3; %never CRUNCH point
             end
+            max_beta_cr_1500{this_roi_index} = beta_values(max_beta_index);
             max_beta_index = find(max(beta_values(5:8))==beta_values(5:8)); %CRUNCH for 500 ISI
             if (max_beta_index  == 1)
                 cr_500{this_roi_index} = 0; %start CRUNCH point
@@ -151,6 +153,7 @@ for sub = 1:length(subjects)
 %                 end
 %                 cr_500{this_roi_index} = 3; %never CRUNCH point
             end
+            max_beta_cr_500{this_roi_index} = beta_values(max_beta_index);
         end
         hold off;
         xticks(number_of_levels)
@@ -166,14 +169,14 @@ for sub = 1:length(subjects)
     if save_variables
         if any(strcmp(task_folder, '05_MotorImagery'))
             task='MotorImagery';
-            save(char(strcat(subj_results_dir,filesep,strcat(subjects{sub},'_',task,'_',output_filename))),'cr*','data','unique_rois');
+            save(char(strcat(subj_results_dir,filesep,strcat(subjects{sub},'_',task,'_',output_filename))),'cr*','data','unique_rois','max_beta_cr*');
         elseif any(strcmp(task_folder, '06_Nback'))
             task='Nback';
-            save(char(strcat(subj_results_dir,filesep,strcat(subjects{sub},'_',task,'_',output_filename))),'cr*','data','unique_rois');
+            save(char(strcat(subj_results_dir,filesep,strcat(subjects{sub},'_',task,'_',output_filename))),'cr*','data','unique_rois','max_beta_cr*');
         end
     end
     fclose(fileID);
-    clearvars beta_values cr* data temp ordered_conditions this_beta this_roi_index;
+    clearvars beta_values cr* max_beta* data temp ordered_conditions this_beta this_roi_index;
 end
 end
 
