@@ -8,6 +8,7 @@ addParameter(parser, 'group_ids', '')
 addParameter(parser, 'no_labels', 0)
 addParameter(parser, 'regressor_variable1', '')
 addParameter(parser, 'regressor_variable2', '')
+addParameter(parser, 'crunchers_only', '0')
 parse(parser, varargin{:})
 subjects = parser.Results.subjects;
 group_names = parser.Results.group_names;
@@ -15,17 +16,23 @@ group_ids = parser.Results.group_ids;
 no_labels = parser.Results.no_labels;
 regressor_variable1 = parser.Results.regressor_variable1;
 regressor_variable2 = parser.Results.regressor_variable2;
+crunchers_only = parser.Results.crunchers_only;
 data_path = pwd;
 close all
 
 group_color_matrix = distinguishable_colors(length(group_names));
 % data_path = pwd;
-
-if strcmp(regressor_variable1,'crunch_nb')
-    % check for inlcusion crunchers
+if strcmp(regressor_variable1,'cr_score_mi')
+    potential_regressor1_data =  readtable(fullfile(data_path,'spreadsheet_data','cr_score_mi.csv'));
 end
-if strcmp(regressor_variable1,'crunch_mi')
-    % check for inlcusion crunchers
+if strcmp(regressor_variable1,'maxbeta_score_mi')
+    potential_regressor1_data =  readtable(fullfile(data_path,'spreadsheet_data','maxbeta_score_mi.csv'));
+end
+if strcmp(regressor_variable1,'cr_score_nb')
+    potential_regressor1_data =  readtable(fullfile(data_path,'spreadsheet_data','cr_score_nb.csv'));
+end
+if strcmp(regressor_variable1,'maxbeta_score_nb')
+    potential_regressor1_data =  readtable(fullfile(data_path,'spreadsheet_data','maxbeta_score_nb.csv'));
 end
 if strcmp(regressor_variable1,'400m_walk')
     potential_regressor1_data =  readtable(fullfile(data_path,'spreadsheet_data','400m_walk.csv'));
@@ -50,11 +57,17 @@ if strcmp(regressor_variable1,'pain_thresh')
     potential_regressor1_data = xlsread('sensory_data.xlsx');
 end
 
-if strcmp(regressor_variable2,'crunch_nb')
-    % check for inlcusion crunchers
+if strcmp(regressor_variable2,'cr_score_mi')
+    potential_regressor2_data =  readtable(fullfile(data_path,'spreadsheet_data','cr_score_mi.csv'));
 end
-if strcmp(regressor_variable2,'crunch_mi')
-    % check for inlcusion crunchers
+if strcmp(regressor_variable2,'maxbeta_score_mi')
+    potential_regressor2_data =  readtable(fullfile(data_path,'spreadsheet_data','maxbeta_score_mi.csv'));
+end
+if strcmp(regressor_variable2,'cr_score_nb')
+    potential_regressor2_data =  readtable(fullfile(data_path,'spreadsheet_data','cr_score_nb.csv'));
+end
+if strcmp(regressor_variable2,'maxbeta_score_nb')
+    potential_regressor2_data =  readtable(fullfile(data_path,'spreadsheet_data','maxbeta_score_nb.csv'));
 end
 if strcmp(regressor_variable2,'400m_walk')
     potential_regressor2_data = readtable(fullfile(data_path,'spreadsheet_data','400m_walk.csv'));
@@ -94,7 +107,8 @@ inclusion_counter = 1;
 for this_subject_index = 1 : length(subjects)
    this_subject_row_data_reg1 = find(strcmp(string(table2cell(potential_regressor1_data(:,1))), subjects{this_subject_index}));
    this_subject_row_data_reg2 = find(strcmp(string(table2cell(potential_regressor2_data(:,1))), subjects{this_subject_index}));
-   if isempty(this_subject_row_data_reg1) || isempty(this_subject_row_data_reg2) || isempty(table2cell(potential_regressor2_data(this_subject_row_data_reg2,2:end))) || isempty(table2cell(potential_regressor1_data(this_subject_row_data_reg1,2:end))) || any(isnan(cell2mat(table2cell(potential_regressor2_data(this_subject_row_data_reg2,2:end))))) || any(isnan(cell2mat(table2cell(potential_regressor1_data(this_subject_row_data_reg1,2:end)))));
+   if isempty(this_subject_row_data_reg1) || isempty(this_subject_row_data_reg2) || isempty(table2cell(potential_regressor2_data(this_subject_row_data_reg2,2:end))) || isempty(table2cell(potential_regressor1_data(this_subject_row_data_reg1,2:end))) || ... 
+           any(isnan(cell2mat(table2cell(potential_regressor2_data(this_subject_row_data_reg2,2:end))))) || any(isnan(cell2mat(table2cell(potential_regressor1_data(this_subject_row_data_reg1,2:end)))));
        adjust_group_id_indices = [adjust_group_id_indices this_subject_index];
    else
        this_regressor1_data(inclusion_counter,:) = table2cell(potential_regressor1_data(this_subject_row_data_reg1,2:end));
@@ -119,7 +133,7 @@ for this_reg1_index = 1 : size(potential_regressor1_data,2)-1
             if length(this_group_subjectindices{this_group_index,:}) >= 3
                 [r , p] = corr(cell2mat(this_regressor1_data(this_group_subjectindices{this_group_index,:},this_reg1_index)), cell2mat(this_regressor2_data(this_group_subjectindices{this_group_index,:},this_reg2_index)));
                 r2 = r^2;
-                coefs = polyfit(cell2mat(this_regressor1_data(this_group_subjectindices{this_group_index,:},this_reg1_index)), cell2mat(this_regressor2_data(this_group_subjectindices{this_group_index,:},this_reg2_index)), 1);
+                coefs = polyfit(cell2mat(this_regressor1_data(this_group_subjectindices{this_group_index,:},this_reg1_index)), cell2mat(this_regressor2_data(this_group_subjectindices{this_group_index,:},this_reg2_index)),1);
                 
                 fittedX=linspace(xLimits(1), xLimits(2), 100);
                 fittedY=polyval(coefs, fittedX);
