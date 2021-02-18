@@ -30,7 +30,7 @@ end
 if strcmp(regressor_variable1,'400m_walk')
     potential_regressor1_data =  readtable(fullfile(data_path,'spreadsheet_data','400m_walk.csv'));
 end
-if strcmp(regressor_variable1,'gmv')
+if strcmp(regressor_variable1,'vol_score')
     potential_regressor1_data =  readtable(fullfile(data_path,'spreadsheet_data','vol_score.csv'));
 end
 if strcmp(regressor_variable1,'within_score')
@@ -63,7 +63,7 @@ if strcmp(regressor_variable2,'400m_walk')
         end
     end
 end
-if strcmp(regressor_variable2,'gmv')
+if strcmp(regressor_variable2,'vol_score')
     potential_regressor2_data =  readtable(fullfile(data_path,'spreadsheet_data','vol_score.csv'));
 end
 if strcmp(regressor_variable2,'within_score')
@@ -119,13 +119,15 @@ for this_reg1_index = 1 : size(potential_regressor1_data,2)-1
                 fittedY=polyval(coefs, fittedX);
                 plot(fittedX, fittedY, '-', 'Color',group_color_matrix(this_group_index, :),'LineWidth',1);
                 
-                str=[group_names{this_group_index}, ' ', 'r= ',num2str(r)];
+                str=[group_names{this_group_index}, ': ', 'r=',num2str(round(r,2)), ' m=',num2str(round(coefs(1),2))];
                 T = strvcat(T, str);
             end
         end
         legend(group_names)
-        text(0,1,T,'Units','normalized')
-        title(strcat(xlabel_text{this_reg1_index}, {' '}, 'vs.', {' '}, ylabel_text{this_reg2_index}) ,'interpreter','latex')
+        text(0.1,0.9,T,'Units','normalized')
+        title(strcat(regressor_variable1, '(x)', {' '}, 'vs.', {' '}, regressor_variable2, '(y)') ,'interpreter','latex')
+        xlabel(xlabel_text{this_reg1_index},'interpreter','latex')
+        ylabel(ylabel_text{this_reg2_index},'interpreter','latex')
     end
 end
 end
