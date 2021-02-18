@@ -16,6 +16,7 @@ no_labels = parser.Results.no_labels;
 regressor_variable1 = parser.Results.regressor_variable1;
 regressor_variable2 = parser.Results.regressor_variable2;
 data_path = pwd;
+close all
 
 group_color_matrix = distinguishable_colors(length(group_names));
 % data_path = pwd;
@@ -103,23 +104,28 @@ for this_reg1_index = 1 : size(potential_regressor1_data,2)-1
 %         allYLim = [];
         figure; hold on;
         for this_group_index = 1 : length(group_names)
-            this_group_subjectindices = find(group_ids==this_group_index);
-            
-            plot(cell2mat(this_regressor1_data(this_group_subjectindices,this_reg1_index))', cell2mat(this_regressor2_data(this_group_subjectindices,this_reg2_index))', 'o', 'MarkerEdge', 'k', 'MarkerFace', group_color_matrix(this_group_index, :))
-            
-            if length(this_group_subjectindices) > 2
-                [r , p] = corr(cell2mat(this_regressor1_data(this_group_subjectindices,this_reg1_index)), cell2mat(this_regressor2_data(this_group_subjectindices,this_reg2_index)));
+            this_group_subjectindices{this_group_index,:} = find(group_ids==this_group_index);
+            plot(cell2mat(this_regressor1_data(this_group_subjectindices{this_group_index,:},this_reg1_index))', cell2mat(this_regressor2_data(this_group_subjectindices{this_group_index,:},this_reg2_index))', 'o', 'MarkerEdge', 'k', 'MarkerFace', group_color_matrix(this_group_index, :))
+        end
+        xLimits = get(gca,'XLim');
+        T = [];
+        for this_group_index = 1 : length(group_names)     
+            if length(this_group_subjectindices{this_group_index,:}) > 3
+                [r , p] = corr(cell2mat(this_regressor1_data(this_group_subjectindices{this_group_index,:},this_reg1_index)), cell2mat(this_regressor2_data(this_group_subjectindices{this_group_index,:},this_reg2_index)));
                 r2 = r^2;
-                coefs = polyfit(cell2mat(this_regressor1_data(this_group_subjectindices,this_reg1_index)), cell2mat(this_regressor2_data(this_group_subjectindices,this_reg2_index)), 1);
-                
-                xLimits = get(gca,'XLim');
+                coefs = polyfit(cell2mat(this_regressor1_data(this_group_subjectindices{this_group_index,:},this_reg1_index)), cell2mat(this_regressor2_data(this_group_subjectindices{this_group_index,:},this_reg2_index)), 1);
                 
                 fittedX=linspace(xLimits(1), xLimits(2), 100);
                 fittedY=polyval(coefs, fittedX);
                 plot(fittedX, fittedY, '-', 'Color',group_color_matrix(this_group_index, :),'LineWidth',1);
-            end            
-            title(strcat(xlabel_text{this_reg1_index}, {' '}, 'vs.', {' '}, ylabel_text{this_reg2_index}) ,'interpreter','latex')
+                
+                str=[group_names{this_group_index}, ' ', 'r= ',num2str(r)];
+                T = strvcat(T, str);
+            end
         end
+        legend(group_names)
+        text(0,1,T,'Units','normalized')
+        title(strcat(xlabel_text{this_reg1_index}, {' '}, 'vs.', {' '}, ylabel_text{this_reg2_index}) ,'interpreter','latex')
     end
 end
 end
