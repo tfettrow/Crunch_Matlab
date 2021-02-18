@@ -42,6 +42,9 @@ end
 if strcmp(regressor_variable1,'seg_score')
     potential_regressor1_data =  readtable(fullfile(data_path,'spreadsheet_data','seg_score.csv'));
 end
+if strcmp(regressor_variable1,'TM_ml')
+    potential_regressor1_data =  readtable(fullfile(data_path,'spreadsheet_data','TM_ml.csv'));
+end
 if strcmp(regressor_variable1,'pain_thresh')
     headers = {'subject_id','PainThreshold_Average','PainInventory_Average','Tactile_Mono','Tactile_Dual'};
     potential_regressor1_data = xlsread('sensory_data.xlsx');
@@ -75,6 +78,9 @@ end
 if strcmp(regressor_variable2,'seg_score')
     potential_regressor2_data =  readtable(fullfile(data_path,'spreadsheet_data','seg_score.csv'));
 end
+if strcmp(regressor_variable2,'TM_ml')
+    potential_regressor2_data =  readtable(fullfile(data_path,'spreadsheet_data','TM_ml.csv'));
+end
 if strcmp(regressor_variable2,'pain_thresh')
     headers = {'subject_id','PainThreshold_Average','PainInventory_Average','Tactile_Mono','Tactile_Dual'};
     potential_regressor2_data = xlsread('sensory_data.xlsx');
@@ -88,7 +94,7 @@ inclusion_counter = 1;
 for this_subject_index = 1 : length(subjects)
    this_subject_row_data_reg1 = find(strcmp(string(table2cell(potential_regressor1_data(:,1))), subjects{this_subject_index}));
    this_subject_row_data_reg2 = find(strcmp(string(table2cell(potential_regressor2_data(:,1))), subjects{this_subject_index}));
-   if isempty(this_subject_row_data_reg1) || isempty(this_subject_row_data_reg2) || isempty(table2cell(potential_regressor2_data(this_subject_row_data_reg2,2:end))) || isempty(table2cell(potential_regressor1_data(this_subject_row_data_reg1,2:end)));
+   if isempty(this_subject_row_data_reg1) || isempty(this_subject_row_data_reg2) || isempty(table2cell(potential_regressor2_data(this_subject_row_data_reg2,2:end))) || isempty(table2cell(potential_regressor1_data(this_subject_row_data_reg1,2:end))) || any(isnan(cell2mat(table2cell(potential_regressor2_data(this_subject_row_data_reg2,2:end))))) || any(isnan(cell2mat(table2cell(potential_regressor1_data(this_subject_row_data_reg1,2:end)))));
        adjust_group_id_indices = [adjust_group_id_indices this_subject_index];
    else
        this_regressor1_data(inclusion_counter,:) = table2cell(potential_regressor1_data(this_subject_row_data_reg1,2:end));
@@ -110,7 +116,7 @@ for this_reg1_index = 1 : size(potential_regressor1_data,2)-1
         xLimits = get(gca,'XLim');
         T = [];
         for this_group_index = 1 : length(group_names)     
-            if length(this_group_subjectindices{this_group_index,:}) > 3
+            if length(this_group_subjectindices{this_group_index,:}) >= 3
                 [r , p] = corr(cell2mat(this_regressor1_data(this_group_subjectindices{this_group_index,:},this_reg1_index)), cell2mat(this_regressor2_data(this_group_subjectindices{this_group_index,:},this_reg2_index)));
                 r2 = r^2;
                 coefs = polyfit(cell2mat(this_regressor1_data(this_group_subjectindices{this_group_index,:},this_reg1_index)), cell2mat(this_regressor2_data(this_group_subjectindices{this_group_index,:},this_reg2_index)), 1);
