@@ -153,7 +153,7 @@ for sub = 1:length(subjects)
 %                 end
 %                 cr_500{this_roi_index} = 3; %never CRUNCH point
             end
-            max_beta_cr_500{this_roi_index} = beta_values(max_beta_index);
+            max_beta_cr_500{this_roi_index} = beta_values(max_beta_index+4);
         end
         hold off;
         xticks(number_of_levels)
