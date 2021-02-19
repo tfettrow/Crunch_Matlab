@@ -5,9 +5,11 @@ task_folder='05_MotorImagery';
 % task_folder = '06_Nback';
 %  subject_codes =  {'1002','1004','1010','1011','1013'};
 % subject_codes =  {'2002','2007','2008','2012','2013','2015','2018','2020','2021','2022','2023','2025','2026'};
-subject_codes =  {'1002','1004','1007','1009','1010','1013','1020','1022','1027','2021','2015','2002','2018','2017','2012','2025','2020','2026','2023','2022','2007','2013','2008','2033','2034','2037','2052','2042'};
-% group_name='youngAdult';
-group_name='all_subjects';
+% subject_codes =  {'1002','1004','1007','1009','1010','1013','1020','1022','1027','2021','2015','2002','2018','2017','2012','2025','2020','2026','2023','2022','2007','2013','2008','2033','2034','2037','2052','2042'};
+% subject_codes = {'1002','1004','1007','1009','1010','1011','1013','1020','1022','1027','1024'};
+subject_codes = {'2021','2015','2002','2018','2017','2012','2025','2020','2026','2023','2022','2007','2013','2008','2033','2034','2037','2052','2042'};
+% group_name='YA';
+group_name='OA';
 
 subject_codes = split(subject_codes,",");
 
@@ -74,7 +76,7 @@ matlabbatch{1}.spm.stats.factorial_design.des.anovaw.fsubject(this_subject_index
     
 elseif strcmp(task_folder, '06_Nback')
      for this_subject_index = 1 : length(subject_codes)
-        this_subject_SPM_path = fullfile(data_path, subject_codes(this_subject_index), 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_Results', 'SPM.mat');
+        this_subject_SPM_path = fullfile(data_path, subject_codes(this_subject_index), 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_Wholebrain', 'SPM.mat');
         this_subject_info_path = fullfile(data_path, subject_codes(this_subject_index), 'subject_info.csv');
         
         this_subject_info = readtable(char(this_subject_info_path));
@@ -100,7 +102,7 @@ elseif strcmp(task_folder, '06_Nback')
         number_of_conditions = length([zero_greaterthan_Rest_contrast_index one_greaterthan_Rest_contrast_index ...
             two_greaterthan_Rest_index three_greaterthan_Rest_index]);
         
-        this_subject_conn_images = dir(char(fullfile(data_path, subject_codes(this_subject_index), 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_Results', 'con_*')));
+        this_subject_conn_images = dir(char(fullfile(data_path, subject_codes(this_subject_index), 'Processed', 'MRI_files', task_folder, 'ANTS_Normalization', 'Level1_Wholebrain', 'con_*')));
         
 %          matlabbatch{1}.spm.stats.factorial_design.des.fblock.fsuball.fsubject(this_subject_index).scans = {
 %             fullfile(this_subject_conn_images(zero_greaterthan_Rest_contrast_index).folder, this_subject_conn_images(zero_greaterthan_Rest_contrast_index).name)
@@ -145,17 +147,17 @@ end
 
 
 % place the age of each subject for each condition
-age_covariate_matrix = [];
-for i_subject = 1 : length(subject_codes)
-    age_covariate_matrix = [age_covariate_matrix; ones(number_of_conditions,1) * all_subjects_age(i_subject)];
-end
-
-matlabbatch{1}.spm.stats.factorial_design.cov(1).c = [age_covariate_matrix];
-%%
-matlabbatch{1}.spm.stats.factorial_design.cov(1).cname = 'age';
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-matlabbatch{1}.spm.stats.factorial_design.cov(1).iCFI = 1; % what is this??
-matlabbatch{1}.spm.stats.factorial_design.cov(1).iCC = 1; % what is this??
+% age_covariate_matrix = [];
+% for i_subject = 1 : length(subject_codes)
+%     age_covariate_matrix = [age_covariate_matrix; ones(number_of_conditions,1) * all_subjects_age(i_subject)];
+% end
+% 
+% matlabbatch{1}.spm.stats.factorial_design.cov(1).c = [age_covariate_matrix];
+% %%
+% matlabbatch{1}.spm.stats.factorial_design.cov(1).cname = 'age';
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% matlabbatch{1}.spm.stats.factorial_design.cov(1).iCFI = 1; % what is this??
+% matlabbatch{1}.spm.stats.factorial_design.cov(1).iCC = 1; % what is this??
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % place the age of each subject for each condition
@@ -171,13 +173,13 @@ for i_subject = 1 : length(subject_codes)
     gender_covariate_matrix = [gender_covariate_matrix; ones(number_of_conditions,1) * all_subjects_gender_coded];
 end
 
-matlabbatch{1}.spm.stats.factorial_design.cov(2).c = [gender_covariate_matrix];
+matlabbatch{1}.spm.stats.factorial_design.cov(1).c = [gender_covariate_matrix];
 
-matlabbatch{1}.spm.stats.factorial_design.cov(2).cname = 'sex';
+matlabbatch{1}.spm.stats.factorial_design.cov(1).cname = 'sex';
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-matlabbatch{1}.spm.stats.factorial_design.cov(2).iCFI = 1; % what is this??
-matlabbatch{1}.spm.stats.factorial_design.cov(2).iCC = 1; % what is this??
+matlabbatch{1}.spm.stats.factorial_design.cov(1).iCFI = 1; % what is this??
+matlabbatch{1}.spm.stats.factorial_design.cov(1).iCC = 1; % what is this??
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 imageryscores = [];
@@ -186,30 +188,14 @@ if strcmp(task_folder, '05_MotorImagery')
         this_subject_index_row = find(strcmp(subject_codes(this_subject_index), string(imageryvividness_data(:,1))));
         imageryscores = [imageryscores; imageryvividness_data(this_subject_index_row,2); imageryvividness_data(this_subject_index_row,3); imageryvividness_data(this_subject_index_row,4); imageryvividness_data(this_subject_index_row,5)] ; 
     end
-    matlabbatch{1}.spm.stats.factorial_design.cov(3).c = imageryscores;
-    matlabbatch{1}.spm.stats.factorial_design.cov(3).cname = 'imagery';
+    matlabbatch{1}.spm.stats.factorial_design.cov(2).c = imageryscores;
+    matlabbatch{1}.spm.stats.factorial_design.cov(2).cname = 'imagery';
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    matlabbatch{1}.spm.stats.factorial_design.cov(3).iCFI = 1; % what is this??
-    matlabbatch{1}.spm.stats.factorial_design.cov(3).iCC = 1; % what is this??
+    matlabbatch{1}.spm.stats.factorial_design.cov(2).iCFI = 1; % what is this??
+    matlabbatch{1}.spm.stats.factorial_design.cov(2).iCC = 1; % what is this??
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
-
-
-% matlabbatch{1}.spm.stats.factorial_design.dir = {level2_results_dir};
-% matlabbatch{1}.spm.stats.factorial_design.des.anova.dept = 0;
-% matlabbatch{1}.spm.stats.factorial_design.des.anova.variance = 1;
-% matlabbatch{1}.spm.stats.factorial_design.des.anova.gmsca = 0;
-% matlabbatch{1}.spm.stats.factorial_design.des.anova.ancova = 0;
-% matlabbatch{1}.spm.stats.factorial_design.cov = struct('c', {}, 'cname', {}, 'iCFI', {}, 'iCC', {});
-% matlabbatch{1}.spm.stats.factorial_design.multi_cov = struct('files', {}, 'iCFI', {}, 'iCC', {});
-% matlabbatch{1}.spm.stats.factorial_design.masking.tm.tm_none = 1;
-% matlabbatch{1}.spm.stats.factorial_design.masking.im = 1;
-% matlabbatch{1}.spm.stats.factorial_design.masking.em = {''};
-% matlabbatch{1}.spm.stats.factorial_design.globalc.g_omit = 1;
-% matlabbatch{1}.spm.stats.factorial_design.globalm.gmsca.gmsca_no = 1;
-% matlabbatch{1}.spm.stats.factorial_design.globalm.glonorm = 1;
-
 % 
 matlabbatch{1}.spm.stats.factorial_design.dir = {level2_results_dir};
 matlabbatch{1}.spm.stats.factorial_design.des.anovaw.dept = 1;
@@ -220,28 +206,10 @@ matlabbatch{1}.spm.stats.factorial_design.des.anovaw.ancova = 0;
 matlabbatch{1}.spm.stats.factorial_design.multi_cov = struct('files', {}, 'iCFI', {}, 'iCC', {});
 matlabbatch{1}.spm.stats.factorial_design.masking.tm.tm_none = 1;
 matlabbatch{1}.spm.stats.factorial_design.masking.im = 1;
-matlabbatch{1}.spm.stats.factorial_design.masking.em = {''};
+matlabbatch{1}.spm.stats.factorial_design.masking.em = {fullfile(data_path, 'ROIs', 'MNI_2mm_gmMask.nii')};
 matlabbatch{1}.spm.stats.factorial_design.globalc.g_omit = 1;
 matlabbatch{1}.spm.stats.factorial_design.globalm.gmsca.gmsca_no = 1;
 matlabbatch{1}.spm.stats.factorial_design.globalm.glonorm = 1;
-
-% matlabbatch{1}.spm.stats.factorial_design.dir ={level2_results_dir};
-% % matlabbatch{1}.spm.stats.factorial_design.des.anova.icell.scans = '<UNDEFINED>';
-% matlabbatch{1}.spm.stats.factorial_design.des.anova.dept = 0;
-% matlabbatch{1}.spm.stats.factorial_design.des.anova.variance = 1;
-% matlabbatch{1}.spm.stats.factorial_design.des.anova.gmsca = 0;
-% matlabbatch{1}.spm.stats.factorial_design.des.anova.ancova = 0;
-% matlabbatch{1}.spm.stats.factorial_design.cov.c = [1 -1 0 0 0 ; 0 1 -1 0 0; 0 0 1 -1 0; 0 0 0 1 -1];
-% matlabbatch{1}.spm.stats.factorial_design.cov.cname = 'Load';
-% matlabbatch{1}.spm.stats.factorial_design.cov.iCFI = 1;
-% matlabbatch{1}.spm.stats.factorial_design.cov.iCC = 1;
-% matlabbatch{1}.spm.stats.factorial_design.multi_cov = struct('files', {}, 'iCFI', {}, 'iCC', {});
-% matlabbatch{1}.spm.stats.factorial_design.masking.tm.tm_none = 1;
-% matlabbatch{1}.spm.stats.factorial_design.masking.im = 1;
-% matlabbatch{1}.spm.stats.factorial_design.masking.em = {''};
-% matlabbatch{1}.spm.stats.factorial_design.globalc.g_omit = 1;
-% matlabbatch{1}.spm.stats.factorial_design.globalm.gmsca.gmsca_no = 1;
-% matlabbatch{1}.spm.stats.factorial_design.globalm.glonorm = 1;
 
 if create_model_and_estimate
     if exist(fullfile(level2_results_dir,'SPM.mat'),'file')
