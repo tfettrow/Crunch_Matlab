@@ -25,14 +25,26 @@ group_color_matrix = distinguishable_colors(length(group_names));
 if strcmp(regressor_variable1,'cr_score_mi')
     potential_regressor1_data =  readtable(fullfile(data_path,'spreadsheet_data','cr_score_mi.csv'));
 end
+if strcmp(regressor_variable1,'cr_score_mi_onlyCrunch')
+    potential_regressor1_data =  readtable(fullfile(data_path,'spreadsheet_data','cr_score_mi_onlyCrunch.csv'));
+end
 if strcmp(regressor_variable1,'maxbeta_score_mi')
     potential_regressor1_data =  readtable(fullfile(data_path,'spreadsheet_data','maxbeta_score_mi.csv'));
+end
+if strcmp(regressor_variable1,'maxbeta_score_mi_onlyCrunch')
+    potential_regressor1_data =  readtable(fullfile(data_path,'spreadsheet_data','maxbeta_score_mi_onlyCrunch.csv'));
 end
 if strcmp(regressor_variable1,'cr_score_nb')
     potential_regressor1_data =  readtable(fullfile(data_path,'spreadsheet_data','cr_score_nb.csv'));
 end
+if strcmp(regressor_variable1,'cr_score_nb_onlyCrunch')
+    potential_regressor1_data =  readtable(fullfile(data_path,'spreadsheet_data','cr_score_nb_onlyCrunch.csv'));
+end
 if strcmp(regressor_variable1,'maxbeta_score_nb')
     potential_regressor1_data =  readtable(fullfile(data_path,'spreadsheet_data','maxbeta_score_nb.csv'));
+end
+if strcmp(regressor_variable1,'maxbeta_score_nb_onlyCrunch')
+    potential_regressor1_data =  readtable(fullfile(data_path,'spreadsheet_data','maxbeta_score_nb_onlyCrunch.csv'));
 end
 if strcmp(regressor_variable1,'400m_walk')
     potential_regressor1_data =  readtable(fullfile(data_path,'spreadsheet_data','400m_walk.csv'));
@@ -60,11 +72,20 @@ end
 if strcmp(regressor_variable2,'cr_score_mi')
     potential_regressor2_data =  readtable(fullfile(data_path,'spreadsheet_data','cr_score_mi.csv'));
 end
+if strcmp(regressor_variable2,'cr_score_mi_onlyCrunch')
+    potential_regressor2_data =  readtable(fullfile(data_path,'spreadsheet_data','cr_score_mi_onlyCrunch.csv'));
+end
 if strcmp(regressor_variable2,'maxbeta_score_mi')
     potential_regressor2_data =  readtable(fullfile(data_path,'spreadsheet_data','maxbeta_score_mi.csv'));
 end
+if strcmp(regressor_variable2,'maxbeta_score_mi_onlyCrunch')
+    potential_regressor2_data =  readtable(fullfile(data_path,'spreadsheet_data','maxbeta_score_mi_onlyCrunch.csv'));
+end
 if strcmp(regressor_variable2,'cr_score_nb')
     potential_regressor2_data =  readtable(fullfile(data_path,'spreadsheet_data','cr_score_nb.csv'));
+end
+if strcmp(regressor_variable2,'cr_score_nb_onlyCrunch')
+    potential_regressor2_data =  readtable(fullfile(data_path,'spreadsheet_data','cr_score_nb_onlyCrunch.csv'));
 end
 if strcmp(regressor_variable2,'maxbeta_score_nb')
     potential_regressor2_data =  readtable(fullfile(data_path,'spreadsheet_data','maxbeta_score_nb.csv'));
