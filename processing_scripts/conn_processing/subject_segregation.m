@@ -25,6 +25,7 @@ addParameter(parser, 'plot_figures', 0)
 addParameter(parser, 'save_figures', 0)
 addParameter(parser, 'export_figures', 0)
 addParameter(parser, 'correlate_outcomes', 0)
+addParameter(parser, 'save_scores', 0)
 parse(parser, varargin{:})
 conn_project_name = parser.Results.conn_project_name;
 roi_settings_filename = parser.Results.roi_settings_filename;
@@ -37,6 +38,8 @@ save_figures = parser.Results.save_figures;
 export_figures = parser.Results.export_figures;
 correlate_outcomes = parser.Results.correlate_outcomes;
 no_labels = parser.Results.no_labels;
+save_scores = parser.Results.save_scores;
+
 load([conn_project_name filesep 'subject_ids'])
 
 project_path = pwd;
@@ -472,6 +475,41 @@ if plot_figures
             export_fig('-pdf','-append')
         end
     end
+end
+
+if save_scores
+    % Need to create a "table" for each score and save to .mat within
+    % spreadsheet_data
+    
+    %     this_seed_to_network_index = contains(seed_to_network_map(1,:),seed_names{this_seed_name_index_1});
+    %     network_name_matrix{this_seed_name_index_1} = seed_to_network_map{2,this_seed_to_network_index};
+    subject_table = array2table(subjects');
+    subject_table.Properties.VariableNames = {'subject_ids'};
+    
+%     group_id_table = array2table(group_ids');
+%     group_id_table.Properties.VariableNames = {'group_ids'};
+%     
+    within_cell_table = array2table(avg_within_network_conn');
+    within_cell_table.Properties.VariableNames = seed_names;
+    
+    between_cell_table = array2table(avg_between_network_conn');
+    between_cell_table.Properties.VariableNames = seed_names;
+    
+    seg_cell_table = array2table(network_segregation');
+    seg_cell_table.Properties.VariableNames = seed_names;
+%     
+%     within_results_table = [subject_table, within_cell_table, group_id_table];
+%     between_results_table = [subject_table, between_cell_table, group_id_table];
+%     seg_results_table = [subject_table, seg_cell_table, group_id_table];
+
+
+    within_results_table = [subject_table, within_cell_table];
+    between_results_table = [subject_table, between_cell_table];
+    seg_results_table = [subject_table, seg_cell_table];
+    
+    writetable(within_results_table,fullfile(project_path,'spreadsheet_data','within_score.csv'))
+    writetable(between_results_table,fullfile(project_path,'spreadsheet_data','between_score.csv'))
+    writetable(seg_results_table,fullfile(project_path,'spreadsheet_data','seg_score.csv'))
 end
 
 %% correlations

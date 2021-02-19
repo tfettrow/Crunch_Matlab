@@ -10,6 +10,7 @@ addParameter(parser, 'group_names', '')
 addParameter(parser, 'group_ids', '')
 addParameter(parser, 'no_labels', 0)
 addParameter(parser, 'save_figures', 0)
+addParameter(parser, 'save_scores', 0)
 parse(parser, varargin{:})
 subjects = parser.Results.subjects;
 task_folder = parser.Results.task_folder;
@@ -17,6 +18,7 @@ group_names = parser.Results.group_names;
 group_ids = parser.Results.group_ids;
 no_labels = parser.Results.no_labels;
 save_figures = parser.Results.save_figures;
+save_scores = parser.Results.save_scores;
 
 close all;
 project_path = pwd;
@@ -47,7 +49,7 @@ for this_roi_index = 1: length(roi_names)
         this_group_and_roi_vol_results = vol_results(this_group_subjectindices,this_roi_index);
 
         
-        singleBoxPlot(this_group_and_roi_vol_results,'abscissa', this_group_index, 'EdgeColor',group_color_matrix(:,this_group_index), 'MarkerColor',group_color_matrix(:,this_group_index),'WiskColor',group_color_matrix(:,this_group_index), 'MeanColor',group_color_matrix(:,this_group_index), 'EdgeLinewidth', 1, 'WiskLinewidth', 1, 'MeanLinewidth', 1 )
+        singleBoxPlot(this_group_and_roi_vol_results,'abscissa', this_group_index, 'EdgeColor',group_color_matrix(this_group_index,:), 'MarkerColor',group_color_matrix(this_group_index,:),'WiskColor',group_color_matrix(this_group_index,:), 'MeanColor',group_color_matrix(:,this_group_index), 'EdgeLinewidth', 1, 'WiskLinewidth', 1, 'MeanLinewidth', 1 )
            
 %         bar(this_group_index, mean(this_group_and_roi_vol_results),'facecolor',group_color_matrix(:,this_group_index))
 %         errorbar(this_group_index, mean(this_group_and_roi_vol_results), std(this_group_and_roi_vol_results)/nnz(this_group_subjectindices), 'k'); hold on;
@@ -75,7 +77,21 @@ for this_roi_index = 1: length(roi_names)
         saveas(gca, filename, 'tiff')
     end
 end
-
+if save_scores
+   subject_table = array2table(subjects');
+   subject_table.Properties.VariableNames = {'subject_ids'};
+   
+%    group_table = array2table(group_ids');
+%    group_table.Properties.VariableNames = {'group_ids'};
+   
+   vol_cell_table = array2table(vol_results);
+   vol_cell_table.Properties.VariableNames = roi_names;
+   
+%    vol_results_table = [subject_table, vol_cell_table, group_table];
+   vol_results_table = [subject_table, vol_cell_table];
+   
+   writetable(vol_results_table,fullfile(project_path,'spreadsheet_data','vol_score.csv'))
+end
 
 
 end
