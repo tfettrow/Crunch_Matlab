@@ -93,6 +93,20 @@ if strcmp(regressor_variable2,'seg_score')
 end
 if strcmp(regressor_variable2,'TM_ml')
     potential_regressor2_data =  readtable(fullfile(data_path,'spreadsheet_data','TM_ml.csv'));
+    converting_data_pre = table2cell(potential_regressor2_data);
+    clear potential_regressor2_data
+    converting_data_post = [];
+    for i_data_entry = 1:size(converting_data_pre,1) %just chose a condition.. doesnt matter
+        
+        idx = isnan(cell2mat(converting_data_pre(i_data_entry,2:end)));
+        idx = [0 idx];
+        coefs = polyfit(1:sum(~idx),cell2mat(converting_data_pre(i_data_entry,~idx)),1);
+        
+        converting_data_post = [converting_data_post; coefs(1)];
+    end
+    potential_regressor2_data = table(converting_data_pre(:,1), converting_data_post);
+    potential_regressor2_data.Properties.VariableNames = {'subject_ids', 'slope_ml_ptp'};
+    
 end
 if strcmp(regressor_variable2,'pain_thresh')
     headers = {'subject_id','PainThreshold_Average','PainInventory_Average','Tactile_Mono','Tactile_Dual'};
