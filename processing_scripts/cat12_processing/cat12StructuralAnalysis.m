@@ -203,4 +203,113 @@ if (steps_to_run_vector(5) == 1)
         clear matlabbatch
     end
 end
+
+%% resample and smooth thickness images
+if (steps_to_run_vector(6) == 1)
+    for this_subject_index = 1:length(subjects)
+        this_subject = subjects(this_subject_index);
+        study_dir = pwd;
+        %WARNING: this assumes a particular folder structure
+        this_cat12_path = strcat([study_dir filesep this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep t1_folder filesep 'CAT12_Analysis']);
+        %         thickness_images{this_subject_index,:} = spm_select('FPList', strcat(this_cat12_path,filesep,'surf',filesep), strcat('^','lh.thickness.T1','$'));
+        thickness_images{this_subject_index,:} = fullfile(this_cat12_path,'surf','lh.thickness.T1');
+    end
+    matlabbatch{1}.spm.tools.cat.stools.surfresamp.data_surf = thickness_images;
+    matlabbatch{1}.spm.tools.cat.stools.surfresamp.merge_hemi = 1;
+    matlabbatch{1}.spm.tools.cat.stools.surfresamp.mesh32k = 1;
+    matlabbatch{1}.spm.tools.cat.stools.surfresamp.fwhm_surf = 15;
+    matlabbatch{1}.spm.tools.cat.stools.surfresamp.lazy = 0;
+    matlabbatch{1}.spm.tools.cat.stools.surfresamp.nproc = 0;
+    spm_jobman('run',matlabbatch);
+    clear matlabbatch
+end
+
+%% cortical complexity
+if (steps_to_run_vector(7) == 1)
+    for this_subject_index = 1:length(subjects)
+        this_subject = subjects(this_subject_index);
+        study_dir = pwd;
+        %WARNING: this assumes a particular folder structure
+        this_cat12_path = strcat([study_dir filesep this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep t1_folder filesep 'CAT12_Analysis']);
+        %         thickness_images{this_subject_index,:} = spm_select('FPList', strcat(this_cat12_path,filesep,'surf',filesep), strcat('^','lh.thickness.T1','$'));
+        central_images{this_subject_index,:} = fullfile(this_cat12_path,'surf','lh.central.T1.gii');
+    end
+    matlabbatch{1}.spm.tools.cat.stools.surfextract.data_surf = central_images;
+    matlabbatch{1}.spm.tools.cat.stools.surfextract.area = 0;
+    matlabbatch{1}.spm.tools.cat.stools.surfextract.gmv = 0;
+    matlabbatch{1}.spm.tools.cat.stools.surfextract.GI = 1;
+    matlabbatch{1}.spm.tools.cat.stools.surfextract.SD = 1;
+    matlabbatch{1}.spm.tools.cat.stools.surfextract.FD = 1;
+    matlabbatch{1}.spm.tools.cat.stools.surfextract.tGI = 0;
+    matlabbatch{1}.spm.tools.cat.stools.surfextract.lGI = 0;
+    matlabbatch{1}.spm.tools.cat.stools.surfextract.GIL = 0;
+    matlabbatch{1}.spm.tools.cat.stools.surfextract.surfaces.IS = 0;
+    matlabbatch{1}.spm.tools.cat.stools.surfextract.surfaces.OS = 0;
+    matlabbatch{1}.spm.tools.cat.stools.surfextract.norm = 0;
+    matlabbatch{1}.spm.tools.cat.stools.surfextract.nproc = 0;
+    matlabbatch{1}.spm.tools.cat.stools.surfextract.lazy = 0;
+    spm_jobman('run',matlabbatch);
+    clear matlabbatch
+end
+
+% %% resample and smooth depth images
+if (steps_to_run_vector(8) == 1)
+    for this_subject_index = 1:length(subjects)
+        this_subject = subjects(this_subject_index);
+        study_dir = pwd;
+        %WARNING: this assumes a particular folder structure
+        this_cat12_path = strcat([study_dir filesep this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep t1_folder filesep 'CAT12_Analysis']);
+        %         thickness_images{this_subject_index,:} = spm_select('FPList', strcat(this_cat12_path,filesep,'surf',filesep), strcat('^','lh.thickness.T1','$'));
+        depth_images{this_subject_index,:} = fullfile(this_cat12_path,'surf','lh.depth.T1');
+    end
+    matlabbatch{1}.spm.tools.cat.stools.surfresamp.data_surf = depth_images;
+    matlabbatch{1}.spm.tools.cat.stools.surfresamp.merge_hemi = 1;
+    matlabbatch{1}.spm.tools.cat.stools.surfresamp.mesh32k = 1;
+    matlabbatch{1}.spm.tools.cat.stools.surfresamp.fwhm_surf = 20;
+    matlabbatch{1}.spm.tools.cat.stools.surfresamp.lazy = 0;
+    matlabbatch{1}.spm.tools.cat.stools.surfresamp.nproc = 0;
+    spm_jobman('run',matlabbatch);
+    clear matlabbatch
+end
+
+% %% resample and smooth gyrification images
+if (steps_to_run_vector(9) == 1)
+    for this_subject_index = 1:length(subjects)
+        this_subject = subjects(this_subject_index);
+        study_dir = pwd;
+        %WARNING: this assumes a particular folder structure
+        this_cat12_path = strcat([study_dir filesep this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep t1_folder filesep 'CAT12_Analysis']);
+        %         thickness_images{this_subject_index,:} = spm_select('FPList', strcat(this_cat12_path,filesep,'surf',filesep), strcat('^','lh.thickness.T1','$'));
+        depth_images{this_subject_index,:} = fullfile(this_cat12_path,'surf','lh.gyrification.T1');
+    end
+    matlabbatch{1}.spm.tools.cat.stools.surfresamp.data_surf = depth_images;
+    matlabbatch{1}.spm.tools.cat.stools.surfresamp.merge_hemi = 1;
+    matlabbatch{1}.spm.tools.cat.stools.surfresamp.mesh32k = 1;
+    matlabbatch{1}.spm.tools.cat.stools.surfresamp.fwhm_surf = 20;
+    matlabbatch{1}.spm.tools.cat.stools.surfresamp.lazy = 0;
+    matlabbatch{1}.spm.tools.cat.stools.surfresamp.nproc = 0;
+    spm_jobman('run',matlabbatch);
+    clear matlabbatch
+end
+
+
+% %% resample and smooth gyrification images
+if (steps_to_run_vector(10) == 1)
+    for this_subject_index = 1:length(subjects)
+        this_subject = subjects(this_subject_index);
+        study_dir = pwd;
+        %WARNING: this assumes a particular folder structure
+        this_cat12_path = strcat([study_dir filesep this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep t1_folder filesep 'CAT12_Analysis']);
+        %         thickness_images{this_subject_index,:} = spm_select('FPList', strcat(this_cat12_path,filesep,'surf',filesep), strcat('^','lh.thickness.T1','$'));
+        depth_images{this_subject_index,:} = fullfile(this_cat12_path,'surf','lh.fractaldimension.T1');
+    end
+    matlabbatch{1}.spm.tools.cat.stools.surfresamp.data_surf = depth_images;
+    matlabbatch{1}.spm.tools.cat.stools.surfresamp.merge_hemi = 1;
+    matlabbatch{1}.spm.tools.cat.stools.surfresamp.mesh32k = 1;
+    matlabbatch{1}.spm.tools.cat.stools.surfresamp.fwhm_surf = 20;
+    matlabbatch{1}.spm.tools.cat.stools.surfresamp.lazy = 0;
+    matlabbatch{1}.spm.tools.cat.stools.surfresamp.nproc = 0;
+    spm_jobman('run',matlabbatch);
+    clear matlabbatch
+end
 end

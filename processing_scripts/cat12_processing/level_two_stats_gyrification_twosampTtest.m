@@ -39,12 +39,12 @@ spm_get_defaults('cmdline',true);
 
 for this_subject_index = 1 : length(group_one_subject_codes)
      this_subject_path = strcat([data_path filesep group_one_subject_codes{this_subject_index} filesep 'Processed' filesep 'MRI_files' filesep t1_folder filesep 'CAT12_Analysis']);
-     group_one_scans{this_subject_index,:} = fullfile(this_subject_path,'surf','s15.mesh.gyrification.resampled_32k.T1.gii');
+     group_one_scans{this_subject_index,:} = fullfile(this_subject_path,'surf','s20.mesh.gyrification.resampled_32k.T1.gii');
 end
 
 for this_subject_index = 1 : length(group_two_subject_codes)
     this_subject_path = strcat([data_path filesep group_two_subject_codes{this_subject_index} filesep 'Processed' filesep 'MRI_files' filesep t1_folder filesep 'CAT12_Analysis']);
-    group_two_scans{this_subject_index,:} = fullfile(this_subject_path,'surf', 's15.mesh.gyrification.resampled_32k.T1.gii');
+    group_two_scans{this_subject_index,:} = fullfile(this_subject_path,'surf', 's20.mesh.gyrification.resampled_32k.T1.gii');
 end
 
 level2_results_dir = fullfile(data_path, strcat('Results_gyrification_twosampTtest_wholebrain_',group_comparison_string));
