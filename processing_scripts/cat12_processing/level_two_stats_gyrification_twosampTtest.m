@@ -20,6 +20,7 @@ addParameter(parser, 'template_dir' , '')
 addParameter(parser, 'group_one_subject_codes', '')
 addParameter(parser, 'group_two_subject_codes' , '')
 addParameter(parser, 'group_comparison_string', '')
+addParameter(parser, 'tfce', '')
 parse(parser, varargin{:})
 create_model_and_estimate = parser.Results.create_model_and_estimate;
 t1_folder = parser.Results.t1_folder;
@@ -27,6 +28,7 @@ template_dir = parser.Results.template_dir;
 group_one_subject_codes = parser.Results.group_one_subject_codes;
 group_two_subject_codes = parser.Results.group_two_subject_codes;
 group_comparison_string = parser.Results.group_comparison_string;
+tfce = parser.Results.tfce;
 
 group_one_subject_codes = split(group_one_subject_codes,",");
 group_two_subject_codes = split(group_two_subject_codes,",");
@@ -75,16 +77,12 @@ if create_model_and_estimate
 end
 clear matlabbatch
 
-
-a = spm_select('FPList', level2_results_dir,'SPM.mat');%SPM.mat file
-matlabbatch{1}.spm.stats.fmri_est.spmmat = cellstr(a);
-matlabbatch{1}.spm.stats.fmri_est.write_residuals = 0;
-matlabbatch{1}.spm.stats.fmri_est.method.Classical = 1;
-
+% Using CAT12 Estimation
 if create_model_and_estimate
-    spm_jobman('run',matlabbatch);
+    cd(level2_results_dir)
+    cat_stat_spm();
+    cd(project_path)
 end
-clear matlabbatch
 
 b = spm_select('FPList', level2_results_dir,'SPM.mat');%SPM.mat file
 matlabbatch{1}.spm.stats.con.spmmat = cellstr(b);
@@ -103,10 +101,19 @@ spm_jobman('run',matlabbatch);
 clear matlabbatch
 
 
-% matlabbatch{2}.spm.tools.cat.tools.check_SPM.spmmat(1) = cfg_dep('Factorial design specification: SPM.mat File', substruct('.','val', '{}',{1}, '.','val', '{}',{1}, '.','val', '{}',{1}), substruct('.','spmmat'));
-% matlabbatch{2}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.use_unsmoothed_data = 1;
-% matlabbatch{2}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.adjust_data = 1;
-% matlabbatch{2}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.outdir = {''};
-% matlabbatch{2}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.fname = 'CATcheckdesign_';
-% matlabbatch{2}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.save = 0;
-% matlabbatch{2}.spm.tools.cat.tools.check_SPM.check_SPM_ortho = 1;
+% TFCE
+if tfce
+    b = spm_select('FPList', level2_results_dir,'SPM.mat');%SPM.mat file
+    matlabbatch{1}.spm.tools.tfce_estimate.spmmat = cellstr(b);
+    matlabbatch{1}.spm.tools.tfce_estimate.mask = '';
+    matlabbatch{1}.spm.tools.tfce_estimate.conspec.titlestr = '';
+    matlabbatch{1}.spm.tools.tfce_estimate.conspec.contrasts = Inf;
+    matlabbatch{1}.spm.tools.tfce_estimate.conspec.n_perm = 5000;
+    matlabbatch{1}.spm.tools.tfce_estimate.nuisance_method = 2;
+    matlabbatch{1}.spm.tools.tfce_estimate.tbss = 0;
+    matlabbatch{1}.spm.tools.tfce_estimate.E_weight = 0.5;
+    matlabbatch{1}.spm.tools.tfce_estimate.singlethreaded = 1;
+    
+    spm_jobman('run',matlabbatch);
+    clear matlabbatch
+end

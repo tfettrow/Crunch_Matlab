@@ -20,6 +20,7 @@ addParameter(parser, 'template_dir' , '')
 addParameter(parser, 'group_one_subject_codes', '')
 addParameter(parser, 'group_two_subject_codes' , '')
 addParameter(parser, 'group_comparison_string', '')
+addParameter(parser, 'tfce', 0)
 parse(parser, varargin{:})
 create_model_and_estimate = parser.Results.create_model_and_estimate;
 t1_folder = parser.Results.t1_folder;
@@ -27,39 +28,28 @@ template_dir = parser.Results.template_dir;
 group_one_subject_codes = parser.Results.group_one_subject_codes;
 group_two_subject_codes = parser.Results.group_two_subject_codes;
 group_comparison_string = parser.Results.group_comparison_string;
-
-% create_model_and_estimate=1;
-% t1_folder = '02_T1';
-% condition='all'; % need to run once per condition (all,flat,low,medium,high)
-% group_one_subject_codes = {'1002','1004','1007','1009'}; % need to figure out how to pass cell from shell
-% group_two_subject_codes =  {'2007','2008','2012','2013'};
-% % 
-% group_one_subject_codes = {'1002','1004','1007','1009','1010','1011','1013','1020','1022','1024','1027'}; % need to figure out how to pass cell from shell
-% group_two_subject_codes =  {'2002','2007','2008','2012','2013','2015','2017','2018','2020','2021','2022','2023','2025','2026','2033','2034','2037','2042','2052'};
-
-% group_one_subject_codes = {'2002','2007','2008','2012','2013','2015','2017','2018','2020','2021','2022','2023','2025','2026','2033','2034','2037','2042','2052'}; % need to figure out how to pass cell from shell
-% group_two_subject_codes =  {'3004', '3006', '3007', '3008'};
+tfce = parser.Results.tfce;
 
 group_one_subject_codes = split(group_one_subject_codes,",");
 group_two_subject_codes = split(group_two_subject_codes,",");
 
-data_path = pwd; % assuming shell script places wd as study level folder
+project_path = pwd; % assuming shell script places wd as study level folder
 clear matlabbatch
 spm('Defaults','fMRI');
 spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
 for this_subject_index = 1 : length(group_one_subject_codes)
-     this_subject_path = strcat([data_path filesep group_one_subject_codes{this_subject_index} filesep 'Processed' filesep 'MRI_files' filesep t1_folder filesep 'CAT12_Analysis']);
+     this_subject_path = strcat([project_path filesep group_one_subject_codes{this_subject_index} filesep 'Processed' filesep 'MRI_files' filesep t1_folder filesep 'CAT12_Analysis']);
      group_one_scans{this_subject_index,:} = fullfile(this_subject_path,'surf','s15.mesh.thickness.resampled_32k.T1.gii');
 end
 
 for this_subject_index = 1 : length(group_two_subject_codes)
-    this_subject_path = strcat([data_path filesep group_two_subject_codes{this_subject_index} filesep 'Processed' filesep 'MRI_files' filesep t1_folder filesep 'CAT12_Analysis']);
+    this_subject_path = strcat([project_path filesep group_two_subject_codes{this_subject_index} filesep 'Processed' filesep 'MRI_files' filesep t1_folder filesep 'CAT12_Analysis']);
     group_two_scans{this_subject_index,:} = fullfile(this_subject_path,'surf', 's15.mesh.thickness.resampled_32k.T1.gii');
 end
 
-level2_results_dir = fullfile(data_path, strcat('Results_thickness_twosampTtest_wholebrain_',group_comparison_string));
+level2_results_dir = fullfile(project_path, strcat('Results_thickness_twosampTtest_wholebrain_',group_comparison_string));
 
 matlabbatch{1}.spm.stats.factorial_design.dir = {level2_results_dir};
 matlabbatch{1}.spm.stats.factorial_design.des.t2.scans1 =  cellstr(group_one_scans);
@@ -88,16 +78,14 @@ end
 clear matlabbatch
 
 
-a = spm_select('FPList', level2_results_dir,'SPM.mat');%SPM.mat file
-matlabbatch{1}.spm.stats.fmri_est.spmmat = cellstr(a);
-matlabbatch{1}.spm.stats.fmri_est.write_residuals = 0;
-matlabbatch{1}.spm.stats.fmri_est.method.Classical = 1;
-
+% Using CAT12 Estimation
 if create_model_and_estimate
-    spm_jobman('run',matlabbatch);
+    cd(level2_results_dir)
+    cat_stat_spm();
+    cd(project_path)
 end
-clear matlabbatch
 
+% Contrasts
 b = spm_select('FPList', level2_results_dir,'SPM.mat');%SPM.mat file
 matlabbatch{1}.spm.stats.con.spmmat = cellstr(b);
 
@@ -114,11 +102,20 @@ matlabbatch{1}.spm.stats.con.delete = 1; %this deletes the previously existing c
 spm_jobman('run',matlabbatch);
 clear matlabbatch
 
+% TFCE
+if tfce
+    b = spm_select('FPList', level2_results_dir,'SPM.mat');%SPM.mat file
+    matlabbatch{1}.spm.tools.tfce_estimate.spmmat = cellstr(b);
+    matlabbatch{1}.spm.tools.tfce_estimate.mask = '';
+    matlabbatch{1}.spm.tools.tfce_estimate.conspec.titlestr = '';
+    matlabbatch{1}.spm.tools.tfce_estimate.conspec.contrasts = Inf;
+    matlabbatch{1}.spm.tools.tfce_estimate.conspec.n_perm = 5000;
+    matlabbatch{1}.spm.tools.tfce_estimate.nuisance_method = 2;
+    matlabbatch{1}.spm.tools.tfce_estimate.tbss = 0;
+    matlabbatch{1}.spm.tools.tfce_estimate.E_weight = 0.5;
+    matlabbatch{1}.spm.tools.tfce_estimate.singlethreaded = 1;
+    
+    spm_jobman('run',matlabbatch);
+    clear matlabbatch
+end
 
-% matlabbatch{2}.spm.tools.cat.tools.check_SPM.spmmat(1) = cfg_dep('Factorial design specification: SPM.mat File', substruct('.','val', '{}',{1}, '.','val', '{}',{1}, '.','val', '{}',{1}), substruct('.','spmmat'));
-% matlabbatch{2}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.use_unsmoothed_data = 1;
-% matlabbatch{2}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.adjust_data = 1;
-% matlabbatch{2}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.outdir = {''};
-% matlabbatch{2}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.fname = 'CATcheckdesign_';
-% matlabbatch{2}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.save = 0;
-% matlabbatch{2}.spm.tools.cat.tools.check_SPM.check_SPM_ortho = 1;
