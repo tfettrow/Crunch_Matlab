@@ -18,7 +18,7 @@ regressor_variable1 = parser.Results.regressor_variable1;
 regressor_variable2 = parser.Results.regressor_variable2;
 crunchers_only = parser.Results.crunchers_only;
 data_path = pwd;
-close all
+close all force
 
 group_color_matrix = distinguishable_colors(length(group_names));
 % data_path = pwd;
@@ -61,9 +61,40 @@ end
 if strcmp(regressor_variable1,'seg_score')
     potential_regressor1_data =  readtable(fullfile(data_path,'spreadsheet_data','seg_score.csv'));
 end
-if strcmp(regressor_variable1,'TM_ml')
-    potential_regressor1_data =  readtable(fullfile(data_path,'spreadsheet_data','TM_ml.csv'));
-end
+% if strcmp(regressor_variable1,'TM_ml1')
+%     potential_regressor1_data =  readtable(fullfile(data_path,'spreadsheet_data','TM_ml1.csv'));
+% %       potential_regressor2_data =  readtable(fullfile(data_path,'spreadsheet_data','TM_ml1.csv'));
+%     converting_data_pre = table2cell(potential_regressor1_data);
+%     clear potential_regressor2_data
+%     converting_data_post = [];
+%     for i_data_entry = 1:size(converting_data_pre,1) %just chose a condition.. doesnt matter
+%         
+%         idx = isnan(cell2mat(converting_data_pre(i_data_entry,2:end)));
+%         idx = [0 idx];
+%         coefs = polyfit(1:sum(~idx),cell2mat(converting_data_pre(i_data_entry,~idx)),1);
+%         
+%         converting_data_post = [converting_data_post; coefs(1)];
+%     end
+%     potential_regressor1_data = table(converting_data_pre(:,1), converting_data_post);
+%     potential_regressor1_data.Properties.VariableNames = {'subject_ids', 'slope_ml_ptp'};
+% end
+% if strcmp(regressor_variable1,'TM_ml2')
+%     potential_regressor1_data =  readtable(fullfile(data_path,'spreadsheet_data','TM_ml2.csv'));
+%     converting_data_pre = table2cell(potential_regressor1_data);
+%     clear potential_regressor2_data
+%     converting_data_post = [];
+%     for i_data_entry = 1:size(converting_data_pre,1) %just chose a condition.. doesnt matter
+%         
+%         idx = isnan(cell2mat(converting_data_pre(i_data_entry,2:end)));
+%         idx = [0 idx];
+%         coefs = polyfit(1:sum(~idx),cell2mat(converting_data_pre(i_data_entry,~idx)),1);
+%         
+%         converting_data_post = [converting_data_post; coefs(1)];
+%     end
+%     potential_regressor1_data = table(converting_data_pre(:,1), converting_data_post);
+%     potential_regressor1_data.Properties.VariableNames = {'subject_ids', 'slope_ml_ptp'};
+%     
+% end
 if strcmp(regressor_variable1,'pain_thresh')
     headers = {'subject_id','PainThreshold_Average','PainInventory_Average','Tactile_Mono','Tactile_Dual'};
     potential_regressor1_data = xlsread('sensory_data.xlsx');
@@ -112,8 +143,8 @@ end
 if strcmp(regressor_variable2,'seg_score')
     potential_regressor2_data =  readtable(fullfile(data_path,'spreadsheet_data','seg_score.csv'));
 end
-if strcmp(regressor_variable2,'TM_ml')
-    potential_regressor2_data =  readtable(fullfile(data_path,'spreadsheet_data','TM_ml.csv'));
+if strcmp(regressor_variable2,'TM_ml1')
+    potential_regressor2_data =  readtable(fullfile(data_path,'spreadsheet_data','TM_ml1.csv'));
     converting_data_pre = table2cell(potential_regressor2_data);
     clear potential_regressor2_data
     converting_data_post = [];
@@ -122,6 +153,23 @@ if strcmp(regressor_variable2,'TM_ml')
         idx = isnan(cell2mat(converting_data_pre(i_data_entry,2:end)));
         idx = [0 idx];
         coefs = polyfit(1:sum(~idx),cell2mat(converting_data_pre(i_data_entry,~idx)),1);
+        
+        converting_data_post = [converting_data_post; coefs(1)];
+    end
+    potential_regressor2_data = table(converting_data_pre(:,1), converting_data_post);
+    potential_regressor2_data.Properties.VariableNames = {'subject_ids', 'slope_ml_ptp'};
+    
+end
+if strcmp(regressor_variable2,'TM_ml2')
+    potential_regressor2_data =  readtable(fullfile(data_path,'spreadsheet_data','TM_ml2.csv'));
+    converting_data_pre = table2cell(potential_regressor2_data);
+    clear potential_regressor2_data
+    converting_data_post = [];
+    for i_data_entry = 1:size(converting_data_pre,1) %just chose a condition.. doesnt matter
+        
+        idx = isnan(cell2mat(converting_data_pre(i_data_entry,2:end)));
+        idx = [1 idx];
+        coefs = polyfit(1:sum(~idx),cell2mat(converting_data_pre(i_data_entry,find(~idx))),1);
         
         converting_data_post = [converting_data_post; coefs(1)];
     end
@@ -153,7 +201,7 @@ for this_subject_index = 1 : length(subjects)
 end
 group_ids(adjust_group_id_indices) = [];
 subjects(adjust_group_id_indices) = [];
-
+this_reg = 1;
 for this_reg1_index = 1 : size(potential_regressor1_data,2)-1
     for this_reg2_index = 1 : size(potential_regressor2_data,2)-1
 %         allYLim = [];
@@ -174,6 +222,9 @@ for this_reg1_index = 1 : size(potential_regressor1_data,2)-1
                 fittedY=polyval(coefs, fittedX);
                 plot(fittedX, fittedY, '-', 'Color',group_color_matrix(this_group_index, :),'LineWidth',1);
                 
+                r_scores(this_reg,this_group_index) = round(r,2);
+                slope_scores(this_reg,this_group_index) = round(coefs(1),2);
+                
                 str=[group_names{this_group_index}, ': ', 'r=',num2str(round(r,2)), ' m=',num2str(round(coefs(1),2))];
                 T = strvcat(T, str);
             end
@@ -183,6 +234,29 @@ for this_reg1_index = 1 : size(potential_regressor1_data,2)-1
         title(strcat(regressor_variable1, '(x)', {' '}, 'vs.', {' '}, regressor_variable2, '(y)') ,'interpreter','latex')
         xlabel(xlabel_text{this_reg1_index},'interpreter','latex')
         ylabel(ylabel_text{this_reg2_index},'interpreter','latex')
+       
+        d_reg1(this_reg1_index) = computeCohen_d(cell2mat(this_regressor1_data(this_group_subjectindices{1,:},this_reg1_index)), [cell2mat(this_regressor1_data(this_group_subjectindices{2,:},this_reg1_index));cell2mat(this_regressor1_data(this_group_subjectindices{3,:},this_reg1_index))]);
+        [p1(this_reg1_index),t1,s1,x1] = anovan(cell2mat(this_regressor1_data(:,1)),{num2str(group_ids')},'varnames', {'Group'});
+        
+        d_reg2(this_reg2_index) = computeCohen_d(cell2mat(this_regressor2_data(this_group_subjectindices{1,:},this_reg2_index)), [cell2mat(this_regressor2_data(this_group_subjectindices{2,:},this_reg2_index));cell2mat(this_regressor2_data(this_group_subjectindices{3,:},this_reg2_index))]);
+        [p2(this_reg2_index),t2,s2,x2] = anovan(cell2mat(this_regressor2_data(:,1)),{num2str(group_ids')},'varnames', {'Group'});
+    
+        reg_table = table(cell2mat(this_regressor1_data(:,this_reg1_index)), cell2mat(this_regressor2_data(:,this_reg2_index)),num2str(group_ids'));
+        reg_table.Properties.VariableNames = {'reg1','reg2','group'};
+        
+        model = fitlme(reg_table,'reg1~reg2 + group');
+        coefTest_p(this_reg) = coefTest(model);
+        
+        this_reg = this_reg + 1;
     end
 end
+
+display(['reg1 cohen d =', num2str(mean(d_reg1))])
+display(['reg2 cohen d =', num2str(mean(d_reg2))])
+display(['reg1-reg2 coeff p =', num2str(mean(coefTest_p))])
+
+display(['YA r:' num2str(mean(r_scores(:,1))) ' hOA r:' num2str(mean(r_scores(:,2))) ' lOA r:' num2str(mean(r_scores(:,3)))])
+display(['YA m:' num2str(mean(slope_scores(:,1))) ' hOA m:' num2str(mean(slope_scores(:,2))) ' lOA m:' num2str(mean(slope_scores(:,3)))])
+
+
 end
