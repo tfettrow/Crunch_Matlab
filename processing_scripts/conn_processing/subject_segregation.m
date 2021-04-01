@@ -303,7 +303,7 @@ if plot_figures
         end
         
         %% between Network
-        figure;
+        figure; hold on;
         if separate_groups
             group_1_indices = contains(group_ids,'1');
             group_2_indices = contains(group_ids,'2');
