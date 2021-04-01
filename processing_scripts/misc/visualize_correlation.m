@@ -255,7 +255,7 @@ for this_reg1_index = 1 : size(potential_regressor1_data,2)-1
             set(get(gca, 'xlabel'), 'visible', 'off');
             set(get(gca, 'ylabel'), 'visible', 'off');
             set(get(gca, 'title'), 'visible', 'off');
-            delete(coef_text);
+%             delete(coef_text);
             legend(gca, 'hide');
         end
         if save_figures
