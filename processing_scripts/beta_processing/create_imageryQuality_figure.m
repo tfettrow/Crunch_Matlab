@@ -6,14 +6,14 @@ addParameter(parser, 'task_folder', '')
 addParameter(parser, 'subjects', '')
 addParameter(parser, 'group_names', '')
 addParameter(parser, 'group_ids', '')
+addParameter(parser, 'no_labels', '')
 parse(parser, varargin{:})
 subjects = parser.Results.subjects;
 group_names = parser.Results.group_names;
 group_ids = parser.Results.group_ids;
-task_folder = parser.Results.task_folder;
-no_labels = parser.Results.no_labels;
-Results_filename = parser.Results.Results_filename;
-data_path = pwd;
+% task_folder = parser.Results.task_folder;
+% no_labels = parser.Results.no_labels;
+% data_path = pwd;
 
 
 group_color_matrix = distinguishable_colors(length(group_names));

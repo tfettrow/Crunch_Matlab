@@ -25,7 +25,7 @@ project_path = pwd;
 group_color_matrix = distinguishable_colors(length(group_names));
 
 for this_subject_index = 1 : length(subjects)
-    subj_results_dir = fullfile(project_path, subjects{this_subject_index}, 'Processed', 'MRI_files', task_folder, 'CAT12_Analysis', 'mri', strcat(subjects{this_subject_index},'_struct_roi_vols.csv'));
+    subj_results_dir = fullfile(project_path, subjects{this_subject_index}, 'Processed', 'MRI_files', task_folder, 'CAT12_Analysis', 'mri', strcat(subjects{this_subject_index},'_gmv_roi_vols.csv'));
     
     fileID = fopen(subj_results_dir);
     
@@ -49,7 +49,7 @@ for this_roi_index = 1: length(roi_names)
         this_group_and_roi_vol_results = vol_results(this_group_subjectindices,this_roi_index);
 
         
-        singleBoxPlot(this_group_and_roi_vol_results,'abscissa', this_group_index, 'EdgeColor',group_color_matrix(this_group_index,:), 'MarkerColor',group_color_matrix(this_group_index,:),'WiskColor',group_color_matrix(this_group_index,:), 'MeanColor',group_color_matrix(:,this_group_index), 'EdgeLinewidth', 1, 'WiskLinewidth', 1, 'MeanLinewidth', 1 )
+        singleBoxPlot(this_group_and_roi_vol_results,'abscissa', this_group_index, 'EdgeColor',group_color_matrix(this_group_index,:), 'MarkerColor',group_color_matrix(this_group_index,:),'WiskColor',group_color_matrix(this_group_index,:), 'MeanColor',group_color_matrix(this_group_index,:), 'EdgeLinewidth', 1, 'WiskLinewidth', 1, 'MeanLinewidth', 1 )
            
 %         bar(this_group_index, mean(this_group_and_roi_vol_results),'facecolor',group_color_matrix(:,this_group_index))
 %         errorbar(this_group_index, mean(this_group_and_roi_vol_results), std(this_group_and_roi_vol_results)/nnz(this_group_subjectindices), 'k'); hold on;

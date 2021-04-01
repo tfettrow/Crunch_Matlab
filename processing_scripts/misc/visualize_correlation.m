@@ -6,6 +6,7 @@ addParameter(parser, 'subjects', '')
 addParameter(parser, 'group_names', '')
 addParameter(parser, 'group_ids', '')
 addParameter(parser, 'no_labels', 0)
+addParameter(parser, 'save_figures' ,0)
 addParameter(parser, 'regressor_variable1', '')
 addParameter(parser, 'regressor_variable2', '')
 addParameter(parser, 'crunchers_only', '0')
@@ -14,6 +15,7 @@ subjects = parser.Results.subjects;
 group_names = parser.Results.group_names;
 group_ids = parser.Results.group_ids;
 no_labels = parser.Results.no_labels;
+save_figures = parser.Results.save_figures;
 regressor_variable1 = parser.Results.regressor_variable1;
 regressor_variable2 = parser.Results.regressor_variable2;
 crunchers_only = parser.Results.crunchers_only;
@@ -230,11 +232,11 @@ for this_reg1_index = 1 : size(potential_regressor1_data,2)-1
             end
         end
         legend(group_names)
-        text(0.1,0.9,T,'Units','normalized')
+        coef_text = text(0.1,0.9,T,'Units','normalized');
         title(strcat(regressor_variable1, '(x)', {' '}, 'vs.', {' '}, regressor_variable2, '(y)') ,'interpreter','latex')
         xlabel(xlabel_text{this_reg1_index},'interpreter','latex')
         ylabel(ylabel_text{this_reg2_index},'interpreter','latex')
-       
+        
         d_reg1(this_reg1_index) = computeCohen_d(cell2mat(this_regressor1_data(this_group_subjectindices{1,:},this_reg1_index)), [cell2mat(this_regressor1_data(this_group_subjectindices{2,:},this_reg1_index));cell2mat(this_regressor1_data(this_group_subjectindices{3,:},this_reg1_index))]);
         [p1(this_reg1_index),t1,s1,x1] = anovan(cell2mat(this_regressor1_data(:,1)),{num2str(group_ids')},'varnames', {'Group'});
         
@@ -248,8 +250,22 @@ for this_reg1_index = 1 : size(potential_regressor1_data,2)-1
         coefTest_p(this_reg) = coefTest(model);
         
         this_reg = this_reg + 1;
+        
+        if no_labels
+            set(get(gca, 'xlabel'), 'visible', 'off');
+            set(get(gca, 'ylabel'), 'visible', 'off');
+            set(get(gca, 'title'), 'visible', 'off');
+            delete(coef_text);
+            legend(gca, 'hide');
+        end
+        if save_figures
+            fig_title = strcat(xlabel_text{this_reg1_index},'_',ylabel_text{this_reg2_index});
+            filename =  fullfile(data_path, 'figures', fig_title);
+            saveas(gca, filename, 'tiff')
+        end
     end
 end
+
 
 display(['reg1 cohen d =', num2str(mean(d_reg1))])
 display(['reg2 cohen d =', num2str(mean(d_reg2))])
