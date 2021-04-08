@@ -63,6 +63,9 @@ end
 if strcmp(regressor_variable1,'seg_score')
     potential_regressor1_data =  readtable(fullfile(data_path,'spreadsheet_data','seg_score.csv'));
 end
+if strcmp(regressor_variable1,'volTIVcorrected_score')
+    potential_regressor1_data =  readtable(fullfile(data_path,'spreadsheet_data','volTIVcorrected_score.csv'));
+end
 % if strcmp(regressor_variable1,'TM_ml1')
 %     potential_regressor1_data =  readtable(fullfile(data_path,'spreadsheet_data','TM_ml1.csv'));
 % %       potential_regressor2_data =  readtable(fullfile(data_path,'spreadsheet_data','TM_ml1.csv'));
@@ -218,10 +221,12 @@ for this_reg1_index = 1 : size(potential_regressor1_data,2)-1
             if length(this_group_subjectindices{this_group_index,:}) >= 3
                 [r , p] = corr(cell2mat(this_regressor1_data(this_group_subjectindices{this_group_index,:},this_reg1_index)), cell2mat(this_regressor2_data(this_group_subjectindices{this_group_index,:},this_reg2_index)));
                 r2 = r^2;
-                coefs = polyfit(cell2mat(this_regressor1_data(this_group_subjectindices{this_group_index,:},this_reg1_index)), cell2mat(this_regressor2_data(this_group_subjectindices{this_group_index,:},this_reg2_index)),1);
+                [coefs,S] = polyfit(cell2mat(this_regressor1_data(this_group_subjectindices{this_group_index,:},this_reg1_index)), cell2mat(this_regressor2_data(this_group_subjectindices{this_group_index,:},this_reg2_index)),1);
                 
                 fittedX=linspace(xLimits(1), xLimits(2), 100);
-                fittedY=polyval(coefs, fittedX);
+                [fittedY,fittedY_delta] = polyconf(coefs,fittedX,S);
+
+                shadedErrorBar(fittedX, fittedY, fittedY_delta, {'color', group_color_matrix(this_group_index, :), 'linewidth', 5}, 1);
                 plot(fittedX, fittedY, '-', 'Color',group_color_matrix(this_group_index, :),'LineWidth',1);
                 
                 r_scores(this_reg,this_group_index) = round(r,2);
@@ -232,7 +237,7 @@ for this_reg1_index = 1 : size(potential_regressor1_data,2)-1
             end
         end
         legend(group_names)
-        coef_text = text(0.1,0.9,T,'Units','normalized');
+        coef_text = text(0.1,0.9,T,'Units','normalized','FontSize',12);
         title(strcat(regressor_variable1, '(x)', {' '}, 'vs.', {' '}, regressor_variable2, '(y)') ,'interpreter','latex')
         xlabel(xlabel_text{this_reg1_index},'interpreter','latex')
         ylabel(ylabel_text{this_reg2_index},'interpreter','latex')
