@@ -223,16 +223,19 @@ for this_reg1_index = 1 : size(potential_regressor1_data,2)-1
                 r2 = r^2;
                 [coefs,S] = polyfit(cell2mat(this_regressor1_data(this_group_subjectindices{this_group_index,:},this_reg1_index)), cell2mat(this_regressor2_data(this_group_subjectindices{this_group_index,:},this_reg2_index)),1);
                 
-                fittedX=linspace(xLimits(1), xLimits(2), 100);
+%                 fittedX=linspace(xLimits(1), xLimits(2), 100);
+                 fittedX=linspace(min(cell2mat(this_regressor1_data(this_group_subjectindices{this_group_index,:},this_reg1_index))), max(cell2mat(this_regressor1_data(this_group_subjectindices{this_group_index,:},this_reg1_index))), 100);
+                 
                 [fittedY,fittedY_delta] = polyconf(coefs,fittedX,S);
 
-                shadedErrorBar(fittedX, fittedY, fittedY_delta, {'color', group_color_matrix(this_group_index, :), 'linewidth', 5}, 1);
-                plot(fittedX, fittedY, '-', 'Color',group_color_matrix(this_group_index, :),'LineWidth',1);
+                shadedErrorBar(fittedX, fittedY, fittedY_delta, {'color', group_color_matrix(this_group_index, :), 'linewidth', 1}, 1);
+%                 plot(fittedX, fittedY, '-', 'Color',group_color_matrix(this_group_index, :),'LineWidth',1);
                 
                 r_scores(this_reg,this_group_index) = round(r,2);
                 slope_scores(this_reg,this_group_index) = round(coefs(1),2);
                 
-                str=[group_names{this_group_index}, ': ', 'r=',num2str(round(r,2)), ' m=',num2str(round(coefs(1),2))];
+                %                 str=[group_names{this_group_index}, ': ', 'r=',num2str(round(r,2)), ' m=',num2str(round(coefs(1),2))];
+                str=[group_names{this_group_index}, ': ', 'r=',num2str(round(r,2))];
                 T = strvcat(T, str);
             end
         end
