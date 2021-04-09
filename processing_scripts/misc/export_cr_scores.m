@@ -3,12 +3,12 @@ parser = inputParser;
 parser.KeepUnmatched = true;
 addParameter(parser, 'subjects', '') %{'1002','1004','1007','1009','1010','1011','1013','1020','1022','1027','1024','2021','2015','2002','2018','2017','2012','2025','2020','2026','2023','2022','2007','2013','2008','2033','2034','2037','2052','2042'}
 addParameter(parser, 'task_folder', '') %05_MotorImagery 06_Nback
-addParameter(parser, 'results_matlfile', '') %'CRUNCH_discete_roi_newacc.mat'
-addParameter(parser, 'crunchers_only', 0) % 
+addParameter(parser, 'results_matfile', '') %'CRUNCH_discete_roi_newacc.mat'
+addParameter(parser, 'crunchers_only', 1) % 
 parse(parser, varargin{:})
 subjects = parser.Results.subjects;
 task_folder = parser.Results.task_folder;
-results_matlfile = parser.Results.results_matlfile;
+results_matlfile = parser.Results.results_matfile;
 crunchers_only = parser.Results.crunchers_only;
 data_path = pwd;
 
@@ -32,7 +32,11 @@ for i = 1:length(subjects)
             maxbeta_to_edit = cell2mat(max_beta_cr);
             
             cr_to_edit(cr_to_edit==0|cr_to_edit==3) = NaN;
-            maxbeta_to_edit(maxbeta_to_edit==0|maxbeta_to_edit==3) = NaN;
+        for dd = 1:3
+            if isnan(cr_to_edit(:,dd))
+            maxbeta_to_edit(:,dd) = NaN;
+            end
+        end
             
             fid1 = fullfile(data_path,'spreadsheet_data','cr_score_mi_onlyCrunch.csv');
             fid2 = fullfile(data_path,'spreadsheet_data','maxbeta_score_mi_onlyCrunch.csv');
@@ -59,12 +63,19 @@ for i = 1:length(subjects)
             cr_to_edit_500 = cell2mat(cr_500);
             maxbeta_to_edit_500 = cell2mat(max_beta_cr_500);
             
-            
             cr_to_edit_1500(cr_to_edit_1500==0|cr_to_edit_1500==3) = NaN;
-            maxbeta_to_edit_1500(maxbeta_to_edit_1500==0|maxbeta_to_edit_1500==3) = NaN;
+            for dd = 1:3
+                if isnan(cr_to_edit_1500(:,dd))
+                    maxbeta_to_edit_1500(:,dd) = NaN;
+                end
+            end
             cr_to_edit_500(cr_to_edit_500==0|cr_to_edit_500==3) = NaN;
-            maxbeta_to_edit_500(maxbeta_to_edit_500==0|maxbeta_to_edit_500==3) = NaN;
-            
+            for dd = 1:3
+                if isnan(cr_to_edit_500(:,dd))
+                    maxbeta_to_edit_500(:,dd) = NaN;
+                end
+            end       
+                      
             fid1 = fullfile(data_path,'spreadsheet_data','cr_score_nb_onlyCrunch.csv');
             fid2 = fullfile(data_path,'spreadsheet_data','maxbeta_score_nb_onlyCrunch.csv');
              
