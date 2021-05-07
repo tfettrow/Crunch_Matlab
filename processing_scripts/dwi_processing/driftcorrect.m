@@ -3,8 +3,8 @@
 
 data_path = pwd;
 
-par.f_in_nii = strcat(data_path,filesep,'DWI.nii');
-par.f_in_txt = strcat(data_path,filesep,'DWI.txt');
+par.f_in_nii = strcat(data_path,filesep,'DWI_RL.nii');
+par.f_in_txt = strcat(data_path,filesep,'DWI_RL.txt');
 par.f_out_nii = 'driftcorrected_DWI.nii';
 par.f_out_txt = 'driftcorrected_DWI.txt';
 par.method = 2; % 1 = linear, 2 = quadratic, 3 = cubic

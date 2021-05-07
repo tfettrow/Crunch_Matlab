@@ -16,7 +16,7 @@ bvec = textread(bvec_file.name)';
 
 B = bval(:,ones(1,6)).*[bvec(:,1).^2 2*bvec(:,1).*bvec(:,2) 2*bvec(:,1).*bvec(:,3) bvec(:,2).^2 2*bvec(:,2).*bvec(:,3) bvec(:,3).^2];
 
-fid = fopen( 'DWI.txt', 'wt' );
+fid = fopen( 'DWI_RL.txt', 'wt' );
 for i=1:size(B,1)    
     fprintf(fid, '%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\t%12.8f\n',B(i,:));
 end
