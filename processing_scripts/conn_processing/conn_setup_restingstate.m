@@ -11,7 +11,9 @@
 
 % WARNING: This assumes there is always a smoothed and nonsmoothed dataset also does not take into account multiple secondary
   % datasets
-  
+%   conn_setup_restingstate('project_name','conn_mim_all_20210714','TR',2.5,'rs_folder', '04_rsfMRI', 'subjects',{'1002','2002','3028'},'group_names',{'ya','hoa','loa'},'group_ids',[1,2,3], 'primary_smoothed', 'smoothed_warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii', 'primary_unsmoothed', 'warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii', 'secondary_smoothed', 'smoothed_warpedToSUIT_CBmasked_coregToT1_unwarpedRealigned_slicetimed_RestingState.nii', 'secondary_unsmoothed', 'warpedToSUIT_CBmasked_coregToT1_unwarpedRealigned_slicetimed_RestingState.nii', 'roi_settings_filename', 'ROI_settings_conn_wu120_all_wb_cb.txt', 'primary_dataset','whole_brain')
+
+%  conn_setup_restingstate('project_name','conn_mim_all_20210714','TR',2.5,'rs_folder', '04_rsfMRI', 'subjects',{'3028'},'group_ids',[3], 'primary_smoothed', 'smoothed_warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii', 'primary_unsmoothed', 'warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii', 'secondary_smoothed', 'smoothed_warpedToSUIT_CBmasked_coregToT1_unwarpedRealigned_slicetimed_RestingState.nii', 'secondary_unsmoothed', 'warpedToSUIT_CBmasked_coregToT1_unwarpedRealigned_slicetimed_RestingState.nii', 'roi_settings_filename', 'ROI_settings_conn_wu120_all_wb_cb.txt', 'primary_dataset','whole_brain')
 function conn_setup_restingstate(varargin)
 parser = inputParser;
 parser.KeepUnmatched = true;
@@ -21,7 +23,7 @@ addParameter(parser, 'primary_smoothed', 'smoothed_warpedToMNI_unwarpedRealigned
 addParameter(parser, 'primary_unsmoothed', 'warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii')
 addParameter(parser, 'secondary_smoothed', '')
 addParameter(parser, 'secondary_unsmoothed', '')
-addParameter(parser, 'structural', 'warpedToMNI_biascorrected_SkullStripped_T1.nii')
+addParameter(parser, 'structural', 'warpedToMNI_SkullStripped_biascorrected_T1.nii')
 addParameter(parser, 'roi_settings_filename', '')
 addParameter(parser, 'rs_folder', '')
 addParameter(parser, 'primary_dataset', 'whole_brain')  % 'whole_brain' or 'cerebellum'
@@ -29,6 +31,7 @@ addParameter(parser, 'TR', 1.5) % assuming default is UF sequence
 addParameter(parser, 'subjects', '')
 addParameter(parser, 'group_names', '')
 addParameter(parser, 'group_ids', '')
+addParameter(parser, 'add_subjects', 0)
 parse(parser, varargin{:})
 TR = parser.Results.TR;
 subjects = parser.Results.subjects;
@@ -43,6 +46,7 @@ roi_settings_filename = parser.Results.roi_settings_filename;
 primary_dataset = parser.Results.primary_dataset;
 group_names = parser.Results.group_names;
 group_ids = parser.Results.group_ids;
+add_subjects = parser.Results.add_subjects;
 
 disp(strcat(['Primary: ', primary_smoothed, ' Structural: ', structural, ' Secondary: ', secondary_smoothed]));
 
@@ -95,9 +99,9 @@ for this_subject_index = 1:length(subjects)
     BATCH.Setup.structurals{this_subject_index} = structural_path;
     BATCH.Setup.functionals{this_subject_index}{1} = primary_smoothed_path;
     
-    gray_matter_path = spm_select('FPList', data_path, '^warpedToMNI_c1T1*');
-    white_matter_path = spm_select('FPList', data_path, '^warpedToMNI_c2T1*');
-    csf_matter_path = spm_select('FPList', data_path, '^warpedToMNI_c3T1*');
+    gray_matter_path = spm_select('FPList', this_subject_path, '^warpedToMNI_c1T1*');
+    white_matter_path = spm_select('FPList', this_subject_path, '^warpedToMNI_c2T1*');
+    csf_matter_path = spm_select('FPList', this_subject_path, '^warpedToMNI_c3T1*');
          
     BATCH.Setup.masks.Grey.files{this_subject_index} = gray_matter_path;
     BATCH.Setup.masks.White.files{this_subject_index} = white_matter_path;
@@ -163,15 +167,27 @@ if ~isempty(group_names)
         BATCH.Setup.subjects.group_names{this_group_name} = group_names{this_group_name};
     end
     BATCH.Setup.subjects.groups = group_ids;
-    BATCH.Setup.subjects.add = 0;
+    if add_subjects
+        BATCH.Setup.subjects.add = 1;
+    else
+        BATCH.Setup.subjects.add = 0;
+    end
 end
 
 BATCH.filename = project_name;
-BATCH.Setup.isnew=1;
-BATCH.Setup.done=1;
-BATCH.Setup.overwrite=1;
 BATCH.Setup.RT=TR;
 BATCH.Setup.acquisitiontype=1;
+
+if add_subjects
+    BATCH.Setup.isnew=0;
+    BATCH.Setup.done=1;
+    BATCH.Setup.overwrite=0;
+    BATCH.Setup.add=1;
+else
+    BATCH.Setup.isnew=1;
+    BATCH.Setup.done=1;
+    BATCH.Setup.overwrite=1;
+end
 
 BATCH.Setup.preprocessing.steps = {'functional_art'};
 %     BATCH.filename = 'Conn_Art_Folder_Stuff';
@@ -263,8 +279,13 @@ end
 %% DENOISING step
 % CONN Denoising                                    % Default options (uses White Matter+CSF+realignment+scrubbing+conditions as confound regressors); see conn_batch for additional options 
 % batch.Denoising.filter=[0.01, 0.1];                 % frequency filter (band-pass values, in Hz)
-BATCH.Denoising.done=1;
-BATCH.Denoising.overwrite='Yes';
+if add_subjects
+    BATCH.Denoising.done=1;
+    BATCH.Denoising.overwrite='No';
+else
+    BATCH.Denoising.done=1;
+    BATCH.Denoising.overwrite='Yes';
+end
 
 %% save QA DENOISING
 BATCH.QA.foldename = strcat(project_name, filesep, 'results', filesep, 'qa');
@@ -281,6 +302,7 @@ BATCH.Analysis.measure = 1; % 1 = 'correlation (bivariate)', 2 = 'correlation (s
 BATCH.Analysis.type = 3;
 BATCH.vvAnalysis.done=1;
 BATCH.vvAnalysis.measures = 'MCOR';
+
 
 %% supposed to but does not seem to run... have to go in and manually run.. obviously
 %BATCH.Results PERFORMS SECOND-LEVEL ANALYSES (ROI-to-ROI and Seed-to-Voxel analyses) %!
@@ -311,19 +333,37 @@ BATCH.vvAnalysis.measures = 'MCOR';
 %                       roi ROINAME) 
 %      contrast      : contrast vector (same size as effect_names)
 
-BATCH.Results.done=1;
-BATCH.Results.overwrite=1;
+if add_subjects
+    BATCH.Results.done=1;
+    BATCH.Results.overwrite=0;
+else
+    BATCH.Results.done=1;
+    BATCH.Results.overwrite=1;
+end
 % BATCH.Results.name=1;
 
 %also does not run as is...
 %BATCH.vvResults PERFORMS SECOND-LEVEL ANALYSES (Voxel-to-Voxel analyses) %!
-BATCH.vvResults.done=1;
-BATCH.vvResults.overwrite=1;
+if add_subjects
+    BATCH.vvResults.done=1;
+    BATCH.vvResults.overwrite=1;
+else
+    BATCH.vvResults.done=1;
+    BATCH.vvResults.overwrite=1;
+end
 % BATCH.vvResults.name=1;
 %  
 conn_batch(BATCH)
-
 disp('saving subject ids for later use...')
-save([project_name filesep 'subject_ids'], 'subjects')
+if add_subjects
+    old_subjects = load([project_name filesep 'subject_ids']);
+    new_subjects = [old_subjects.subjects subjects];
+    new_group_ids = [old_subjects.group_ids group_ids];
+    subjects = new_subjects;
+    group_ids = new_group_ids;
+    save([project_name filesep 'subject_ids'], 'subjects', 'group_ids') 
+else    
+    save([project_name filesep 'subject_ids'], 'subjects', 'group_ids') 
+end
 
 end
