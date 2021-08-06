@@ -110,7 +110,7 @@ function singleBoxPlot(data, varargin)
     outliers = data(data>data_upper_inner_fence | data<data_lower_inner_fence);
     
     % plot
-    axes_hold = ishold(axes_handle);
+%     axes_hold = ishold(axes_handle);
     hold(axes_handle, 'on');
     box_x_data = [abscissa-width/2 abscissa+width/2 abscissa+width/2 abscissa-width/2 abscissa-width/2];
     box_y_data = [data_quartile_1 data_quartile_1 data_quartile_3 data_quartile_3 data_quartile_1];
@@ -158,15 +158,16 @@ function singleBoxPlot(data, varargin)
             jitter(i_point) = jitter(i_point) * this_point_spread;
         end
         
-        scatterplot = scatter(axes_handle, ones(size(data))*abscissa, data, data_marker_size, 'MarkerFaceColor', markercolor, 'MarkerEdgeColor', 'none');
+%         scatterplot = scatter(axes_handle, ones(size(data))*abscissa, data, data_marker_size, 'MarkerFaceColor', markercolor, 'MarkerEdgeColor', 'none');
+        scatterplot = scatter(axes_handle, ones(size(data))*abscissa, data, data_marker_size, jet(length(data)),'filled');
         set(scatterplot, 'xdata', ones(size(data))*abscissa + jitter)
 %         uistack(scatterplot, 'bottom');
         RandStream.setGlobalStream(old_stream);
     end
     
     
-    if ~axes_hold
-        hold(axes_handle, 'off');
-    end
+%     if ~axes_hold
+%         hold(axes_handle, 'off');
+%     end
     
 end

@@ -31,7 +31,7 @@ for i_file = 1 : size(all_files_to_coregister,1)
     
     clear matlabbatch
     matlabbatch{1}.spm.spatial.smooth.data = cellstr(this_file_path_with_volumes);
-    matlabbatch{1}.spm.spatial.smooth.fwhm = [8 8 8];
+    matlabbatch{1}.spm.spatial.smooth.fwhm = [4 4 4];
     matlabbatch{1}.spm.spatial.smooth.dtype = 0;
     matlabbatch{1}.spm.spatial.smooth.im = 0;
     matlabbatch{1}.spm.spatial.smooth.prefix = 'smoothed_';

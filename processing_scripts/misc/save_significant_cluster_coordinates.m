@@ -1,7 +1,9 @@
+Results_foldername = 'Results_split_mag';
+
 peak_coord_indices = find(~cellfun(@isempty,TabDat.dat(:,4)));
 
-fid = fopen('ROIs.txt','wt');
-% fprintf(fid, 'Happy\nNew\nYear');
+fid = fopen(strcat(Results_foldername, '_ROIs.txt'),'wt');
+
 
 for this_roi = 1:10
     fprintf(fid, strcat('roi',num2str(this_roi),', '));

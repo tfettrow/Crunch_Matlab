@@ -182,34 +182,33 @@ for i_subject = 1 : length(available_subject_file_name_list)
     % 1) for each subject i want to export the last 4? seed_indices of
     % network_segregation
     % 2) write to csv (see the resulting 1013_fmri_roi_betas.csv in fmri
-    % Level1 folder) 
-%     example:
-% record_id, redcap_event_name,flat_neurosynth_dlpfc_left_gmMasked,low_neurosynth_dlpfc_left_gmMasked,med_neurosynth_dlpfc_left_gmMasked,high_neurosynth_dlpfc_left_gmMasked,flat_neurosynth_dlpfc_right_gmMasked,low_neurosynth_dlpfc_right_gmMasked,med_neurosynth_dlpfc_right_gmMasked,high_neurosynth_dlpfc_right_gmMasked,flat_neurosynth_acc_gmMasked,low_neurosynth_acc_gmMasked,med_neurosynth_acc_gmMasked,high_neurosynth_acc_gmMasked
-% 1013, base_v4_mri_arm_1,0.321409 ,0.440705 ,0.929578 ,0.257719  ​,0.049928 ,0.237883 ,0.515291 ,-0.031890  ​,-0.064096 ,0.343579 ,0.125681 ,-0.187217  ​
-    % 3) write this into subject/rsfmri/Level1 
-%         example:
-% record_id, redcap_event_name, seed_name1, seed_name2, etc
-
-% only gather the left_dlpfc, right_dlpfc, left_acc, and right_acc
-networks_of_interest_indices = find(contains(seed_names,{'left_dlpfc', 'right_dlpfc', 'left_acc', 'right_acc'}));
-this_table_cell = {subjects{i_subject}, 'base_v4_mri_arm_1'};
-seed_names_cell = {'record_id', 'redcap_event_name'};
-for i_net = 1:length(networks_of_interest_indices)
-    this_table_cell{i_net+2} = network_segregation(networks_of_interest_indices(i_net));
-    seed_names_cell(i_net+2) = strcat('conn_',seed_names(networks_of_interest_indices(i_net)));
-end
-
-seed_names_cell{end+1} = 'conn_complete';
-this_table_cell{end+1} = '2';
-
-T = cell2table(this_table_cell, 'VariableNames', seed_names_cell);
-
-% 1) need to identify study folder then create a this_subject processed rsfMRI folder Level1 folder then write T 
-
-subject_folder = subjects{i_subject};
-mkdir(fullfile(project_path, subject_folder, 'Processed', 'MRI_files','04_rsfMRI','ANTS_Normalization','Level1'));
-writetable(T, fullfile(project_path, subject_folder, 'Processed', 'MRI_files','04_rsfMRI','ANTS_Normalization','Level1', strcat(subjects{i_subject},'_rsfmri_segregation.csv')))
-
+    % Level1 folder)
+    %     example:
+    % record_id, redcap_event_name,flat_neurosynth_dlpfc_left_gmMasked,low_neurosynth_dlpfc_left_gmMasked,med_neurosynth_dlpfc_left_gmMasked,high_neurosynth_dlpfc_left_gmMasked,flat_neurosynth_dlpfc_right_gmMasked,low_neurosynth_dlpfc_right_gmMasked,med_neurosynth_dlpfc_right_gmMasked,high_neurosynth_dlpfc_right_gmMasked,flat_neurosynth_acc_gmMasked,low_neurosynth_acc_gmMasked,med_neurosynth_acc_gmMasked,high_neurosynth_acc_gmMasked
+    % 1013, base_v4_mri_arm_1,0.321409 ,0.440705 ,0.929578 ,0.257719  ​,0.049928 ,0.237883 ,0.515291 ,-0.031890  ​,-0.064096 ,0.343579 ,0.125681 ,-0.187217  ​
+    % 3) write this into subject/rsfmri/Level1
+    %         example:
+    % record_id, redcap_event_name, seed_name1, seed_name2, etc
+    
+    % only gather the left_dlpfc, right_dlpfc, left_acc, and right_acc
+    if save_scores
+        networks_of_interest_indices = find(contains(seed_names,{'left_dlpfc', 'right_dlpfc', 'left_acc', 'right_acc'}));
+        this_table_cell = {subjects{i_subject}, 'base_v4_mri_arm_1'};
+        seed_names_cell = {'record_id', 'redcap_event_name'};
+        for i_net = 1:length(networks_of_interest_indices)
+            this_table_cell{i_net+2} = network_segregation(networks_of_interest_indices(i_net),i_subject);
+            seed_names_cell(i_net+2) = strcat('conn_',seed_names(networks_of_interest_indices(i_net)));
+        end
+        
+        seed_names_cell{end+1} = 'conn_complete';
+        this_table_cell{end+1} = '2';
+        
+        T = cell2table(this_table_cell, 'VariableNames', seed_names_cell);
+        
+        subject_folder = subjects{i_subject};
+        mkdir(fullfile(project_path, subject_folder, 'Processed', 'MRI_files','04_rsfMRI','ANTS_Normalization','Level1'));
+        writetable(T, fullfile(project_path, subject_folder, 'Processed', 'MRI_files','04_rsfMRI','ANTS_Normalization','Level1', strcat(subjects{i_subject},'_rsfmri_segregation.csv')))
+    end
 end
 
 if plot_figures
