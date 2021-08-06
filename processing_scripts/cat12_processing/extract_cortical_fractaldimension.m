@@ -19,7 +19,7 @@ save_figures = parser.Results.save_figures;
 save_scores = parser.Results.save_scores;
 project_path = pwd;
 group_color_matrix = distinguishable_colors(length(group_names));
-close all
+% close all
 
 
 % go into subject folder, grab the combined thickness file, and for each
@@ -115,7 +115,7 @@ for this_roi_index = 1: length(roi_image_cell)
     title(roi_name_cell{this_roi_index},'interpreter','latex')
     xlim([0 length(group_names)+1])
 %     ylim([0 1])
-    ylabel('Avg Cortical Depth (mm?)')
+    ylabel('Avg Cortical fractaldimension (mm?)')
     set(gca,'XTick',1:length(group_names),'xticklabel',{'YA','high-OA','low-OA'},'TickLabelInterpreter','none')
     xtickangle(45)
     set(gcf, 'ToolBar', 'none');
@@ -143,7 +143,7 @@ if save_scores
    surf_cell_table.Properties.VariableNames = roi_name_cell;
    
 %    vol_results_table = [subject_table, vol_cell_table, group_table];
-   surf_results_table = [subject_table, vol_cell_table];
+   surf_results_table = [subject_table, surf_cell_table];
    
    writetable(surf_results_table,fullfile(project_path,'spreadsheet_data','surfFractalDimension_score.csv'))
 end

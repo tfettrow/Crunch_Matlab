@@ -19,7 +19,7 @@ save_figures = parser.Results.save_figures;
 save_scores = parser.Results.save_scores;
 project_path = pwd;
 group_color_matrix = distinguishable_colors(length(group_names));
-close all
+% close all
 
 
 % go into subject folder, grab the combined thickness file, and for each
@@ -143,7 +143,7 @@ if save_scores
    surf_cell_table.Properties.VariableNames = roi_name_cell;
    
 %    vol_results_table = [subject_table, vol_cell_table, group_table];
-   surf_results_table = [subject_table, vol_cell_table];
+   surf_results_table = [subject_table, surf_cell_table];
    
    writetable(surf_results_table,fullfile(project_path,'spreadsheet_data','surfDepth_score.csv'))
 end

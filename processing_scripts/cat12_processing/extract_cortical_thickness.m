@@ -19,7 +19,7 @@ save_figures = parser.Results.save_figures;
 save_scores = parser.Results.save_scores;
 project_path = pwd;
 group_color_matrix = distinguishable_colors(length(group_names));
-close all
+% close all
 
 
 % go into subject folder, grab the combined thickness file, and for each
@@ -103,13 +103,7 @@ for this_roi_index = 1: length(roi_image_cell)
         this_group_subjectindices = find(group_ids==this_group_index);
         this_group_and_roi_vol_results = thickness_results(this_group_subjectindices,this_roi_index);
 
-        
-        singleBoxPlot(this_group_and_roi_vol_results,'abscissa', this_group_index, 'EdgeColor',group_color_matrix(this_group_index,:), 'MarkerColor',group_color_matrix(this_group_index,:),'WiskColor',group_color_matrix(this_group_index,:), 'MeanColor',group_color_matrix(this_group_index,:), 'EdgeLinewidth', 1, 'WiskLinewidth', 1, 'MeanLinewidth', 1 )
-           
-%         bar(this_group_index, mean(this_group_and_roi_vol_results),'facecolor',group_color_matrix(:,this_group_index))
-%         errorbar(this_group_index, mean(this_group_and_roi_vol_results), std(this_group_and_roi_vol_results)/nnz(this_group_subjectindices), 'k'); hold on;
-        
-        %         boxplot(this_group_and_roi_vol_results, this_group_index);
+        singleBoxPlot(this_group_and_roi_vol_results,'abscissa', this_group_index, 'EdgeColor',group_color_matrix(this_group_index,:), 'MarkerColor',group_color_matrix(this_group_index,:),'WiskColor',group_color_matrix(this_group_index,:), 'MeanColor',group_color_matrix(this_group_index,:), 'EdgeLinewidth', 1, 'WiskLinewidth', 1, 'MeanLinewidth', 1 )           
     end
     xlim([ 0 length(group_names)+1])
     title(roi_name_cell{this_roi_index},'interpreter','latex')
@@ -143,7 +137,7 @@ if save_scores
    surf_cell_table.Properties.VariableNames = roi_name_cell;
    
 %    vol_results_table = [subject_table, vol_cell_table, group_table];
-   surf_results_table = [subject_table, vol_cell_table];
+   surf_results_table = [subject_table, surf_cell_table];
    
    writetable(surf_results_table,fullfile(project_path,'spreadsheet_data','surfThickness_score.csv'))
 end

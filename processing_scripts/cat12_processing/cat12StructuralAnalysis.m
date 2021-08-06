@@ -25,6 +25,9 @@ t1_filename = parser.Results.t1_filename;
 template_dir = parser.Results.template_dir;
 steps_to_run_vector = parser.Results.steps_to_run_vector; %steps_to_run_vector should be a vector the length of the number of steps that are present in this function
 
+% Example: cat12StructuralAnalysis('subjects',{'1002','1004','1007','1009','1010','1011','1013','1020','1022','1024','1027','2002','2007','2008','2012','2013','2015','2017','2018','2020','2021','2022','2023','2025','2026','2033','2034','2037','2042','2052','3004','3006','3007','3008'},'t1_folder','02_T1','t1_filename','T1.nii','steps_to_run_vector',[0 0 0 0 0 0 0 1 1 1],'template_dir','\\exasmb.rc.ufl.edu\blue\rachaelseidler\tfettrow\Crunch_Code\MR_Templates')
+
+
 %steps to run
 %1) segmentation
 %2) display segmentation slices
