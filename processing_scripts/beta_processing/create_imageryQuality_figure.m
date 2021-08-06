@@ -35,8 +35,8 @@ for this_group_index = 1 : length(group_names)
     this_group_subject_array(1:length(this_group_subjectindices)) = subjects(this_group_subjectindices);
     this_group_subjectindices_imageryindices = find(contains(string(imagery_data(:,1)), this_group_subject_array));
     
-    this_group_imagery_averages(this_group_index,:) = mean(imagery_data(this_group_subjectindices_imageryindices,2:5));
-    this_group_imagery_stds(this_group_index,:) = std(imagery_data(this_group_subjectindices_imageryindices,2:5));
+    this_group_imagery_averages(this_group_index,:) = mean(imagery_data(this_group_subjectindices_imageryindices,2:5)+1);
+    this_group_imagery_stds(this_group_index,:) = std(imagery_data(this_group_subjectindices_imageryindices,2:5)+1);
     
 %     bar(number_of_levels,this_group_imagery_averages) %, 'Color',  group_color_matrix(this_group_index, :))
 end
