@@ -2,3 +2,5 @@
 processing_scripts/conn_processing/subject_segregation.asv
 *.asv
 processing_scripts/conn_processing/html/subject_segregation.html
+helper/pathdef.m
+helper/pathdef.m

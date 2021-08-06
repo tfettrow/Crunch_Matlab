@@ -1,7 +1,7 @@
 function export_cr_scores(varargin)
 parser = inputParser;
 parser.KeepUnmatched = true;
-addParameter(parser, 'subjects', '') %{'1002','1004','1007','1009','1010','1011','1013','1020','1022','1027','1024','2021','2015','2002','2018','2017','2012','2025','2020','2026','2023','2022','2007','2013','2008','2033','2034','2037','2052','2042'}
+addParameter(parser, 'subjects', '') %{'1002','1004','1007','1009','1010','1011','1013','1017','1018','1019','1020','1022','1024','1025','1026','1027','2002','2007','2008','2012','2013','2015','2017','2018','2020','2021','2022','2023','2025','2026','2027','2033','2034','2037','2038','2039','2042','2052'}
 addParameter(parser, 'task_folder', '') %05_MotorImagery 06_Nback
 addParameter(parser, 'results_matfile', '') %'CRUNCH_discete_roi_newacc.mat'
 addParameter(parser, 'crunchers_only', 1) % 
@@ -94,4 +94,5 @@ for i = 1:length(subjects)
         end
     end
 end
+fclose all;
 end
