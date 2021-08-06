@@ -21,5 +21,4 @@ slicetimes = textscan(cslicetimes,'%f','Delimiter',',');
 [sortedslicetimes,sindx] = sort(slicetimes{1});
 mb = length(sortedslicetimes)/(sum(diff(sortedslicetimes)~=0)+1);
 slspec = reshape(sindx,[mb length(sindx)/mb])'-1;
-
 dlmwrite('my_slspec.txt',slspec,'delimiter',' ','precision','%3d');
