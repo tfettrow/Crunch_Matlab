@@ -50,9 +50,9 @@ seed_to_network_map = {'left_hand','medial_prefrontal_cortex_post_cingulate','ri
 % WARNING: this logic only works for MiM data
 if separate_groups
     % find first number of subject id (1,2 or 3)
-    for this_subject = 1:length(subjects)
-        group_ids{this_subject} = subjects{:,this_subject}(1);
-    end
+%     for this_subject = 1:length(subjects)
+%         group_ids{this_subject} = subjects{:,this_subject}(1);
+%     end
     unique_groups = unique(group_ids);
     
     % identify colors based on number of unique groups ^^
@@ -218,14 +218,14 @@ if plot_figures
         %% within Network
         figure; hold on;
         if separate_groups
-            group_1_indices = contains(group_ids,'1');
-            group_2_indices = contains(group_ids,'2');
+            group_1_indices = (group_ids==1);
+            group_2_indices = (group_ids==2);
             
             bar(1:sum(group_1_indices), avg_within_network_conn(this_seed_name_index,group_1_indices), 'FaceColor', color_groups(1,:)); hold on;
             bar(sum(group_1_indices)+1:sum(group_2_indices)+sum(group_1_indices), avg_within_network_conn(this_seed_name_index,group_2_indices), 'FaceColor', color_groups(2,:));hold on;
             
             if length(unique_groups) > 2
-                group_3_indices = contains(group_ids,'3');
+                group_3_indices = (group_ids==3);
                 bar(sum(group_2_indices)+sum(group_1_indices)+1:sum(group_3_indices)+sum(group_2_indices)+sum(group_1_indices), avg_within_network_conn(this_seed_name_index,group_3_indices), 'FaceColor', color_groups(3,:));
             end
         else
@@ -255,14 +255,14 @@ if plot_figures
         
         figure; hold on;
         if separate_groups
-            group_1_indices = contains(group_ids,'1');
-            group_2_indices = contains(group_ids,'2');
+           group_1_indices = (group_ids==1);
+            group_2_indices = (group_ids==2);
             
             singleBoxPlot(avg_within_network_conn(this_seed_name_index,group_1_indices),'abscissa', 1, 'EdgeColor', color_groups(1,:), 'MarkerColor', color_groups(1,:),'WiskColor',  color_groups(1,:), 'MeanColor', color_groups(1,:))
             singleBoxPlot(avg_within_network_conn(this_seed_name_index,group_2_indices),'abscissa', 2, 'EdgeColor', color_groups(2,:), 'MarkerColor', color_groups(2,:),'WiskColor',  color_groups(2,:), 'MeanColor', color_groups(2,:))
             xlim([0 3])
             if length(unique_groups) > 2
-                group_3_indices = contains(group_ids,'3');
+                group_3_indices = (group_ids==3);
                 singleBoxPlot(avg_within_network_conn(this_seed_name_index,group_3_indices),'abscissa', 3, 'EdgeColor', color_groups(3,:), 'MarkerColor', color_groups(3,:),'WiskColor',  color_groups(3,:), 'MeanColor', color_groups(3,:))
                 xlim([0 4])
             end
@@ -304,14 +304,14 @@ if plot_figures
         %% between Network
         figure; hold on;
         if separate_groups
-            group_1_indices = contains(group_ids,'1');
-            group_2_indices = contains(group_ids,'2');
+            group_1_indices = (group_ids==1);
+            group_2_indices = (group_ids==2);
             
             bar(1:sum(group_1_indices), avg_between_network_conn(this_seed_name_index,group_1_indices), 'FaceColor', color_groups(1,:)); hold on;
             bar(sum(group_1_indices)+1:sum(group_2_indices)+sum(group_1_indices), avg_between_network_conn(this_seed_name_index,group_2_indices), 'FaceColor', color_groups(2,:));hold on;
             
             if length(unique_groups) > 2
-                group_3_indices = contains(group_ids,'3');
+                group_3_indices = (group_ids==3);
                 bar(sum(group_2_indices)+sum(group_1_indices)+1:sum(group_3_indices)+sum(group_2_indices)+sum(group_1_indices), avg_between_network_conn(this_seed_name_index,group_3_indices), 'FaceColor', color_groups(3,:));
             end
         else
@@ -341,14 +341,14 @@ if plot_figures
         
         figure; hold on;
         if separate_groups
-            group_1_indices = contains(group_ids,'1');
-            group_2_indices = contains(group_ids,'2');
+            group_1_indices = (group_ids==1);
+            group_2_indices = (group_ids==2);
             
             singleBoxPlot(avg_between_network_conn(this_seed_name_index,group_1_indices),'abscissa', 1, 'EdgeColor', color_groups(1,:), 'MarkerColor', color_groups(1,:),'WiskColor',  color_groups(1,:), 'MeanColor', color_groups(1,:))
             singleBoxPlot(avg_between_network_conn(this_seed_name_index,group_2_indices),'abscissa', 2, 'EdgeColor', color_groups(2,:), 'MarkerColor', color_groups(2,:),'WiskColor',  color_groups(2,:), 'MeanColor', color_groups(2,:))
             xlim([0 3])
             if length(unique_groups) > 2
-                group_3_indices = contains(group_ids,'3');
+                group_3_indices = (group_ids==3);
                 singleBoxPlot(avg_between_network_conn(this_seed_name_index,group_3_indices),'abscissa', 3, 'EdgeColor', color_groups(3,:), 'MarkerColor', color_groups(3,:),'WiskColor',  color_groups(3,:), 'MeanColor', color_groups(3,:))
                 xlim([0 4])
             end
@@ -392,14 +392,14 @@ if plot_figures
         %% Network Segregation
         figure;
         if separate_groups
-            group_1_indices = contains(group_ids,'1');
-            group_2_indices = contains(group_ids,'2');
+            group_1_indices = (group_ids==1);
+            group_2_indices = (group_ids==2);
             
             bar(1:sum(group_1_indices), network_segregation(this_seed_name_index,group_1_indices), 'FaceColor', color_groups(1,:)); hold on;
             bar(sum(group_1_indices)+1:sum(group_2_indices)+sum(group_1_indices), network_segregation(this_seed_name_index,group_2_indices), 'FaceColor', color_groups(2,:));hold on;
             
             if length(unique_groups) > 2
-                group_3_indices = contains(group_ids,'3');
+                group_3_indices = (group_ids==3);
                 bar(sum(group_2_indices)+sum(group_1_indices)+1:sum(group_3_indices)+sum(group_2_indices)+sum(group_1_indices), network_segregation(this_seed_name_index,group_3_indices), 'FaceColor', color_groups(3,:));
             end
         else
@@ -428,14 +428,14 @@ if plot_figures
         
         figure; hold on;
         if separate_groups
-            group_1_indices = contains(group_ids,'1');
-            group_2_indices = contains(group_ids,'2');
+            group_1_indices = (group_ids==1);
+            group_2_indices = (group_ids==2);
             
             singleBoxPlot(network_segregation(this_seed_name_index,group_1_indices),'abscissa', 1, 'EdgeColor', color_groups(1,:), 'MarkerColor', color_groups(1,:),'WiskColor',  color_groups(1,:), 'MeanColor', color_groups(1,:))
             singleBoxPlot(network_segregation(this_seed_name_index,group_2_indices),'abscissa', 2, 'EdgeColor', color_groups(2,:), 'MarkerColor', color_groups(2,:),'WiskColor',  color_groups(2,:), 'MeanColor', color_groups(2,:))
             xlim([0 3])
             if length(unique_groups) > 2
-                group_3_indices = contains(group_ids,'3');
+                group_3_indices = (group_ids==3);
                 singleBoxPlot(network_segregation(this_seed_name_index,group_3_indices),'abscissa', 3, 'EdgeColor', color_groups(3,:), 'MarkerColor', color_groups(3,:),'WiskColor',  color_groups(3,:), 'MeanColor', color_groups(3,:))
                 xlim([0 4])
             end

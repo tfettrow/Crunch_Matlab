@@ -1,9 +1,9 @@
 function convert_to_mniVoxel_coordinates(roi_name, roi_x, roi_y, roi_z)
-% roi_name = 'caudate';
+% roi_name = 'roi1';
 % % roi_mni_coord = [-34 -32 66];
-% roi_x = '0';
-% roi_y = '24'; 
-% roi_z = '-4';
+% roi_x = '20';
+% roi_y = '-52'; 
+% roi_z = '41';
 
 
 roi_name = strtrim(roi_name);

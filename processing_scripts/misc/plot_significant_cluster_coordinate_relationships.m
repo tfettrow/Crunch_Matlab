@@ -6,18 +6,27 @@
 % 4) identify the highest probablity label of peak cluster (that is not
 % unknown)
 
-cov_filename = 'covs_split_stp_mag_allVars';
-% cov_filename = 'covs_split_stp_mag_groupdiff_allVars';
-% cov_filename = 'covs_split_stp_mag_4varSEX';
+image_type = 'cortical_thickness';
+% image_type = 'cerebellum';
+% image_type = 'whole_brain';
 
+% cov_filename = 'covs_split_stp_mag_allVars';
+% cov_filename = 'covs_split_stp_mag_groupdiff_allVars';
+cov_filename = 'covs_split_stp_mag_4var';
+% cov_filename = 'covs_split_stp_mag_4var_tiv';
+% cov_filename = 'covs_split_stp_mag_4varSEX';
+% cov_filename = 'covs_split_stp_mag_4varSEX_tiv';
+
+contrast_name = 'positive_steplength';
+% contrast_name = 'negative_mpsi';
 % contrast_name = 'negative_mpsicop';
 % contrast_name = 'ya_gt_oa_steplength';
 % contrast_name = 'ya_gt_oa_mpsicop';
-contrast_name = 'ya_gt_oa_mpsi';
+% contrast_name = 'ya_gt_oa_mpsi';
 
-% cov_of_interest = 'step_length_percent';
+cov_of_interest = 'step_length_percent';
 % cov_of_interest = 'step_placement_from_mpsis_x_percent_sym';
-cov_of_interest = 'mpsis_x_perc_end_sym';
+% cov_of_interest = 'mpsis_x_perc_end_sym';
 % cov_of_interest = 'mpsis_from_cop_x_integratedStretch_singlestance_percent_sym_response';
 save_figures = 1;
 
@@ -26,11 +35,29 @@ results_path_split = strsplit(results_path,'\');
 resuls_foldername = results_path_split{end};
 
 project_path = '\\exasmb.rc.ufl.edu\blue\rachaelseidler\share\FromExternal\Research_Projects_UF\CRUNCH\GABA_Data';
+%   project_path = 'G:\Shared drives\GABA_Aging_MoCap';
+  
+ya_sex = [1 1 1 1 -1 -1 1 -1 1 -1 1 1 -1 1 -1 1 -1 1 1 1 1 -1 -1 -1 1 1 1 -1 -1 -1 -1];
+oa_sex = [zeros(1,length(ya_sex)) 1 1 -1 -1 1 1 1 -1 1 1 -1 -1 1 -1 1 -1 -1 -1 1];
+ya_subject_indices = 1:31;
+oa_subject_indices = 32:50;
+
+ya_male_subject_indices = ya_sex == -1;
+ya_female_subject_indices = ya_sex == 1;
+oa_male_subject_indices = oa_sex == -1;
+oa_female_subject_indices = oa_sex == 1;
+% ya_steplength_mag = [15.4911531819477;10.6340689994505;16.3579535678089;9.68714888484488;8.84985558972483;18.6530201706469;10.0213599540034;10.7283628162797;9.74407833966906;26.8036101819941;14.5890270589781;25.9545430220918;5.17677453585836;14.0490911976111;17.6452293049914;17.6396764368266;13.0133828794058;8.10048205881441;4.84495093836877;6.06323150178461;11.7571497041788;13.5369295732645;10.6887600545738;8.59072815370773;26.1137374140713;-3.16777522683955;5.01872633915659;11.5753890632484;-3.34249074527401;-5.27879704145155;22.8778380898384]];
+% oa_steplength_mag = [21.7714632950242;-0.494567897074258;33.2178856485469;-8.94382981351176;6.58010334319997;9.93154963765706;9.73663959115259;36.2552601407704;13.0630854737524;6.20700441147760;13.5828812154986;40.7787678721403;7.01381213382597;5.46796687543011;9.58659427210774;24.0121630572389;35.8049208055845;43.7101856550716;8.38197889369162];
+% 
+% ya_stepmpsi_mag = [29.6841535458676;37.8903386270041;22.1088622112350;18.7177028967621;17.1005985489580;33.1719883329690;20.1843671701891;6.01231519903764;47.2354835620874;25.7745814134151;81.9467698594328;8.89633400288925;7.77407468440987;40.1597383166435;17.3939557655639;17.9999032171293;24.3009571301929;60.3203658918199;45.1632456952992;27.9873448814534;31.2606218973147;24.1752831896097;36.5048811115243;27.2720259599608;24.8670750789228;10.1141547456139;33.0177769999365;14.7643087660647;32.5619972123208;46.4506820296046;28.1053883585086];
+% oa_stepmpsi_mag = [-16.6174832171910;34.2539997471566;21.7244961863665;-5.35238431187778;-16.2194880267416;-3.10246226429304;-15.1578646019206;28.2018968224881;-0.913276590522448;33.6574225865981;-10.2042735323554;-52.1701135675263;-7.70538369266613;18.1713876564068;-0.522497360788986;12.6401721153782;28.7675841862261;31.9730659581671;-20.9738496578554];
 
 
 covs = load(fullfile(project_path, cov_filename));
 
-if strcmp(resuls_foldername, 'Results_gmv_splitmag') || strcmp(resuls_foldername, 'Results_gmv_splitmag_4varSEX')
+if strcmp(resuls_foldername, 'Results_gmv_splitmag') || strcmp(resuls_foldername, 'Results_gmv_splitmag_4var') || strcmp(resuls_foldername, 'Results_gmv_splitmag_4varSEX') || strcmp(resuls_foldername, 'Results_gmv_splitmag_4var_ct') || strcmp(resuls_foldername, 'Results_gmv_splitmag_4varSEX_ct') || strcmp(resuls_foldername, 'Results_gmv_splitmag_4var_cb') ...
+        || strcmp(resuls_foldername, 'Results_gmv_splitmag_4varSEX_ct') || strcmp(resuls_foldername, 'Results_gmv_splitmag_4varSEX_cb') || strcmp(resuls_foldername, 'Results_gmv_splitmag_4var_tiv') || ...
+        strcmp(resuls_foldername, 'Results_gmv_splitmag_4var_tiv_cb') || strcmp(resuls_foldername, 'Results_gmv_splitmag_4varSEX_tiv') || strcmp(resuls_foldername, 'Results_gmv_splitmag_4varSEX_tiv_cb')
     group_ids = covs.R(:,1);
     cov_data = covs.R(:,contains(covs.names,cov_of_interest));
 elseif strcmp(resuls_foldername, 'Results_gmv_splitmag_groupdiff')
@@ -42,11 +69,47 @@ elseif strcmp(resuls_foldername, 'Results_gmv_splitmag_groupdiff')
     if length(cov_data) ~= 50
        error('problem with length of covariates') 
     end
+else
+    error('need to be in proper results folder')
 end
 
-peak_coord_indices = find(~cellfun(@isempty,TabDat.dat(:,5)));
-peak_coordinates = TabDat.dat(:,12);
- 
+
+if strcmp(image_type, 'cortical_thickness')
+    peak_coord_indices = [1 2 3];
+    
+    % hacked this.. if running for first time use nii, and uncomment
+    % vol2surf... otherwise use gii and comment on vol2surf
+%     roi_images_nii = spm_select('FPList', '\\exasmb.rc.ufl.edu\blue\rachaelseidler\share\FromExternal\Research_Projects_UF\CRUNCH\GABA_Data\ROIs\', '^roi.*\.nii$');
+    roi_images_gii = spm_select('FPList', '\\exasmb.rc.ufl.edu\blue\rachaelseidler\share\FromExternal\Research_Projects_UF\CRUNCH\GABA_Data\ROIs\', '^mesh.intensity_roi.*\.gii$');
+    
+    % need to spm_select this image from ROIs folder
+    for this_roi_index = 1:size(roi_images_gii,1)
+        clear matlabbatch
+        matlabbatch{1}.spm.tools.cat.stools.vol2surftemp.data_vol = cellstr(roi_images_nii(this_roi_index,:));
+        matlabbatch{1}.spm.tools.cat.stools.vol2surftemp.merge_hemi = 1;
+        matlabbatch{1}.spm.tools.cat.stools.vol2surftemp.mesh32k = 1;
+        matlabbatch{1}.spm.tools.cat.stools.vol2surftemp.sample = {'maxabs'};
+        matlabbatch{1}.spm.tools.cat.stools.vol2surftemp.interp = {'linear'};
+        matlabbatch{1}.spm.tools.cat.stools.vol2surftemp.datafieldname = 'intensity';
+        matlabbatch{1}.spm.tools.cat.stools.vol2surftemp.mapping.rel_mapping.class = 'GM';
+        matlabbatch{1}.spm.tools.cat.stools.vol2surftemp.mapping.rel_mapping.startpoint = -0.5;
+        matlabbatch{1}.spm.tools.cat.stools.vol2surftemp.mapping.rel_mapping.steps = 7;
+        matlabbatch{1}.spm.tools.cat.stools.vol2surftemp.mapping.rel_mapping.endpoint = 0.5;
+        spm_jobman('run',matlabbatch);
+        
+%            
+        for this_subject_index = 1:length(SPM.xY.VY)
+            surface_file_data= spm_data_read(spm_data_hdr_read(SPM.xY.VY(this_subject_index).fname));
+            roi_file_data = spm_data_read(spm_data_hdr_read(roi_images_gii(this_roi_index,:)));
+            raw_y_voxeldata(this_subject_index,this_roi_index) = nanmean(surface_file_data(find(roi_file_data)));
+        end
+        
+    end
+end
+if strcmp(image_type, 'cerebellum') || strcmp(image_type, 'whole_brain')
+        peak_coord_indices = find(~cellfun(@isempty,TabDat.dat(:,5)));
+    peak_coordinates = TabDat.dat(:,12);
+end
 figure; hold on;
 t = tiledlayout(1,3);
 for this_peak_coord = 1:length(peak_coord_indices)
@@ -55,7 +118,9 @@ for this_peak_coord = 1:length(peak_coord_indices)
     % Label coordinate
     %--------------------------------------------------------------
     %%% pulled from cg_tfce_list.m (within tfce toolbox folder) %%%
+%     if 
     atlas_info = spm_atlas('load','AAL3'); % could also load neuromorphometrics here? or potentially any other atlas.. cool stuff
+%     atlas_info = spm_atlas('load','lh.aparc_a2009s.freesurfer.annot');
     %-Consider peak only
     labk  = spm_atlas('query',atlas_info,XYZmm);
     %  %-Consider a 10mm sphere around the peak
@@ -69,8 +134,10 @@ for this_peak_coord = 1:length(peak_coord_indices)
     % see
     % https://jacoblee.net/occamseraser/2018/01/03/extracting-rois-for-ppi-analysis-using-spm-batch/index.html
     % for functions on grabbing raw and filtered y values
-    xyz_vox = xSPM.iM*[XYZmm;1]; %evalin('base','xSPM.iM*[xyz_mm;1]'); % avoid passing xSPM explicitly
-    raw_y_voxeldata = spm_get_data(SPM.xY.VY,xyz_vox);
+  
+        xyz_vox = xSPM.iM*[XYZmm;1]; %evalin('base','xSPM.iM*[xyz_mm;1]'); % avoid passing xSPM explicitly
+        raw_y_voxeldata = spm_get_data(SPM.xY.VY,xyz_vox);
+    
     
     % create a subfig for each peak coord
     %--------------------------------------------------------------
@@ -78,29 +145,77 @@ for this_peak_coord = 1:length(peak_coord_indices)
    
 %     ya_subject_indices = find(group_ids==-1);
 %     oa_subject_indices = find(group_ids==1);
-    ya_subject_indices = 1:31;
-    oa_subject_indices = 32:50;
+    
+    
  
-    group_color_matrix = distinguishable_colors(2);
+    group_color_matrix = distinguishable_colors(4);
     
     nexttile; hold on;
+%     set(gca,'Color','k')
     %     subplot(1,3,this_peak_coord); hold on;
     % plot ya
-    ya_x = linspace(min(raw_y_voxeldata(ya_subject_indices)), max(raw_y_voxeldata(ya_subject_indices)), 100);
-    ya_coef = polyfit(raw_y_voxeldata(ya_subject_indices), cov_data(ya_subject_indices),1);
-    ya_fit = polyval(ya_coef,ya_x);
     
-    plot(raw_y_voxeldata(ya_subject_indices), cov_data(ya_subject_indices), 'o', 'MarkerFaceColor', group_color_matrix(1,:), 'MarkerEdgeColor', 'w');
-    plot(ya_x, ya_fit, '-', 'Color', group_color_matrix(1,:), 'LineWidth', 3)
+    ya_male_x = linspace(min(raw_y_voxeldata(ya_male_subject_indices)), max(raw_y_voxeldata(ya_male_subject_indices)), 100);
+    ya_male_coef = polyfit(raw_y_voxeldata(ya_male_subject_indices), cov_data(ya_male_subject_indices),1);
+    ya_male_fit = polyval(ya_male_coef,ya_male_x);
     
+    ya_female_x = linspace(min(raw_y_voxeldata(ya_female_subject_indices)), max(raw_y_voxeldata(ya_female_subject_indices)), 100);
+    ya_female_coef = polyfit(raw_y_voxeldata(ya_female_subject_indices), cov_data(ya_female_subject_indices),1);
+    ya_female_fit = polyval(ya_female_coef,ya_female_x);
+    
+%     ya_x = linspace(min(raw_y_voxeldata(ya_subject_indices)), max(raw_y_voxeldata(ya_subject_indices)), 100);
+%     ya_coef = polyfit(raw_y_voxeldata(ya_subject_indices), cov_data(ya_subject_indices),1);
+%     ya_fit = polyval(ya_coef,ya_x);
+    
+%     plot(raw_y_voxeldata(ya_male_subject_indices), cov_data(ya_male_subject_indices), '^', 'MarkerFaceColor', group_color_matrix(1,:), 'MarkerEdgeColor', 'g','MarkerSize',6);
+%     plot(raw_y_voxeldata(ya_female_subject_indices), cov_data(ya_female_subject_indices), '^', 'MarkerFaceColor', group_color_matrix(1,:), 'MarkerEdgeColor', 'm','MarkerSize',6);
+
+%      plot(raw_y_voxeldata(ya_male_subject_indices), cov_data(ya_male_subject_indices), '^', 'MarkerFaceColor','k', 'MarkerEdgeColor', 'g','MarkerSize',6);
+%     plot(raw_y_voxeldata(ya_female_subject_indices), cov_data(ya_female_subject_indices), '^', 'MarkerFaceColor', 'k', 'MarkerEdgeColor', 'm','MarkerSize',6);
+    
+    
+%     plot(ya_male_x, ya_male_fit,'^', 'MarkerFaceColor',  'k', 'MarkerEdgeColor', 'g','MarkerSize',3)
+%     plot(ya_female_x, ya_female_fit,  '^', 'MarkerFaceColor', 'k', 'MarkerEdgeColor', 'm','MarkerSize',3)
+
+ya_m_p = scatter(raw_y_voxeldata(ya_male_subject_indices), cov_data(ya_male_subject_indices), 10,'o', 'MarkerFaceColor', group_color_matrix(1,:), 'MarkerEdgeColor', group_color_matrix(1,:));
+ya_f_p = scatter(raw_y_voxeldata(ya_female_subject_indices), cov_data(ya_female_subject_indices), 10, 'o', 'MarkerFaceColor',  group_color_matrix(2,:), 'MarkerEdgeColor',  group_color_matrix(2,:));
+alpha(ya_m_p,.5)
+alpha(ya_f_p,.5)
+
+ya_m_l = plot(ya_male_x, ya_male_fit, 'Color', group_color_matrix(1,:), 'LineWidth', 3);
+ya_f_l = plot(ya_female_x, ya_female_fit, 'Color', group_color_matrix(2,:), 'LineWidth', 3);
+
+%     plot(raw_y_voxeldata(ya_subject_indices), cov_data(ya_subject_indices), 'o', 'MarkerFaceColor', group_color_matrix(1,:), 'MarkerEdgeColor', 'w');
+%     plot(ya_x, ya_fit, '-', 'Color', group_color_matrix(1,:), 'LineWidth', 3)
     
     % plot oa
-    oa_x = linspace(min(raw_y_voxeldata(oa_subject_indices)), max(raw_y_voxeldata(oa_subject_indices)), 100);
-    oa_coef = polyfit(raw_y_voxeldata(oa_subject_indices), cov_data(oa_subject_indices),1);
-    oa_fit = polyval(oa_coef,oa_x);
+    oa_male_x = linspace(min(raw_y_voxeldata(oa_male_subject_indices)), max(raw_y_voxeldata(oa_male_subject_indices)), 100);
+    oa_male_coef = polyfit(raw_y_voxeldata(oa_male_subject_indices), cov_data(oa_male_subject_indices),1);
+    oa_male_fit = polyval(oa_male_coef,oa_male_x);
     
-    plot(raw_y_voxeldata(oa_subject_indices), cov_data(oa_subject_indices), 'o', 'MarkerFaceColor', group_color_matrix(2,:), 'MarkerEdgeColor', 'w');
-    plot(oa_x, oa_fit, '-', 'Color', group_color_matrix(2,:), 'LineWidth', 3)
+    oa_female_x = linspace(min(raw_y_voxeldata(oa_female_subject_indices)), max(raw_y_voxeldata(oa_female_subject_indices)),100);
+    oa_female_coef = polyfit(raw_y_voxeldata(oa_female_subject_indices), cov_data(oa_female_subject_indices),1);
+    oa_female_fit = polyval(oa_female_coef,oa_female_x);
+    
+%         oa_x = linspace(min(raw_y_voxeldata(oa_subject_indices)), max(raw_y_voxeldata(oa_subject_indices)), 100);
+%         oa_coef = polyfit(raw_y_voxeldata(oa_subject_indices), cov_data(oa_subject_indices),1);
+%         oa_fit = polyval(oa_coef,oa_x);
+    
+%     plot(raw_y_voxeldata(oa_male_subject_indices), cov_data(oa_male_subject_indices), 'o', 'MarkerFaceColor', 'k', 'MarkerEdgeColor', 'g','MarkerSize',6);
+%     plot(raw_y_voxeldata(oa_female_subject_indices), cov_data(oa_female_subject_indices), 'o', 'MarkerFaceColor','k', 'MarkerEdgeColor', 'm','MarkerSize',6);
+oa_m_p = scatter(raw_y_voxeldata(oa_male_subject_indices), cov_data(oa_male_subject_indices), 10,'o', 'MarkerFaceColor', group_color_matrix(3,:), 'MarkerEdgeColor', group_color_matrix(3,:));
+oa_f_p = scatter(raw_y_voxeldata(oa_female_subject_indices), cov_data(oa_female_subject_indices), 10, 'o', 'MarkerFaceColor',  group_color_matrix(4,:), 'MarkerEdgeColor',  group_color_matrix(4,:));
+alpha(oa_m_p,.5)
+alpha(oa_f_p,.5)
+%     plot(oa_male_x, oa_male_fit,'o', 'MarkerFaceColor',  'k', 'MarkerEdgeColor', 'g','MarkerSize',3)
+%     plot(oa_female_x, oa_female_fit,  'o', 'MarkerFaceColor', 'k', 'MarkerEdgeColor', 'm','MarkerSize',3)
+
+
+    oa_m_l = plot(oa_male_x, oa_male_fit, 'Color', group_color_matrix(3,:), 'LineWidth', 3);
+    oa_f_l = plot(oa_female_x, oa_female_fit,  'Color', group_color_matrix(4,:), 'LineWidth', 3);
+
+%     plot(raw_y_voxeldata(oa_subject_indices), cov_data(oa_subject_indices), 'o', 'MarkerFaceColor', group_color_matrix(2,:), 'MarkerEdgeColor', 'w');
+%     plot(oa_x, oa_fit, '-', 'Color', group_color_matrix(2,:), 'LineWidth', 3)
     
     title(labk,'interpreter','none')
     subtitle(strcat('[',num2str(XYZmm(1)),',',num2str(XYZmm(2)),',',num2str(XYZmm(3)),']'),'interpreter','none')
@@ -109,12 +224,16 @@ for this_peak_coord = 1:length(peak_coord_indices)
         break;
     end
 end
-
+% MaximizeFigureWindow
 % title(t, strcat(resuls_foldername, ' vs' 
+legend([ya_m_l ya_f_l oa_m_l oa_f_l],'YA male', 'YA female', 'OA male', 'OA female', 'Location', 'best');
 xlabel(t, 'GMV')
 ylabel(t, strcat(cov_of_interest, ' asymmetry'),'interpreter','none')
-
+% set(gcf,'Color',[0 0 0]);
 if save_figures 
+    fig = gcf;
+    fig.Color = 'white';
+    fig.InvertHardcopy = 'off';
     mkdir('figures')
     fig_title = strcat(contrast_name, '_vs_', cov_of_interest);
     filename =  fullfile(results_path, 'figures', fig_title);
