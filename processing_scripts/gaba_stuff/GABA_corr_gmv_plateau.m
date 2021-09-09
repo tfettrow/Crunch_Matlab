@@ -4,15 +4,17 @@ function GABA_corr_gmv_plateau(varargin)
 parser = inputParser;
 parser.KeepUnmatched = true;
 % setup defaults in case no arguments specified
-addParameter(parser, 'subjects', '')
+addParameter(parser, 'subjects', '');
 addParameter(parser, 'cov_filename', '');
 addParameter(parser, 'output_dir', '');
 addParameter(parser, 'tfce_only', 0);
+addParameter(parser, 'image_type', '');
 parse(parser, varargin{:})
 subjects = parser.Results.subjects;
 cov_filename = parser.Results.cov_filename;
 output_dir = parser.Results.output_dir;
 tfce_only = parser.Results.tfce_only;
+image_type = parser.Results.image_type;
 data_path = pwd;
 
 %% Set output dir
@@ -22,6 +24,10 @@ full_output_dir = fullfile(data_path, output_dir);
 % Select covariate *.mat file based on output directory
 cov_file = spm_select('FPList', data_path, strcat(cov_filename,'.mat'));
 
+if isempty(image_type)
+   error('need an image_type input')
+end
+
 %% Specify the model
 clear matlabbatch
 
@@ -30,7 +36,13 @@ matlabbatch{1}.spm.stats.factorial_design.dir = cellstr(full_output_dir);
 
 scans = {};
 for this_subject_index = 1 : length(subjects)
-    this_subject_t1_path = fullfile(data_path, subjects{this_subject_index}, 'structural_metrics', strcat('s8_mwp1T1_',subjects{this_subject_index},'.nii'));
+    if strcmp(image_type, 'whole_brain')
+        this_subject_t1_path = fullfile(data_path, subjects{this_subject_index}, 'structural_metrics', strcat('s8_mwp1T1_',subjects{this_subject_index},'.nii'));
+    elseif strcmp(image_type, 'cerebellum')
+        this_subject_t1_path = fullfile(data_path, subjects{this_subject_index}, 'structural_metrics', strcat('p0_',subjects{this_subject_index},'_SUIT_Mod_S2.nii'));
+    elseif strcmp(image_type, 'cortical_thickness')
+        this_subject_t1_path = fullfile(data_path, subjects{this_subject_index}, 'structural_metrics', strcat('s15.mesh.thickness.resampled_32k.T1_',subjects{this_subject_index},'.gii'));
+    end
     %     this_subject_info_path = fullfile(data_path, subject_codes(this_subject_index), 'subject_info.csv');
     
     %     this_subject_info = readtable(char(this_subject_info_path));
@@ -54,7 +66,13 @@ matlabbatch{1}.spm.stats.factorial_design.multi_cov.iCC = 1;
 % Don't change anything below; defaults & run the model spec:
 matlabbatch{1}.spm.stats.factorial_design.masking.tm.tma.athresh = 0.1;
 matlabbatch{1}.spm.stats.factorial_design.masking.im = 1;
-matlabbatch{1}.spm.stats.factorial_design.masking.em = {'Template_1_IXI555_MNI152_bin_noCB_clean2_bin.nii'};
+if strcmp(image_type, 'whole_brain')
+    matlabbatch{1}.spm.stats.factorial_design.masking.em = {'Template_1_IXI555_MNI152_bin_noCB_clean2_bin.nii'};
+elseif strcmp(image_type, 'cerebellum')
+    matlabbatch{1}.spm.stats.factorial_design.masking.em = {'SUIT_Nobrainstem_1mm.nii'};
+elseif strcmp(image_type, 'cortical_thickness')
+     matlabbatch{1}.spm.stats.factorial_design.masking.em = {''};
+end
 % matlabbatch{1}.spm.stats.factorial_design.masking.em = {''};
 matlabbatch{1}.spm.stats.factorial_design.globalc.g_omit = 1;
 matlabbatch{1}.spm.stats.factorial_design.globalm.gmsca.gmsca_no = 1;
@@ -63,12 +81,23 @@ if ~tfce_only
     spm_jobman('run',matlabbatch);
 end
 
+
 %% Estimate the SPM model
 clear matlabbatch
-SPMfile = spm_select('FPList', full_output_dir, 'SPM.mat');
-matlabbatch{1}.spm.stats.fmri_est.spmmat = cellstr(SPMfile);
-matlabbatch{1}.spm.stats.fmri_est.write_residuals = 0;
-matlabbatch{1}.spm.stats.fmri_est.method.Classical = 1;
+% if strcmp(image_type, 'whole_brain') || strcmp(image_type, 'cerebellum')
+    SPMfile = spm_select('FPList', full_output_dir, 'SPM.mat');
+    matlabbatch{1}.spm.stats.fmri_est.spmmat = cellstr(SPMfile);
+    matlabbatch{1}.spm.stats.fmri_est.write_residuals = 0;
+    matlabbatch{1}.spm.stats.fmri_est.method.Classical = 1;
+% elseif strcmp(image_type, 'cortical_thickness')
+%     matlabbatch{1}.spm.tools.cat.tools.check_SPM.spmmat(1) = cfg_dep('Factorial design specification: SPM.mat File', substruct('.','val', '{}',{1}, '.','val', '{}',{1}, '.','val', '{}',{1}), substruct('.','spmmat'));
+%     matlabbatch{1}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.use_unsmoothed_data = 1;
+%     matlabbatch{1}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.adjust_data = 1;
+%     matlabbatch{1}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.outdir = {''};
+%     matlabbatch{1}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.fname = 'CATcheckdesign_';
+%     matlabbatch{1}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.save = 1;
+%     matlabbatch{1}.spm.tools.cat.tools.check_SPM.check_SPM_ortho = 1;
+% end
 if ~tfce_only
     spm_jobman('run',matlabbatch);
 end
@@ -173,49 +202,72 @@ if tfce_only
 
 
  % % % % % %  4var 
-%     matlabbatch{1}.spm.stats.con.consess{1}.tcon.name = 'Step Length';
-%     matlabbatch{1}.spm.stats.con.consess{1}.tcon.weights = [0 0 1 0 0 0];
-%     matlabbatch{1}.spm.stats.con.consess{1}.tcon.sessrep = 'none';
-%     
-%     matlabbatch{1}.spm.stats.con.consess{2}.tcon.name = 'Step-MPSI';
-%     matlabbatch{1}.spm.stats.con.consess{2}.tcon.weights = [0 0 0 1 0 0];
-%     matlabbatch{1}.spm.stats.con.consess{2}.tcon.sessrep = 'none';
-%     
-%     matlabbatch{1}.spm.stats.con.consess{3}.tcon.name = 'MPSI';
-%     matlabbatch{1}.spm.stats.con.consess{3}.tcon.weights = [0 0 0 0 1 0];
-%     matlabbatch{1}.spm.stats.con.consess{3}.tcon.sessrep = 'none';
-%     
-%     matlabbatch{1}.spm.stats.con.consess{4}.tcon.name = 'MPSI-CoP';
-%     matlabbatch{1}.spm.stats.con.consess{4}.tcon.weights = [0 0 0 0 0 1];
-%     matlabbatch{1}.spm.stats.con.consess{4}.tcon.sessrep = 'none';   
-% 
-%     matlabbatch{1}.spm.stats.con.delete = 1; % Set to 1 to delete the previously existing contrasts
-%     spm_jobman('run',matlabbatch);
+ if strcmp(cov_filename,'covs_split_stp_4var') || strcmp(cov_filename,'covs_split_stp_mag_4var')
+    matlabbatch{1}.spm.stats.con.consess{1}.tcon.name = 'Step Length';
+    matlabbatch{1}.spm.stats.con.consess{1}.tcon.weights = [0 0 1 0 0 0];
+    matlabbatch{1}.spm.stats.con.consess{1}.tcon.sessrep = 'none';
+    
+    matlabbatch{1}.spm.stats.con.consess{2}.tcon.name = 'Step-MPSI';
+    matlabbatch{1}.spm.stats.con.consess{2}.tcon.weights = [0 0 0 1 0 0];
+    matlabbatch{1}.spm.stats.con.consess{2}.tcon.sessrep = 'none';
+    
+    matlabbatch{1}.spm.stats.con.consess{3}.tcon.name = 'MPSI';
+    matlabbatch{1}.spm.stats.con.consess{3}.tcon.weights = [0 0 0 0 1 0];
+    matlabbatch{1}.spm.stats.con.consess{3}.tcon.sessrep = 'none';
+    
+    matlabbatch{1}.spm.stats.con.consess{4}.tcon.name = 'MPSI-CoP';
+    matlabbatch{1}.spm.stats.con.consess{4}.tcon.weights = [0 0 0 0 0 1];
+    matlabbatch{1}.spm.stats.con.consess{4}.tcon.sessrep = 'none';   
 
-     % % % % % %  4varsSEX
-%     matlabbatch{1}.spm.stats.con.consess{1}.tcon.name = 'Step Length';
-%     matlabbatch{1}.spm.stats.con.consess{1}.tcon.weights = [0 0 0 1 0 0 0];
-%     matlabbatch{1}.spm.stats.con.consess{1}.tcon.sessrep = 'none';
-%     
-%     matlabbatch{1}.spm.stats.con.consess{2}.tcon.name = 'Step-MPSI';
-%     matlabbatch{1}.spm.stats.con.consess{2}.tcon.weights = [0 0 0 0 1 0 0];
-%     matlabbatch{1}.spm.stats.con.consess{2}.tcon.sessrep = 'none';
-%     
-%     matlabbatch{1}.spm.stats.con.consess{3}.tcon.name = 'MPSI';
-%     matlabbatch{1}.spm.stats.con.consess{3}.tcon.weights = [0 0 0 0 0 1 0];
-%     matlabbatch{1}.spm.stats.con.consess{3}.tcon.sessrep = 'none';
-%     
-%     matlabbatch{1}.spm.stats.con.consess{4}.tcon.name = 'MPSI-CoP';
-%     matlabbatch{1}.spm.stats.con.consess{4}.tcon.weights = [0 0 0 0 0 0 1];
-%     matlabbatch{1}.spm.stats.con.consess{4}.tcon.sessrep = 'none';   
-% 
-%     matlabbatch{1}.spm.stats.con.delete = 1; % Set to 1 to delete the previously existing contrasts
-%     spm_jobman('run',matlabbatch);
+    matlabbatch{1}.spm.stats.con.delete = 1; % Set to 1 to delete the previously existing contrasts
+    spm_jobman('run',matlabbatch);
+ end
+ 
+ % % % % % %  4varsSEX or tiv
+ if strcmp(cov_filename,'covs_split_stp_4varSEX') || strcmp(cov_filename,'covs_split_stp_mag_4varSEX') || strcmp(cov_filename,'covs_split_stp_4var_tiv') || strcmp(cov_filename,'covs_split_stp_mag_4var_tiv')
+     matlabbatch{1}.spm.stats.con.consess{1}.tcon.name = 'Step Length';
+     matlabbatch{1}.spm.stats.con.consess{1}.tcon.weights = [0 0 0 1 0 0 0];
+     matlabbatch{1}.spm.stats.con.consess{1}.tcon.sessrep = 'none';
+     
+     matlabbatch{1}.spm.stats.con.consess{2}.tcon.name = 'Step-MPSI';
+     matlabbatch{1}.spm.stats.con.consess{2}.tcon.weights = [0 0 0 0 1 0 0];
+     matlabbatch{1}.spm.stats.con.consess{2}.tcon.sessrep = 'none';
+     
+     matlabbatch{1}.spm.stats.con.consess{3}.tcon.name = 'MPSI';
+     matlabbatch{1}.spm.stats.con.consess{3}.tcon.weights = [0 0 0 0 0 1 0];
+     matlabbatch{1}.spm.stats.con.consess{3}.tcon.sessrep = 'none';
+     
+     matlabbatch{1}.spm.stats.con.consess{4}.tcon.name = 'MPSI-CoP';
+     matlabbatch{1}.spm.stats.con.consess{4}.tcon.weights = [0 0 0 0 0 0 1];
+     matlabbatch{1}.spm.stats.con.consess{4}.tcon.sessrep = 'none';
+     
+     matlabbatch{1}.spm.stats.con.delete = 1; % Set to 1 to delete the previously existing contrasts
+     spm_jobman('run',matlabbatch);
+ end
 
 
-
-
-
+ % % % % % %  4varsSEX_tiv
+ if strcmp(cov_filename,'covs_split_stp_4varSEX_tiv') || strcmp(cov_filename,'covs_split_stp_mag_4varSEX_tiv')
+     matlabbatch{1}.spm.stats.con.consess{1}.tcon.name = 'Step Length';
+     matlabbatch{1}.spm.stats.con.consess{1}.tcon.weights = [0 0 0 0 1 0 0 0];
+     matlabbatch{1}.spm.stats.con.consess{1}.tcon.sessrep = 'none';
+     
+     matlabbatch{1}.spm.stats.con.consess{2}.tcon.name = 'Step-MPSI';
+     matlabbatch{1}.spm.stats.con.consess{2}.tcon.weights = [0 0 0 0 0 1 0 0];
+     matlabbatch{1}.spm.stats.con.consess{2}.tcon.sessrep = 'none';
+     
+     matlabbatch{1}.spm.stats.con.consess{3}.tcon.name = 'MPSI';
+     matlabbatch{1}.spm.stats.con.consess{3}.tcon.weights = [0 0 0 0 0 0 1 0];
+     matlabbatch{1}.spm.stats.con.consess{3}.tcon.sessrep = 'none';
+     
+     matlabbatch{1}.spm.stats.con.consess{4}.tcon.name = 'MPSI-CoP';
+     matlabbatch{1}.spm.stats.con.consess{4}.tcon.weights = [0 0 0 0 0 0 0 1];
+     matlabbatch{1}.spm.stats.con.consess{4}.tcon.sessrep = 'none';
+     
+     matlabbatch{1}.spm.stats.con.delete = 1; % Set to 1 to delete the previously existing contrasts
+     spm_jobman('run',matlabbatch);
+ end
+ 
  % % % % % %  YA 4var 
 %     matlabbatch{1}.spm.stats.con.consess{1}.tcon.name = 'Step Length';
 %     matlabbatch{1}.spm.stats.con.consess{1}.tcon.weights = [0 1 0 0 0];
@@ -237,24 +289,24 @@ if tfce_only
 %     spm_jobman('run',matlabbatch);
 
      % % % % % %  YA  4varsSEX
-    matlabbatch{1}.spm.stats.con.consess{1}.tcon.name = 'Step Length';
-    matlabbatch{1}.spm.stats.con.consess{1}.tcon.weights = [0 0 1 0 0 0];
-    matlabbatch{1}.spm.stats.con.consess{1}.tcon.sessrep = 'none';
-    
-    matlabbatch{1}.spm.stats.con.consess{2}.tcon.name = 'Step-MPSI';
-    matlabbatch{1}.spm.stats.con.consess{2}.tcon.weights = [0 0 0 1 0 0];
-    matlabbatch{1}.spm.stats.con.consess{2}.tcon.sessrep = 'none';
-    
-    matlabbatch{1}.spm.stats.con.consess{3}.tcon.name = 'MPSI';
-    matlabbatch{1}.spm.stats.con.consess{3}.tcon.weights = [0 0 0 0 1 0];
-    matlabbatch{1}.spm.stats.con.consess{3}.tcon.sessrep = 'none';
-    
-    matlabbatch{1}.spm.stats.con.consess{4}.tcon.name = 'MPSI-CoP';
-    matlabbatch{1}.spm.stats.con.consess{4}.tcon.weights = [0 0 0 0 0 1];
-    matlabbatch{1}.spm.stats.con.consess{4}.tcon.sessrep = 'none';   
-% 
-    matlabbatch{1}.spm.stats.con.delete = 1; % Set to 1 to delete the previously existing contrasts
-    spm_jobman('run',matlabbatch);
+%     matlabbatch{1}.spm.stats.con.consess{1}.tcon.name = 'Step Length';
+%     matlabbatch{1}.spm.stats.con.consess{1}.tcon.weights = [0 0 1 0 0 0];
+%     matlabbatch{1}.spm.stats.con.consess{1}.tcon.sessrep = 'none';
+%     
+%     matlabbatch{1}.spm.stats.con.consess{2}.tcon.name = 'Step-MPSI';
+%     matlabbatch{1}.spm.stats.con.consess{2}.tcon.weights = [0 0 0 1 0 0];
+%     matlabbatch{1}.spm.stats.con.consess{2}.tcon.sessrep = 'none';
+%     
+%     matlabbatch{1}.spm.stats.con.consess{3}.tcon.name = 'MPSI';
+%     matlabbatch{1}.spm.stats.con.consess{3}.tcon.weights = [0 0 0 0 1 0];
+%     matlabbatch{1}.spm.stats.con.consess{3}.tcon.sessrep = 'none';
+%     
+%     matlabbatch{1}.spm.stats.con.consess{4}.tcon.name = 'MPSI-CoP';
+%     matlabbatch{1}.spm.stats.con.consess{4}.tcon.weights = [0 0 0 0 0 1];
+%     matlabbatch{1}.spm.stats.con.consess{4}.tcon.sessrep = 'none';   
+% % 
+%     matlabbatch{1}.spm.stats.con.delete = 1; % Set to 1 to delete the previously existing contrasts
+%     spm_jobman('run',matlabbatch);
 
 
     %% Re-estimate the model using the TFCE toolbox

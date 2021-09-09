@@ -8,30 +8,45 @@ addParameter(parser, 'subjects', '')
 addParameter(parser, 'cov_filename', '');
 addParameter(parser, 'output_dir', '');
 addParameter(parser, 'tfce_only', 0);
+addParameter(parser, 'image_type', '');
 parse(parser, varargin{:})
 subjects = parser.Results.subjects;
 cov_filename = parser.Results.cov_filename;
 output_dir = parser.Results.output_dir;
 tfce_only = parser.Results.tfce_only;
+image_type = parser.Results.image_type;
 data_path = pwd;
+
+% results_drive = 'G:\Shared drives\GABA_Aging_MoCap';
+% image_drive = 'G:\Shared drives\GABA_Aging_Brain_Structure\BRAIN_DATA';
 
 %% Set output dir
 % MAKE SURE THIS IS SET PROPERLY TO INTENDED FOLDER
 full_output_dir = fullfile(data_path, output_dir);
+% full_output_dir = fullfile(results_drive, output_dir);
 
 % Select covariate *.mat file based on output directory
+% cov_file = spm_select('FPList', data_path, strcat(cov_filename,'.mat'));
 cov_file = spm_select('FPList', data_path, strcat(cov_filename,'.mat'));
 
 %% Specify the model
 clear matlabbatch
 
+
+       
 % Set output dir
 matlabbatch{1}.spm.stats.factorial_design.dir = cellstr(full_output_dir);
 
 scans = {};
 for this_subject_index = 1 : length(subjects)
-    this_subject_t1_path = fullfile(data_path, subjects{this_subject_index}, 'structural_metrics', strcat('s8_mwp1T1_',subjects{this_subject_index},'.nii'));
- 
+    if strcmp(image_type, 'whole_brain')
+        %     this_subject_t1_path = fullfile(image_drive, subjects{this_subject_index}, '\01_CAT12_v1725\mri', strcat('s8_mwp1T1_',subjects{this_subject_index},'.nii'));
+         this_subject_t1_path = fullfile(data_path, subjects{this_subject_index}, 'structural_metrics', strcat('s8_mwp1T1_',subjects{this_subject_index},'.nii'));
+    elseif strcmp(image_type, 'cerebellum')
+        this_subject_t1_path = fullfile(data_path, subjects{this_subject_index}, 'structural_metrics', strcat('p0_',subjects{this_subject_index},'_SUIT_Mod_S2.nii'));
+    elseif strcmp(image_type, 'cortical_thickness')
+        this_subject_t1_path = fullfile(data_path, subjects{this_subject_index}, 'structural_metrics', strcat('s15.mesh.thickness.resampled_32k.T1_',subjects{this_subject_index},'.gii'));
+    end
     scans = [scans; this_subject_t1_path];
 end
 
@@ -49,7 +64,13 @@ matlabbatch{1}.spm.stats.factorial_design.multi_cov.iCC = 1;
 % Don't change anything below; defaults & run the model spec:
 matlabbatch{1}.spm.stats.factorial_design.masking.tm.tma.athresh = 0.1;
 matlabbatch{1}.spm.stats.factorial_design.masking.im = 1;
-matlabbatch{1}.spm.stats.factorial_design.masking.em = {'Template_1_IXI555_MNI152_bin_noCB_clean2_bin.nii'};
+if strcmp(image_type, 'whole_brain')
+    matlabbatch{1}.spm.stats.factorial_design.masking.em = {'Template_1_IXI555_MNI152_bin_noCB_clean2_bin.nii'};
+elseif strcmp(image_type, 'cerebellum')
+    matlabbatch{1}.spm.stats.factorial_design.masking.em = {'SUIT_Nobrainstem_1mm.nii'};
+elseif strcmp(image_type, 'cortical_thickness')
+     matlabbatch{1}.spm.stats.factorial_design.masking.em = {''};
+end
 % matlabbatch{1}.spm.stats.factorial_design.masking.em = {''};
 matlabbatch{1}.spm.stats.factorial_design.globalc.g_omit = 1;
 matlabbatch{1}.spm.stats.factorial_design.globalm.gmsca.gmsca_no = 1;
@@ -97,8 +118,47 @@ if tfce_only
 %     matlabbatch{1}.spm.stats.con.consess{6}.tcon.name = 'MPSI-CoP YA < OA';
 %     matlabbatch{1}.spm.stats.con.consess{6}.tcon.weights = [0 0 0 0 0 0 0 -1 0 0 0 0 0 0 1 ];
 %     matlabbatch{1}.spm.stats.con.consess{6}.tcon.sessrep = 'none';
+
+% % % % % %  4var
+if strcmp(cov_filename,'covs_split_stp_groupdiff_4var') || strcmp(cov_filename,'covs_split_stp_mag_groupdiff_4var')
+    matlabbatch{1}.spm.stats.con.consess{1}.tcon.name = 'Step Length YA > OA';
+    matlabbatch{1}.spm.stats.con.consess{1}.tcon.weights = [0 0 1 0 0 0 -1 0 0 0];
+    matlabbatch{1}.spm.stats.con.consess{1}.tcon.sessrep = 'none';
     
-% % % % % 4varsSEX
+    matlabbatch{1}.spm.stats.con.consess{2}.tcon.name = 'Step Length YA < OA';
+    matlabbatch{1}.spm.stats.con.consess{2}.tcon.weights = [0 0 -1 0 0 0 1 0 0 0];
+    matlabbatch{1}.spm.stats.con.consess{2}.tcon.sessrep = 'none';
+    
+    matlabbatch{1}.spm.stats.con.consess{3}.tcon.name = 'Step-MPSI YA > OA';
+    matlabbatch{1}.spm.stats.con.consess{3}.tcon.weights = [0 0 0 1 0 0 0 -1 0 0];
+    matlabbatch{1}.spm.stats.con.consess{3}.tcon.sessrep = 'none';
+    
+    matlabbatch{1}.spm.stats.con.consess{4}.tcon.name = 'Step-MPSI YA < OA';
+    matlabbatch{1}.spm.stats.con.consess{4}.tcon.weights = [0 0 0 -1 0 0 0 1 0 0];
+    matlabbatch{1}.spm.stats.con.consess{4}.tcon.sessrep = 'none';
+    
+    matlabbatch{1}.spm.stats.con.consess{5}.tcon.name = 'MPSI YA > OA';
+    matlabbatch{1}.spm.stats.con.consess{5}.tcon.weights = [0 0 0 0 1 0 0 0 -1 0];
+    matlabbatch{1}.spm.stats.con.consess{5}.tcon.sessrep = 'none';
+    
+    matlabbatch{1}.spm.stats.con.consess{6}.tcon.name = 'MPSI YA < OA';
+    matlabbatch{1}.spm.stats.con.consess{6}.tcon.weights = [0 0 0 0 -1 0 0 0 1 0];
+    matlabbatch{1}.spm.stats.con.consess{6}.tcon.sessrep = 'none';
+    
+    matlabbatch{1}.spm.stats.con.consess{7}.tcon.name = 'MPSI-CoP YA > OA';
+    matlabbatch{1}.spm.stats.con.consess{7}.tcon.weights = [0 0 0 0 0 1 0 0 0 -1];
+    matlabbatch{1}.spm.stats.con.consess{7}.tcon.sessrep = 'none';
+    
+    matlabbatch{1}.spm.stats.con.consess{8}.tcon.name = 'MPSI-CoP YA < OA';
+    matlabbatch{1}.spm.stats.con.consess{8}.tcon.weights = [0 0 0 0 0 -1 0 0 0 1];
+    matlabbatch{1}.spm.stats.con.consess{8}.tcon.sessrep = 'none';
+    
+    matlabbatch{1}.spm.stats.con.delete = 1; % Set to 1 to delete the previously existing contrasts
+    spm_jobman('run',matlabbatch);
+end
+
+ % % % % % %  4varsSEX or tiv
+if strcmp(cov_filename,'covs_split_stp_groupdiff_4varSEX') || strcmp(cov_filename,'covs_split_stp_mag_groupdiff_4varSEX') || strcmp(cov_filename,'covs_split_stp_groupdiff_4var_tiv') || strcmp(cov_filename,'covs_split_stp_mag_groupdiff_4var_tiv')
     matlabbatch{1}.spm.stats.con.consess{1}.tcon.name = 'Step Length YA > OA';
     matlabbatch{1}.spm.stats.con.consess{1}.tcon.weights = [0 0 0 1 0 0 0 -1 0 0 0];
     matlabbatch{1}.spm.stats.con.consess{1}.tcon.sessrep = 'none';
@@ -128,13 +188,50 @@ if tfce_only
     matlabbatch{1}.spm.stats.con.consess{7}.tcon.sessrep = 'none';
     
     matlabbatch{1}.spm.stats.con.consess{8}.tcon.name = 'MPSI-CoP YA < OA';
-    matlabbatch{1}.spm.stats.con.consess{8}.tcon.weights = [0 0 0 0 0 0 -11 0 0 0 1];
-    matlabbatch{1}.spm.stats.con.consess{8}.tcon.sessrep = 'none';   
-
+    matlabbatch{1}.spm.stats.con.consess{8}.tcon.weights = [0 0 0 0 0 0 -1 0 0 0 1];
+    matlabbatch{1}.spm.stats.con.consess{8}.tcon.sessrep = 'none';
 
     matlabbatch{1}.spm.stats.con.delete = 1; % Set to 1 to delete the previously existing contrasts
     spm_jobman('run',matlabbatch);
+end
 
+% % % % % %  4varsSEX_tiv
+if strcmp(cov_filename,'covs_split_stp_groupdiff_4varSEX_tiv') || strcmp(cov_filename,'covs_split_stp_mag_groupdiff_4varSEX_tiv')
+    matlabbatch{1}.spm.stats.con.consess{1}.tcon.name = 'Step Length YA > OA';
+    matlabbatch{1}.spm.stats.con.consess{1}.tcon.weights = [0 0 0 0 1 0 0 0 -1 0 0 0];
+    matlabbatch{1}.spm.stats.con.consess{1}.tcon.sessrep = 'none';
+    
+    matlabbatch{1}.spm.stats.con.consess{2}.tcon.name = 'Step Length YA < OA';
+    matlabbatch{1}.spm.stats.con.consess{2}.tcon.weights = [0 0 0 0 -1 0 0 0 1 0 0 0];
+    matlabbatch{1}.spm.stats.con.consess{2}.tcon.sessrep = 'none';
+    
+    matlabbatch{1}.spm.stats.con.consess{3}.tcon.name = 'Step-MPSI YA > OA';
+    matlabbatch{1}.spm.stats.con.consess{3}.tcon.weights = [0 0 0 0 0 1 0 0 0 -1 0 0];
+    matlabbatch{1}.spm.stats.con.consess{3}.tcon.sessrep = 'none';
+    
+    matlabbatch{1}.spm.stats.con.consess{4}.tcon.name = 'Step-MPSI YA < OA';
+    matlabbatch{1}.spm.stats.con.consess{4}.tcon.weights = [0 0 0 0 0 -1 0 0 0 1 0 0];
+    matlabbatch{1}.spm.stats.con.consess{4}.tcon.sessrep = 'none';
+    
+    matlabbatch{1}.spm.stats.con.consess{5}.tcon.name = 'MPSI YA > OA';
+    matlabbatch{1}.spm.stats.con.consess{5}.tcon.weights = [0 0 0 0 0 0 1 0 0 0 -1 0];
+    matlabbatch{1}.spm.stats.con.consess{5}.tcon.sessrep = 'none';
+    
+    matlabbatch{1}.spm.stats.con.consess{6}.tcon.name = 'MPSI YA < OA';
+    matlabbatch{1}.spm.stats.con.consess{6}.tcon.weights = [0 0 0 0 0 0 -1 0 0 0 1 0];
+    matlabbatch{1}.spm.stats.con.consess{6}.tcon.sessrep = 'none';
+    
+    matlabbatch{1}.spm.stats.con.consess{7}.tcon.name = 'MPSI-CoP YA > OA';
+    matlabbatch{1}.spm.stats.con.consess{7}.tcon.weights = [0 0 0 0 0 0 0 1 0 0 0 -1];
+    matlabbatch{1}.spm.stats.con.consess{7}.tcon.sessrep = 'none';
+    
+    matlabbatch{1}.spm.stats.con.consess{8}.tcon.name = 'MPSI-CoP YA < OA';
+    matlabbatch{1}.spm.stats.con.consess{8}.tcon.weights = [0 0 0 0 0 0 0 -1 0 0 0 1];
+    matlabbatch{1}.spm.stats.con.consess{8}.tcon.sessrep = 'none';
+    
+    matlabbatch{1}.spm.stats.con.delete = 1; % Set to 1 to delete the previously existing contrasts
+    spm_jobman('run',matlabbatch);
+end
 
     %% Re-estimate the model using the TFCE toolbox
     clear matlabbatch

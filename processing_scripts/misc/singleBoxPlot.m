@@ -158,8 +158,8 @@ function singleBoxPlot(data, varargin)
             jitter(i_point) = jitter(i_point) * this_point_spread;
         end
         
-%         scatterplot = scatter(axes_handle, ones(size(data))*abscissa, data, data_marker_size, 'MarkerFaceColor', markercolor, 'MarkerEdgeColor', 'none');
-        scatterplot = scatter(axes_handle, ones(size(data))*abscissa, data, data_marker_size, jet(length(data)),'filled');
+        scatterplot = scatter(axes_handle, ones(size(data))*abscissa, data, data_marker_size, 'MarkerFaceColor', markercolor, 'MarkerEdgeColor', 'none');
+%         scatterplot = scatter(axes_handle, ones(size(data))*abscissa, data, data_marker_size, jet(length(data)),'filled');
         set(scatterplot, 'xdata', ones(size(data))*abscissa + jitter)
 %         uistack(scatterplot, 'bottom');
         RandStream.setGlobalStream(old_stream);
