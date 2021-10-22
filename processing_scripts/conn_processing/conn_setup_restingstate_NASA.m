@@ -14,16 +14,17 @@
 %   conn_setup_restingstate('project_name','conn_mim_all_20210714','TR',2.5,'rs_folder', '04_rsfMRI', 'subjects',{'1002','2002','3028'},'group_names',{'ya','hoa','loa'},'group_ids',[1,2,3], 'primary_smoothed', 'smoothed_warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii', 'primary_unsmoothed', 'warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii', 'secondary_smoothed', 'smoothed_warpedToSUIT_CBmasked_coregToT1_unwarpedRealigned_slicetimed_RestingState.nii', 'secondary_unsmoothed', 'warpedToSUIT_CBmasked_coregToT1_unwarpedRealigned_slicetimed_RestingState.nii', 'roi_settings_filename', 'ROI_settings_conn_wu120_all_wb_cb.txt', 'primary_dataset','whole_brain')
 
 %  conn_setup_restingstate('project_name','conn_mim_all_20210714','TR',2.5,'rs_folder', '04_rsfMRI', 'subjects',{'3028'},'group_ids',[3], 'primary_smoothed', 'smoothed_warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii', 'primary_unsmoothed', 'warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii', 'secondary_smoothed', 'smoothed_warpedToSUIT_CBmasked_coregToT1_unwarpedRealigned_slicetimed_RestingState.nii', 'secondary_unsmoothed', 'warpedToSUIT_CBmasked_coregToT1_unwarpedRealigned_slicetimed_RestingState.nii', 'roi_settings_filename', 'ROI_settings_conn_wu120_all_wb_cb.txt', 'primary_dataset','whole_brain')
-function conn_setup_restingstate(varargin)
+function conn_setup_restingstate_NASA(varargin)
 parser = inputParser;
 parser.KeepUnmatched = true;
 % setup defaults in case no arguments specified
 addParameter(parser, 'project_name', 'conn_project')
-addParameter(parser, 'primary_smoothed', 'smoothed_warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii')
-addParameter(parser, 'primary_unsmoothed', 'warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii')
+addParameter(parser, 'primary_smoothed', '')
+addParameter(parser, 'primary_unsmoothed', '')
 addParameter(parser, 'secondary_smoothed', '')
 addParameter(parser, 'secondary_unsmoothed', '')
-addParameter(parser, 'structural', 'warpedToMNI_SkullStripped_biascorrected_T1.nii')
+addParameter(parser, 'structural', '')
+addParameter(parser, 'structural_folder', '')
 addParameter(parser, 'roi_settings_filename', '')
 addParameter(parser, 'rs_folder', '')
 addParameter(parser, 'primary_dataset', 'whole_brain')  % 'whole_brain' or 'cerebellum'
@@ -37,6 +38,7 @@ TR = parser.Results.TR;
 subjects = parser.Results.subjects;
 primary_smoothed = parser.Results.primary_smoothed;
 primary_unsmoothed = parser.Results.primary_unsmoothed;
+structural_folder = parser.Results.structural_folder;
 structural = parser.Results.structural;
 secondary_smoothed = parser.Results.secondary_smoothed;
 secondary_unsmoothed = parser.Results.secondary_unsmoothed;
@@ -62,10 +64,15 @@ end
 for this_subject_index = 1:length(subjects)
     this_subject = subjects(this_subject_index);
     data_path = pwd;
-    this_subject_path = strcat([data_path filesep this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep rs_folder filesep 'ANTS_Normalization']);
     
-    primary_smoothed_path = spm_select('FPList', this_subject_path, strcat('^',primary_smoothed,'$'));
-    primary_unsmoothed_path = spm_select('FPList', this_subject_path, strcat('^',primary_unsmoothed,'$'));
+    % ADJUSTED FOR NASA
+        this_subject_path = strcat([data_path filesep this_subject{1} filesep '02']);
+%     this_subject_path = strcat([data_path filesep this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep rs_folder filesep 'ANTS_Normalization']);
+    
+    % ADJUSTED FOR NASA
+primary_smoothed_path = spm_select('FPList',  fullfile(this_subject_path,rs_folder), strcat('^',this_subject{1},'_',primary_smoothed,'$'));
+%     primary_smoothed_path = spm_select('FPList', this_subject_path, strcat('^',primary_smoothed,'$'));
+    primary_unsmoothed_path = spm_select('FPList', fullfile(this_subject_path,rs_folder), strcat('^',this_subject{1},'_',primary_unsmoothed,'$'));
 
     % Beware: Hard coded for WU120 data
     if ~exist(primary_smoothed_path)
@@ -75,7 +82,7 @@ for this_subject_index = 1:length(subjects)
         primary_unsmoothed_path = spm_select('FPList', this_subject_path, strcat('^',primary_unsmoothed_corename{1},'1.nii'));
     end
     
-    structural_path = spm_select('FPList', this_subject_path, strcat('^',structural,'$'));
+    structural_path = spm_select('FPList', fullfile(this_subject_path,structural_folder), strcat('^',this_subject{1},'_',structural,'$'));
     
     if ~isempty(secondary_smoothed)
         secondary_smoothed_path = spm_select('FPList', this_subject_path, strcat('^',secondary_smoothed,'$'));
@@ -99,9 +106,12 @@ for this_subject_index = 1:length(subjects)
     BATCH.Setup.structurals{this_subject_index} = structural_path;
     BATCH.Setup.functionals{this_subject_index}{1} = primary_smoothed_path;
     
-    gray_matter_path = spm_select('FPList', this_subject_path, '^warpedToMNI_c1T1*');
-    white_matter_path = spm_select('FPList', this_subject_path, '^warpedToMNI_c2T1*');
-    csf_matter_path = spm_select('FPList', this_subject_path, '^warpedToMNI_c3T1*');
+    gray_matter_path = spm_select('FPList', fullfile(this_subject_path,structural_folder), strcat('^c1',this_subject{1},'_02_T1_SPM_MNIspace*'));
+    white_matter_path = spm_select('FPList', fullfile(this_subject_path,structural_folder), strcat('^c2',this_subject{1},'_02_T1_SPM_MNIspace*'));
+    csf_matter_path = spm_select('FPList', fullfile(this_subject_path,structural_folder), strcat('^c3',this_subject{1},'_02_T1_SPM_MNIspace*'));
+%     gray_matter_path = spm_select('FPList', this_subject_path, '^warpedToMNI_c1T1*');
+%     white_matter_path = spm_select('FPList', this_subject_path, '^warpedToMNI_c2T1*');
+%     csf_matter_path = spm_select('FPList', this_subject_path, '^warpedToMNI_c3T1*');
          
     BATCH.Setup.masks.Grey.files{this_subject_index} = gray_matter_path;
     BATCH.Setup.masks.White.files{this_subject_index} = white_matter_path;
@@ -147,12 +157,13 @@ for this_subject_index = 1:length(subjects)
 
 
     BATCH.Setup.covariates.names = {'realignment'};
-    this_movement_file = spm_select('FPList', this_subject_path, strcat('^','rp_unwarpedRealigned_slicetimed_RestingState.txt','$'));
+     this_movement_file = spm_select('FPList', fullfile(this_subject_path,rs_folder), strcat('^','rp_a',this_subject{1},'_02_RestingState_s003a001.txt'))
+%     this_movement_file = spm_select('FPList', this_subject_path, strcat('^','rp_unwarpedRealigned_slicetimed_RestingState.txt','$'));
  
 %     Beware... Hard coded for WU120 data
-    if ~exist(this_movement_file)
-        this_movement_file = spm_select('FPList', this_subject_path, strcat('^','rp_unwarpedRealigned_slicetimed_RestingState1.txt','$'));
-    end
+%     if ~exist(this_movement_file)
+%         this_movement_file = spm_select('FPList', this_subject_path, strcat('^','rp_unwarpedRealigned_slicetimed_RestingState1.txt','$'));
+%     end
     BATCH.Setup.covariates.files{1}{this_subject_index}{1} = this_movement_file;
     
 end
