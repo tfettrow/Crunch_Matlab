@@ -26,11 +26,10 @@ addParameter(parser, 'save_figures', 0)
 addParameter(parser, 'export_figures', 0)
 addParameter(parser, 'correlate_outcomes', 0)
 addParameter(parser, 'save_scores', 0)
+addParameter(parser, 'save_mim_scores', 0)
 parse(parser, varargin{:})
 conn_project_name = parser.Results.conn_project_name;
 roi_settings_filename = parser.Results.roi_settings_filename;
-% group_names = parser.Results.group_names;
-% group_ids = parser.Results.group_ids;
 separate_groups = parser.Results.separate_groups;
 plot_figures = parser.Results.plot_figures;
 seed_names = parser.Results.seed_names;
@@ -39,13 +38,17 @@ export_figures = parser.Results.export_figures;
 correlate_outcomes = parser.Results.correlate_outcomes;
 no_labels = parser.Results.no_labels;
 save_scores = parser.Results.save_scores;
+save_mim_scores = parser.Results.save_scores;
 
 load([conn_project_name filesep 'subject_ids'])
 
 project_path = pwd;
 
-seed_to_network_map = {'left_hand','medial_prefrontal_cortex_post_cingulate','right_mouth','left_aud_cortex','right_post_ips','left_insular','dACC','visual_cortex','left_dlpfc','right_dlpfc','left_acc','right_acc'; ...
-    'Hand','Default', 'Mouth', 'Auditory', 'DAN', 'Salience', 'CinguloOperc', 'Visual', 'Left DLPFC', 'Right DLPFC', 'Left ACC', 'Right ACC'};
+% seed_to_network_map = {'left_hand','medial_prefrontal_cortex_post_cingulate','right_mouth','left_aud_cortex','right_post_ips','left_insular','dACC','visual_cortex','left_dlpfc','right_dlpfc','left_acc','right_acc'; ...
+%     'Hand','Default', 'Mouth', 'Auditory', 'DAN', 'Salience', 'CinguloOperc', 'Visual', 'Left DLPFC', 'Right DLPFC', 'Left ACC', 'Right ACC'};
+
+seed_to_network_map = {'left_hand','medial_prefrontal_cortex_post_cingulate','right_mouth','left_aud_cortex','right_post_ips','left_insular','visual_cortex'; ...
+    'Hand','Default', 'Mouth', 'Auditory', 'DAN', 'Salience', 'Visual'};
 
 % WARNING: this logic only works for MiM data
 if separate_groups
@@ -57,6 +60,8 @@ if separate_groups
     
     % identify colors based on number of unique groups ^^
     color_groups = distinguishable_colors(length(unique_groups));
+else
+    unique_groups = 1;
 end
     
 wdir = strcat(project_path, filesep, conn_project_name, filesep, 'results', filesep, 'firstlevel');
@@ -122,18 +127,7 @@ for i_subject = 1 : length(available_subject_file_name_list)
     this_subject_data = load(strcat(first_level_corr_folder, filesep, available_subject_file_name_list{i_subject}));
     
     average_total_conn(i_subject) = mean(nanmean(this_subject_data.Z));
-    % for each seed (network)
-    % % % WITHIN % %
-    % 1) go into this subject data
-    % 2) identify the indices for this seed
-    % 3) find the pairs of rois within this seed/network
-    % 4) extract the correlation for each pair (if>0) and average
-    % % % BETWEEN % %
-    % 1) go into this subject data
-    % 2) identify the indices for this seed
-    % 3) find the pairs of rois between each index (within this seed) and
-    % all other indices
-    
+
     roi_pairs_between_network = [];
     for this_seed_name_index = 1:length(seed_names)
         this_within_network_occurences = contains(roi_network_cell, strcat(seed_names{this_seed_name_index},'_network'));
@@ -179,19 +173,8 @@ for i_subject = 1 : length(available_subject_file_name_list)
         network_segregation(this_seed_name_index, i_subject) = (avg_within_network_conn(this_seed_name_index, i_subject) - avg_between_network_conn(this_seed_name_index, i_subject))/(avg_within_network_conn(this_seed_name_index, i_subject));
     end
     
-    % 1) for each subject i want to export the last 4? seed_indices of
-    % network_segregation
-    % 2) write to csv (see the resulting 1013_fmri_roi_betas.csv in fmri
-    % Level1 folder)
-    %     example:
-    % record_id, redcap_event_name,flat_neurosynth_dlpfc_left_gmMasked,low_neurosynth_dlpfc_left_gmMasked,med_neurosynth_dlpfc_left_gmMasked,high_neurosynth_dlpfc_left_gmMasked,flat_neurosynth_dlpfc_right_gmMasked,low_neurosynth_dlpfc_right_gmMasked,med_neurosynth_dlpfc_right_gmMasked,high_neurosynth_dlpfc_right_gmMasked,flat_neurosynth_acc_gmMasked,low_neurosynth_acc_gmMasked,med_neurosynth_acc_gmMasked,high_neurosynth_acc_gmMasked
-    % 1013, base_v4_mri_arm_1,0.321409 ,0.440705 ,0.929578 ,0.257719  ​,0.049928 ,0.237883 ,0.515291 ,-0.031890  ​,-0.064096 ,0.343579 ,0.125681 ,-0.187217  ​
-    % 3) write this into subject/rsfmri/Level1
-    %         example:
-    % record_id, redcap_event_name, seed_name1, seed_name2, etc
-    
-    % only gather the left_dlpfc, right_dlpfc, left_acc, and right_acc
-    if save_scores
+    % WARNING: MiM Specific
+    if save_mim_scores
         networks_of_interest_indices = find(contains(seed_names,{'left_dlpfc', 'right_dlpfc', 'left_acc', 'right_acc'}));
         this_table_cell = {subjects{i_subject}, 'base_v4_mri_arm_1'};
         seed_names_cell = {'record_id', 'redcap_event_name'};
@@ -215,7 +198,7 @@ if plot_figures
     for this_seed_name_index = 1:length(seed_names)
         this_seed_to_network_index = contains(seed_to_network_map(1,:),seed_names{this_seed_name_index});
         network_name = seed_to_network_map{2,this_seed_to_network_index};
-        %% within Network
+        %% Inidividual WITHIN
         figure; hold on;
         if separate_groups
             group_1_indices = (group_ids==1);
@@ -253,9 +236,10 @@ if plot_figures
             export_fig('-pdf','-append')
         end
         
-        figure; hold on;
+        % Group AVG WITHIN
         if separate_groups
-           group_1_indices = (group_ids==1);
+            figure; hold on;
+            group_1_indices = (group_ids==1);
             group_2_indices = (group_ids==2);
             
             singleBoxPlot(avg_within_network_conn(this_seed_name_index,group_1_indices),'abscissa', 1, 'EdgeColor', color_groups(1,:), 'MarkerColor', color_groups(1,:),'WiskColor',  color_groups(1,:), 'MeanColor', color_groups(1,:))
@@ -266,42 +250,31 @@ if plot_figures
                 singleBoxPlot(avg_within_network_conn(this_seed_name_index,group_3_indices),'abscissa', 3, 'EdgeColor', color_groups(3,:), 'MarkerColor', color_groups(3,:),'WiskColor',  color_groups(3,:), 'MeanColor', color_groups(3,:))
                 xlim([0 4])
             end
-            %             bar(1, mean(avg_within_network_conn(this_seed_name_index,group_1_indices)), 'FaceColor', color_groups(1,:)); hold on;
-%             errorbar(1, mean(avg_within_network_conn(this_seed_name_index,group_1_indices)), std(avg_within_network_conn(this_seed_name_index,group_1_indices))/nnz(group_1_indices), 'k'); hold on;
-%             bar(2, mean(avg_within_network_conn(this_seed_name_index,group_2_indices)), 'FaceColor', color_groups(2,:)); hold on;
-%             errorbar(2, mean(avg_within_network_conn(this_seed_name_index,group_2_indices)), std(avg_within_network_conn(this_seed_name_index,group_2_indices))/nnz(group_2_indices), 'k'); hold on;
-%             if length(unique_groups) > 2
-%                  bar(3, mean(avg_within_network_conn(this_seed_name_index,group_3_indices)), 'FaceColor', color_groups(3,:)); hold on;
-%                 errorbar(3, mean(avg_within_network_conn(this_seed_name_index,group_3_indices)), std(avg_within_network_conn(this_seed_name_index,group_3_indices))/nnz(group_3_indices), 'k'); hold on;
-%             end
- 
-        else
-            bar(1:length(subjects), avg_within_network_conn(this_seed_name_index,:))
-        end
-        ylim([0 .3])
-        title(strcat('WITHIN Network Connectivity', {' '}, network_name),'interpreter','none', 'FontSize',18)
-        ylabel('Connectivity')
-        %     legend({'YA','high-OA','low-OA'})
-        set(gca,'XTick',1:length(unique_groups),'xticklabel',{'YA','high-OA','low-OA'},'TickLabelInterpreter','none','FontSize',16)
-        xtickangle(45)
-        set(gcf, 'ToolBar', 'none');
-        set(gcf, 'MenuBar', 'none');
-        if no_labels
-            set(get(gca, 'xlabel'), 'visible', 'off');
-            set(get(gca, 'ylabel'), 'visible', 'off');
-            set(get(gca, 'title'), 'visible', 'off');
-            legend(gca, 'hide');
-        end
-        if save_figures
-            fig_title = strcat('groups_', network_name, 'within_network_connectivity');
-            filename =  fullfile(project_path, 'figures', fig_title);
-            saveas(gca, filename, 'tiff')
-        end
-        if export_figures
-            export_fig('-pdf','-append')
+             ylim([0 .3])
+             title(strcat('WITHIN Network Connectivity', {' '}, network_name),'interpreter','none', 'FontSize',18)
+             ylabel('Connectivity')
+             %     legend({'YA','high-OA','low-OA'})
+             set(gca,'XTick',1:length(unique_groups),'xticklabel',{'YA','high-OA','low-OA'},'TickLabelInterpreter','none','FontSize',16)
+             xtickangle(45)
+             set(gcf, 'ToolBar', 'none');
+             set(gcf, 'MenuBar', 'none');
+             if no_labels
+                 set(get(gca, 'xlabel'), 'visible', 'off');
+                 set(get(gca, 'ylabel'), 'visible', 'off');
+                 set(get(gca, 'title'), 'visible', 'off');
+                 legend(gca, 'hide');
+             end
+             if save_figures
+                 fig_title = strcat('groups_', network_name, 'within_network_connectivity');
+                 filename =  fullfile(project_path, 'figures', fig_title);
+                 saveas(gca, filename, 'tiff')
+             end
+             if export_figures
+                 export_fig('-pdf','-append')
+             end
         end
         
-        %% between Network
+        %% Individual BETWEEN
         figure; hold on;
         if separate_groups
             group_1_indices = (group_ids==1);
@@ -339,8 +312,9 @@ if plot_figures
             export_fig('-pdf','-append')
         end
         
-        figure; hold on;
+        
         if separate_groups
+            figure; hold on;
             group_1_indices = (group_ids==1);
             group_2_indices = (group_ids==2);
             
@@ -352,45 +326,32 @@ if plot_figures
                 singleBoxPlot(avg_between_network_conn(this_seed_name_index,group_3_indices),'abscissa', 3, 'EdgeColor', color_groups(3,:), 'MarkerColor', color_groups(3,:),'WiskColor',  color_groups(3,:), 'MeanColor', color_groups(3,:))
                 xlim([0 4])
             end
-            
-%             bar(1, mean(avg_between_network_conn(this_seed_name_index,group_1_indices)), 'FaceColor', color_groups(1,:)); hold on;
-%             errorbar(1, mean(avg_between_network_conn(this_seed_name_index,group_1_indices)), std(avg_between_network_conn(this_seed_name_index,group_1_indices))/nnz(group_1_indices), 'k'); hold on;
-%             bar(2, mean(avg_between_network_conn(this_seed_name_index,group_2_indices)), 'FaceColor', color_groups(2,:)); hold on;
-%             errorbar(2, mean(avg_between_network_conn(this_seed_name_index,group_2_indices)), std(avg_between_network_conn(this_seed_name_index,group_2_indices))/nnz(group_2_indices), 'k'); hold on;
-%             if length(unique_groups) > 2
-%                 group_3_indices = contains(group_ids,'3');
-%                 bar(3, mean(avg_between_network_conn(this_seed_name_index,group_3_indices)), 'FaceColor', color_groups(3,:)); hold on;
-%                 errorbar(3, mean(avg_between_network_conn(this_seed_name_index,group_3_indices)), std(avg_between_network_conn(this_seed_name_index,group_3_indices))/nnz(group_3_indices), 'k'); hold on;
-%             end
-        else
-            bar(1:length(subjects), avg_between_network_conn(this_seed_name_index,:))
-        end
-        ylim([0 .1])
-        title(strcat('BETWEEN Network Connectivity', {' '}, network_name),'interpreter','none', 'FontSize',18)
-        ylabel('Connectivity')
-        %     legend({'YA','high-OA','low-OA'})
-        set(gca,'XTick',1:length(unique_groups),'xticklabel',{'YA','high-OA','low-OA'},'TickLabelInterpreter','none','FontSize',16)
-        xtickangle(45)
-        set(gcf, 'ToolBar', 'none');
-        set(gcf, 'MenuBar', 'none');
-        if no_labels
-            set(get(gca, 'xlabel'), 'visible', 'off');
-            set(get(gca, 'ylabel'), 'visible', 'off');
-            set(get(gca, 'title'), 'visible', 'off');
-            legend(gca, 'hide');
-        end
-        if save_figures
-            fig_title = strcat('groups_', network_name, 'between_network_connectivity');
-            filename =  fullfile(project_path, 'figures', fig_title);
-            saveas(gca, filename, 'tiff')
-        end
-        if export_figures
-            export_fig('-pdf','-append')
+            ylim([0 .1])
+            title(strcat('BETWEEN Network Connectivity', {' '}, network_name),'interpreter','none', 'FontSize',18)
+            ylabel('Connectivity')
+            set(gca,'XTick',1:length(unique_groups),'xticklabel',{'YA','high-OA','low-OA'},'TickLabelInterpreter','none','FontSize',16)
+            xtickangle(45)
+            set(gcf, 'ToolBar', 'none');
+            set(gcf, 'MenuBar', 'none');
+            if no_labels
+                set(get(gca, 'xlabel'), 'visible', 'off');
+                set(get(gca, 'ylabel'), 'visible', 'off');
+                set(get(gca, 'title'), 'visible', 'off');
+                legend(gca, 'hide');
+            end
+            if save_figures
+                fig_title = strcat('groups_', network_name, 'between_network_connectivity');
+                filename =  fullfile(project_path, 'figures', fig_title);
+                saveas(gca, filename, 'tiff')
+            end
+            if export_figures
+                export_fig('-pdf','-append')
+            end
         end
         
         
-        %% Network Segregation
-        figure;
+        %% Individual SEGREGATION
+        figure; hold on;
         if separate_groups
             group_1_indices = (group_ids==1);
             group_2_indices = (group_ids==2);
@@ -426,8 +387,9 @@ if plot_figures
             export_fig('-pdf','-append')
         end
         
-        figure; hold on;
+        % Group SEGREGATION
         if separate_groups
+            figure; hold on;
             group_1_indices = (group_ids==1);
             group_2_indices = (group_ids==2);
             
@@ -439,39 +401,28 @@ if plot_figures
                 singleBoxPlot(network_segregation(this_seed_name_index,group_3_indices),'abscissa', 3, 'EdgeColor', color_groups(3,:), 'MarkerColor', color_groups(3,:),'WiskColor',  color_groups(3,:), 'MeanColor', color_groups(3,:))
                 xlim([0 4])
             end
-            
-%             bar(1, mean(network_segregation(this_seed_name_index,group_1_indices)), 'FaceColor', color_groups(1,:)); hold on;
-%             errorbar(1, mean(network_segregation(this_seed_name_index,group_1_indices)), std(network_segregation(this_seed_name_index,group_1_indices))/nnz(group_1_indices), 'k'); hold on;
-%             bar(2, mean(network_segregation(this_seed_name_index,group_2_indices)), 'FaceColor', color_groups(2,:)); hold on;
-%             errorbar(2, mean(network_segregation(this_seed_name_index,group_2_indices)), std(network_segregation(this_seed_name_index,group_2_indices))/nnz(group_2_indices), 'k'); hold on;
-%             if length(unique_groups) > 2
-%                 group_3_indices = contains(group_ids,'3');
-%                 bar(3, mean(network_segregation(this_seed_name_index,group_3_indices)), 'FaceColor', color_groups(3,:)); hold on;
-%                 errorbar(3, mean(network_segregation(this_seed_name_index,group_3_indices)), std(network_segregation(this_seed_name_index,group_3_indices))/nnz(group_3_indices), 'k'); hold on;
-%             end
-            
-        end
-        ylim([0 .85])
-        title(strcat('Segregation', {' '}, network_name),'interpreter','none', 'FontSize',18)
-        ylabel('Segregation')
-        %     legend({'YA','high-OA','low-OA'})
-        set(gca,'XTick',1:length(unique_groups),'xticklabel',{'YA','high-OA','low-OA'},'TickLabelInterpreter','none','FontSize',16)
-        xtickangle(45)
-        set(gcf, 'ToolBar', 'none');
-        set(gcf, 'MenuBar', 'none');
-        if no_labels
-            set(get(gca, 'xlabel'), 'visible', 'off');
-            set(get(gca, 'ylabel'), 'visible', 'off');
-            set(get(gca, 'title'), 'visible', 'off');
-            legend(gca, 'hide');
-        end
-        if save_figures
-            fig_title = strcat('groups_', network_name, 'network_segregation');
-            filename =  fullfile(project_path, 'figures', fig_title);
-            saveas(gca, filename, 'tiff')
-        end
-        if export_figures
-            export_fig('-pdf','-append')
+            ylim([0 .85])
+            title(strcat('Segregation', {' '}, network_name),'interpreter','none', 'FontSize',18)
+            ylabel('Segregation')
+            %     legend({'YA','high-OA','low-OA'})
+            set(gca,'XTick',1:length(unique_groups),'xticklabel',{'YA','high-OA','low-OA'},'TickLabelInterpreter','none','FontSize',16)
+            xtickangle(45)
+            set(gcf, 'ToolBar', 'none');
+            set(gcf, 'MenuBar', 'none');
+            if no_labels
+                set(get(gca, 'xlabel'), 'visible', 'off');
+                set(get(gca, 'ylabel'), 'visible', 'off');
+                set(get(gca, 'title'), 'visible', 'off');
+                legend(gca, 'hide');
+            end
+            if save_figures
+                fig_title = strcat('groups_', network_name, 'network_segregation');
+                filename =  fullfile(project_path, 'figures', fig_title);
+                saveas(gca, filename, 'tiff')
+            end
+            if export_figures
+                export_fig('-pdf','-append')
+            end
         end
     end
 end
@@ -484,10 +435,7 @@ if save_scores
     %     network_name_matrix{this_seed_name_index_1} = seed_to_network_map{2,this_seed_to_network_index};
     subject_table = array2table(subjects');
     subject_table.Properties.VariableNames = {'subject_ids'};
-    
-%     group_id_table = array2table(group_ids');
-%     group_id_table.Properties.VariableNames = {'group_ids'};
-%     
+      
     within_cell_table = array2table(avg_within_network_conn');
     within_cell_table.Properties.VariableNames = seed_names;
     
@@ -496,11 +444,6 @@ if save_scores
     
     seg_cell_table = array2table(network_segregation');
     seg_cell_table.Properties.VariableNames = seed_names;
-%     
-%     within_results_table = [subject_table, within_cell_table, group_id_table];
-%     between_results_table = [subject_table, between_cell_table, group_id_table];
-%     seg_results_table = [subject_table, seg_cell_table, group_id_table];
-
 
     within_results_table = [subject_table, within_cell_table];
     between_results_table = [subject_table, between_cell_table];
