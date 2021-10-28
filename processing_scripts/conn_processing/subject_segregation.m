@@ -44,11 +44,9 @@ load([conn_project_name filesep 'subject_ids'])
 
 project_path = pwd;
 
-% seed_to_network_map = {'left_hand','medial_prefrontal_cortex_post_cingulate','right_mouth','left_aud_cortex','right_post_ips','left_insular','dACC','visual_cortex','left_dlpfc','right_dlpfc','left_acc','right_acc'; ...
-%     'Hand','Default', 'Mouth', 'Auditory', 'DAN', 'Salience', 'CinguloOperc', 'Visual', 'Left DLPFC', 'Right DLPFC', 'Left ACC', 'Right ACC'};
+seed_to_network_map = {'left_hand','medial_prefrontal_cortex_post_cingulate','right_mouth','left_aud_cortex','right_post_ips','left_insular','dACC','visual_cortex','left_dlpfc','right_dlpfc','left_acc','right_acc','left_ips','left_op2' ; ...
+    'Hand','Default', 'Mouth', 'Auditory', 'DAN', 'Salience', 'CinguloOperc', 'Visual', 'Left DLPFC', 'Right DLPFC', 'Left ACC', 'Right ACC', 'FrontoParietal', 'Vestibular'};
 
-seed_to_network_map = {'left_hand','medial_prefrontal_cortex_post_cingulate','right_mouth','left_aud_cortex','right_post_ips','left_insular','visual_cortex'; ...
-    'Hand','Default', 'Mouth', 'Auditory', 'DAN', 'Salience', 'Visual'};
 
 % WARNING: this logic only works for MiM data
 if separate_groups
