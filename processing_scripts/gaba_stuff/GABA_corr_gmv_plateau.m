@@ -42,6 +42,14 @@ for this_subject_index = 1 : length(subjects)
         this_subject_t1_path = fullfile(data_path, subjects{this_subject_index}, 'structural_metrics', strcat('p0_',subjects{this_subject_index},'_SUIT_Mod_S2.nii'));
     elseif strcmp(image_type, 'cortical_thickness')
         this_subject_t1_path = fullfile(data_path, subjects{this_subject_index}, 'structural_metrics', strcat('s15.mesh.thickness.resampled_32k.T1_',subjects{this_subject_index},'.gii'));
+    elseif strcmp(image_type, 'sulcal_depth')
+        this_subject_t1_path = fullfile(data_path, subjects{this_subject_index}, 'structural_metrics', strcat('s20.mesh.depth.resampled_32k.T1_',subjects{this_subject_index},'.gii'));
+    elseif strcmp(image_type, 'fractal_dimension')
+        this_subject_t1_path = fullfile(data_path, subjects{this_subject_index}, 'structural_metrics', strcat('s20.mesh.fractaldimension.resampled_32k.T1_',subjects{this_subject_index},'.gii'));
+    elseif strcmp(image_type, 'gyrification')
+        this_subject_t1_path = fullfile(data_path, subjects{this_subject_index}, 'structural_metrics', strcat('s20.mesh.gyrification.resampled_32k.T1_',subjects{this_subject_index},'.gii'));
+    elseif strcmp(image_type, 'tbss_fa')
+        this_subject_t1_path = fullfile(data_path, subjects{this_subject_index}, 'structural_metrics', strcat('FAt_skeleton_',subjects{this_subject_index},'.nii'));
     end
     %     this_subject_info_path = fullfile(data_path, subject_codes(this_subject_index), 'subject_info.csv');
     
@@ -70,7 +78,8 @@ if strcmp(image_type, 'whole_brain')
     matlabbatch{1}.spm.stats.factorial_design.masking.em = {'Template_1_IXI555_MNI152_bin_noCB_clean2_bin.nii'};
 elseif strcmp(image_type, 'cerebellum')
     matlabbatch{1}.spm.stats.factorial_design.masking.em = {'SUIT_Nobrainstem_1mm.nii'};
-elseif strcmp(image_type, 'cortical_thickness')
+% elseif strcmp(image_type, 'cortical_thickness')
+else
      matlabbatch{1}.spm.stats.factorial_design.masking.em = {''};
 end
 % matlabbatch{1}.spm.stats.factorial_design.masking.em = {''};
@@ -84,20 +93,21 @@ end
 
 %% Estimate the SPM model
 clear matlabbatch
-% if strcmp(image_type, 'whole_brain') || strcmp(image_type, 'cerebellum')
+if strcmp(image_type, 'whole_brain') || strcmp(image_type, 'cerebellum' ) || strcmp(image_type, 'tbss_fa' )
     SPMfile = spm_select('FPList', full_output_dir, 'SPM.mat');
     matlabbatch{1}.spm.stats.fmri_est.spmmat = cellstr(SPMfile);
     matlabbatch{1}.spm.stats.fmri_est.write_residuals = 0;
     matlabbatch{1}.spm.stats.fmri_est.method.Classical = 1;
-% elseif strcmp(image_type, 'cortical_thickness')
-%     matlabbatch{1}.spm.tools.cat.tools.check_SPM.spmmat(1) = cfg_dep('Factorial design specification: SPM.mat File', substruct('.','val', '{}',{1}, '.','val', '{}',{1}, '.','val', '{}',{1}), substruct('.','spmmat'));
-%     matlabbatch{1}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.use_unsmoothed_data = 1;
-%     matlabbatch{1}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.adjust_data = 1;
-%     matlabbatch{1}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.outdir = {''};
-%     matlabbatch{1}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.fname = 'CATcheckdesign_';
-%     matlabbatch{1}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.save = 1;
-%     matlabbatch{1}.spm.tools.cat.tools.check_SPM.check_SPM_ortho = 1;
-% end
+elseif strcmp(image_type, 'sulcal_depth') || strcmp(image_type, 'gyrification') || strcmp(image_type, 'fractal_dimension') || strcmp(image_type, 'cortical_thickness' )
+     SPMfile = spm_select('FPList', full_output_dir, 'SPM.mat');
+    matlabbatch{1}.spm.tools.cat.tools.check_SPM.spmmat(1) = cellstr(SPMfile); %cfg_dep('Factorial design specification: SPM.mat File', substruct('.','val', '{}',{1}, '.','val', '{}',{1}, '.','val', '{}',{1}), substruct('.','spmmat'));
+    matlabbatch{1}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.use_unsmoothed_data = 1;
+    matlabbatch{1}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.adjust_data = 1;
+    matlabbatch{1}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.outdir = {''};
+    matlabbatch{1}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.fname = 'CATcheckdesign_';
+    matlabbatch{1}.spm.tools.cat.tools.check_SPM.check_SPM_cov.do_check_cov.save = 1;
+    matlabbatch{1}.spm.tools.cat.tools.check_SPM.check_SPM_ortho = 1;
+end
 if ~tfce_only
     spm_jobman('run',matlabbatch);
 end
@@ -224,7 +234,7 @@ if tfce_only
  end
  
  % % % % % %  4varsSEX or tiv
- if strcmp(cov_filename,'covs_split_stp_4varSEX') || strcmp(cov_filename,'covs_split_stp_mag_4varSEX') || strcmp(cov_filename,'covs_split_stp_4var_tiv') || strcmp(cov_filename,'covs_split_stp_mag_4var_tiv')
+ if strcmp(cov_filename,'covs_split_stp_4varSEX') || strcmp(cov_filename,'covs_split_stp_mag_4varSEX') || strcmp(cov_filename,'covs_split_stp_4var_tiv') || strcmp(cov_filename,'covs_split_stp_mag_4var_tiv') || strcmp(cov_filename,'covs_split_stp_mag_4varSEX_WMonly')
      matlabbatch{1}.spm.stats.con.consess{1}.tcon.name = 'Step Length';
      matlabbatch{1}.spm.stats.con.consess{1}.tcon.weights = [0 0 0 1 0 0 0];
      matlabbatch{1}.spm.stats.con.consess{1}.tcon.sessrep = 'none';
@@ -319,7 +329,11 @@ if tfce_only
     matlabbatch{1}.spm.tools.tfce_estimate.conspec.contrasts = [1 2 3 4];
     matlabbatch{1}.spm.tools.tfce_estimate.conspec.n_perm = 5000;
     matlabbatch{1}.spm.tools.tfce_estimate.nuisance_method = 2;
-    matlabbatch{1}.spm.tools.tfce_estimate.tbss = 0; % Set to 0 for GMv; set to 1 if TBSS data
+    if strcmp(image_type, 'tbss_fa')
+        matlabbatch{1}.spm.tools.tfce_estimate.tbss = 1; % Set to 0 for GMv; set to 1 if TBSS data
+    else
+        matlabbatch{1}.spm.tools.tfce_estimate.tbss = 0;
+    end
     matlabbatch{1}.spm.tools.tfce_estimate.E_weight = 0.5;
     matlabbatch{1}.spm.tools.tfce_estimate.singlethreaded = 1;
     spm_jobman('run',matlabbatch);
