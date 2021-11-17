@@ -11,7 +11,7 @@
 %     You should have received a copy of the GNU General Public License
 %     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-function plot_dti_histogram(varargin)
+function plot_asl_meanresults(varargin)
 % plot_fsl_histogram('subject','1002','roi_settings_filename','ROI_settings_MiMRedcap_CAT12_NewAcc.txt'
 % WARNING: currently setup to require each group run seperately
 
