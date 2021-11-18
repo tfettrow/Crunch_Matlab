@@ -22,43 +22,123 @@ addParameter(parser, 'subjects', '')
 addParameter(parser, 'group_names', '')
 addParameter(parser, 'group_ids', '')
 addParameter(parser, 'save_figures', 1)
+addParameter(parser, 'results_foldername', '')
+addParameter(parser, 'pvcorr', 0)
 parse(parser, varargin{:})
 subjects = parser.Results.subjects;
 group_names = parser.Results.group_names;
 group_ids = parser.Results.group_ids;
 save_figures = parser.Results.save_figures;
+results_foldername = parser.Results.results_foldername;
+pvcorr = parser.Results.pvcorr;
 
 project_path = pwd;
 unique_groups = unique(group_ids);
 color_groups = distinguishable_colors(length(unique_groups));
 
-
+if isempty(results_foldername)
+   error('need to specify results folder name (see arguments)') 
+end
 
 for this_subject_index = 1:length(subjects)
     this_subject_id = subjects{this_subject_index};
-    hist_data(:,this_subject_index) = load(fullfile(project_path,this_subject_id,'Processed','MRI_files','08_DWI',strcat('subj_',this_subject_id,'_',roi_network_cell{this_roi_index},'_histcount.csv')));
+    if pvcorr
+        gm_perf_data(this_subject_index) = load(fullfile(project_path,this_subject_id,'Processed','MRI_files','07_ASL',results_foldername,'native_space','pvcorr','perfusion_gm_mean.txt'));
+        wm_perf_data(this_subject_index) = load(fullfile(project_path,this_subject_id,'Processed','MRI_files','07_ASL',results_foldername,'native_space','pvcorr','perfusion_wm_wm_mean.txt'));
+        gm_perf_calib_data(this_subject_index) = load(fullfile(project_path,this_subject_id,'Processed','MRI_files','07_ASL',results_foldername,'native_space','pvcorr','perfusion_calib_gm_mean.txt'));
+        wm_perf_calib_data(this_subject_index) = load(fullfile(project_path,this_subject_id,'Processed','MRI_files','07_ASL',results_foldername,'native_space','pvcorr','perfusion_wm_calib_wm_mean.txt'));
+    else
+        gm_perf_data(this_subject_index) = load(fullfile(project_path,this_subject_id,'Processed','MRI_files','07_ASL',results_foldername,'native_space','perfusion_gm_mean.txt'));
+        wm_perf_data(this_subject_index) = load(fullfile(project_path,this_subject_id,'Processed','MRI_files','07_ASL',results_foldername,'native_space','perfusion_wm_mean.txt'));
+        gm_perf_calib_data(this_subject_index) = load(fullfile(project_path,this_subject_id,'Processed','MRI_files','07_ASL',results_foldername,'native_space','perfusion_calib_gm_mean.txt'));
+        wm_perf_calib_data(this_subject_index) = load(fullfile(project_path,this_subject_id,'Processed','MRI_files','07_ASL',results_foldername,'native_space','perfusion_calib_wm_mean.txt'));
+    end
 end
 
 figure; hold on;
 for this_group_index = 1 : length(group_names)
     this_group_subjectindices = find(group_ids==this_group_index);
     
-    bar(this_group_subjectindices, hist_data(end,this_group_subjectindices), 'FaceColor', color_groups(this_group_index,:)); hold on;
-    
+    bar(this_group_subjectindices, gm_perf_data(end,this_group_subjectindices), 'FaceColor', color_groups(this_group_index,:)); hold on;
 end
-    
-title('AVG CBF','interpreter','none', 'FontSize',18)
-ylabel('AVG CBF (?)','interpreter','none')
+
+title('AVG GM CBF','interpreter','none', 'FontSize',18)
+ylabel('AVG GM CBF (?)','interpreter','none')
 set(gca,'XTick',1:length(subjects),'xticklabel',subjects,'TickLabelInterpreter','none')
 xtickangle(45)
 set(gcf, 'ToolBar', 'none');
 set(gcf, 'MenuBar', 'none');
 
 if save_figures
-    fig_title = strcat('subjects_','_',roi_network_cell{this_roi_index},'_DTIhistogram');
+    fig_title = 'subjects_GM_CBF';
     filename =  fullfile(project_path, 'figures', fig_title);
     saveas(gca, filename, 'tiff')
 end
+
+
+figure; hold on;
+for this_group_index = 1 : length(group_names)
+    this_group_subjectindices = find(group_ids==this_group_index);
+    
+    bar(this_group_subjectindices, wm_perf_data(end,this_group_subjectindices), 'FaceColor', color_groups(this_group_index,:)); hold on;
+end
+
+title('AVG WM CBF','interpreter','none', 'FontSize',18)
+ylabel('AVG WM CBF (?)','interpreter','none')
+set(gca,'XTick',1:length(subjects),'xticklabel',subjects,'TickLabelInterpreter','none')
+xtickangle(45)
+set(gcf, 'ToolBar', 'none');
+set(gcf, 'MenuBar', 'none');
+
+if save_figures
+    fig_title = 'subjects_WM_CBF';
+    filename =  fullfile(project_path, 'figures', fig_title);
+    saveas(gca, filename, 'tiff')
+end
+
+
+figure; hold on;
+for this_group_index = 1 : length(group_names)
+    this_group_subjectindices = find(group_ids==this_group_index);
+    
+    bar(this_group_subjectindices, gm_perf_calib_data(end,this_group_subjectindices), 'FaceColor', color_groups(this_group_index,:)); hold on;
+end
+
+title('AVG GM CALIB CBF','interpreter','none', 'FontSize',18)
+ylabel('AVG GM CALIB CBF (?)','interpreter','none')
+set(gca,'XTick',1:length(subjects),'xticklabel',subjects,'TickLabelInterpreter','none')
+xtickangle(45)
+set(gcf, 'ToolBar', 'none');
+set(gcf, 'MenuBar', 'none');
+
+if save_figures
+    fig_title = 'subjects_GM_CALIB_CBF';
+    filename =  fullfile(project_path, 'figures', fig_title);
+    saveas(gca, filename, 'tiff')
+end
+
+
+figure; hold on;
+for this_group_index = 1 : length(group_names)
+    this_group_subjectindices = find(group_ids==this_group_index);
+    
+    bar(this_group_subjectindices, wm_perf_calib_data(end,this_group_subjectindices), 'FaceColor', color_groups(this_group_index,:)); hold on;
+end
+
+title('AVG WM CALIB CBF','interpreter','none', 'FontSize',18)
+ylabel('AVG WM CALIB CBF (?)','interpreter','none')
+set(gca,'XTick',1:length(subjects),'xticklabel',subjects,'TickLabelInterpreter','none')
+xtickangle(45)
+set(gcf, 'ToolBar', 'none');
+set(gcf, 'MenuBar', 'none');
+
+if save_figures
+    fig_title = 'subjects_WM_CALIB_CBF';
+    filename =  fullfile(project_path, 'figures', fig_title);
+    saveas(gca, filename, 'tiff')
+end
+
+
 end
 
 
