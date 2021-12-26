@@ -215,7 +215,7 @@ if plot_figures
         
         title(strcat('WITHIN Network Connectivity ', {' '}, network_name),'interpreter','none', 'FontSize',18)
         ylabel('Connectivity')
-        set(gca,'XTick',1:length(subjects),'xticklabel',subjects,'TickLabelInterpreter','none')
+        set(gca,'XTick',1:length(subjects),'xticklabel',subjects,'TickLabelInterpreter','none','FontSize',8)
         xtickangle(45)
         set(gcf, 'ToolBar', 'none');
         set(gcf, 'MenuBar', 'none');
@@ -226,6 +226,7 @@ if plot_figures
             legend(gca, 'hide');
         end
         if save_figures
+            MaximizeFigureWindow
             fig_title = strcat('subjects_', network_name, 'within_network_connectivity');
             filename =  fullfile(project_path, 'figures', fig_title);
             saveas(gca, filename, 'tiff')
@@ -291,7 +292,7 @@ if plot_figures
         
         title(strcat('BETWEEN Network Connectivity', {' '}, network_name),'interpreter','none', 'FontSize',18)
         ylabel('Connectivity')
-        set(gca,'XTick',1:length(subjects),'xticklabel',subjects,'TickLabelInterpreter','none')
+        set(gca,'XTick',1:length(subjects),'xticklabel',subjects,'TickLabelInterpreter','none','FontSize',8)
         xtickangle(45)
         set(gcf, 'ToolBar', 'none');
         set(gcf, 'MenuBar', 'none');
@@ -302,6 +303,7 @@ if plot_figures
             legend(gca, 'hide');
         end
         if save_figures
+            MaximizeFigureWindow
             fig_title = strcat('subjects_', network_name, 'between_network_connectivity');
             filename =  fullfile(project_path, 'figures', fig_title);
             saveas(gca, filename, 'tiff')
@@ -366,7 +368,7 @@ if plot_figures
         end
         title(strcat('Segregation', {' '}, network_name),'interpreter','none', 'FontSize',18)
         ylabel('Segregation')
-        set(gca,'XTick',1:length(subjects), 'xticklabel',subjects,'TickLabelInterpreter','none')
+        set(gca,'XTick',1:length(subjects), 'xticklabel',subjects,'TickLabelInterpreter','none','FontSize',8)
         xtickangle(45)
         set(gcf, 'ToolBar', 'none');
         set(gcf, 'MenuBar', 'none');
@@ -377,6 +379,7 @@ if plot_figures
             legend(gca, 'hide');
         end
         if save_figures
+            MaximizeFigureWindow
             fig_title = strcat('subjects_', network_name, 'network_segregation');
             filename =  fullfile(project_path, 'figures', fig_title);
             saveas(gca, filename, 'tiff')

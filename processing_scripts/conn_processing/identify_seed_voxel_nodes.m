@@ -1,6 +1,9 @@
 function identify_seed_voxel_nodes(varargin)
 % add arguments 1) conn_project 2) original seed to find the nodes
 % associated???
+
+% example: identify_individual_discrete_crunch('task_folder', '05_MotorImagery', 'subjects', {'1002','1004','1007','1009','1010','1011','1013','1020','1022','1027','1024','2021','2015','2002','2018','2017','2012','2025','2020','2026','2023','2022','2007','2013','2008','2033','2034','2037','2052','2042'}, 'output_filename', 'CRUNCH_wholebrain.mat', 'beta_filename_extension', '_fmri_wholebrain_betas')
+
 parser = inputParser;
 parser.KeepUnmatched = true;
 addParameter(parser, 'conn_project_name', '')
@@ -16,6 +19,8 @@ seed_names = parser.Results.seed_names;
 
 % need to find out if this is cb to append to node name
 project_name_split = strsplit(conn_project_name,'_');
+
+
     
 % some reason folders appending dir from two above what interested in??
 for this_seed_folder = 1:length(seed_names)
