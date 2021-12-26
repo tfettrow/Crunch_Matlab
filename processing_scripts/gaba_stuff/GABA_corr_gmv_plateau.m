@@ -251,6 +251,14 @@ if tfce_only
      matlabbatch{1}.spm.stats.con.consess{4}.tcon.weights = [0 0 0 0 0 0 1];
      matlabbatch{1}.spm.stats.con.consess{4}.tcon.sessrep = 'none';
      
+     matlabbatch{1}.spm.stats.con.consess{5}.tcon.name = 'inverse Step Length';
+     matlabbatch{1}.spm.stats.con.consess{5}.tcon.weights = [0 0 0 -1 0 0 0];
+     matlabbatch{1}.spm.stats.con.consess{5}.tcon.sessrep = 'none';
+     
+     matlabbatch{1}.spm.stats.con.consess{6}.tcon.name = 'inverse MPSI-CoP';
+     matlabbatch{1}.spm.stats.con.consess{6}.tcon.weights = [0 0 0 0 0 0 -1];
+     matlabbatch{1}.spm.stats.con.consess{6}.tcon.sessrep = 'none';
+     
      matlabbatch{1}.spm.stats.con.delete = 1; % Set to 1 to delete the previously existing contrasts
      spm_jobman('run',matlabbatch);
  end
