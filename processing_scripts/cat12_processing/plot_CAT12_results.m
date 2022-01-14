@@ -47,6 +47,7 @@ for this_subject_index = 1 : length(subjects)
     
     
     % read tiv info
+    disp(['loading' subj_results_dir])
     this_subject_tiv_file = spm_select('FPList', strcat(subj_results_dir,filesep), strcat('^','TIV.txt','$'));
     volume_data = load(this_subject_tiv_file);
     tiv_data(this_subject_index) = volume_data(1);
@@ -54,7 +55,7 @@ for this_subject_index = 1 : length(subjects)
     fileID = fopen(gmv_results_dir);
     
     data = textscan(fileID,'%s','delimiter',',','headerlines',0);
-    fclose(gmv_results_dir);
+    fclose('all');
     data_reshaped = reshape(data{:},length(data{1})/2,2);
     for this_beta = 3:length(data_reshaped)
         split_condition_name = strsplit(data_reshaped{this_beta,1},'_');

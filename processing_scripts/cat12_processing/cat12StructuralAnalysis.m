@@ -34,7 +34,7 @@ steps_to_run_vector = parser.Results.steps_to_run_vector; %steps_to_run_vector s
 %3) estimate tiv
 %4) check VBM homogeneity
 
-% so if wanting to run steps 1,3,and 5 the vector would be [1 0 1 0 1]
+% so if wanting to run steps 1,3,and 5 the vector would be [1 0 1 0 1 1 1 1 1 1]
 
 if isempty(subjects)
     error('need subjects for this one')
@@ -156,6 +156,7 @@ if (steps_to_run_vector(3) == 1)
     for this_subject_index = 1:length(subjects)
         this_subject = subjects(this_subject_index);
         study_dir = pwd;
+        disp(['processing' this_subject])
         %WARNING: this assumes a particular folder structure
         this_cat12_path = strcat([study_dir filesep this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep t1_folder filesep 'CAT12_Analysis']);
         this_subject_xml_files = spm_select('FPList', strcat(this_cat12_path,filesep,'report',filesep), strcat('^','cat_T1.xml','$'));

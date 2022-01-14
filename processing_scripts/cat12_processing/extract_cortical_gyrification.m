@@ -80,6 +80,7 @@ for this_roi_index = 1:length(settings_cell)
 end
 
 for this_subject_index = 1 : length(subjects)
+    disp(['processing' subjects{this_subject_index}])
     subject_image = fullfile(project_path, subjects{this_subject_index}, 'Processed', 'MRI_files', '02_T1', 'CAT12_Analysis', 'surf', 's20.mesh.gyrification.resampled_32k.T1.gii');
     surf_headerinfo = spm_data_hdr_read(subject_image);
     surface_file_data = spm_data_read(spm_data_hdr_read(subject_image)); %,'xyz',1 ;

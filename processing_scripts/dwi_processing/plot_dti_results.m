@@ -25,6 +25,7 @@ project_path = pwd;
 group_color_matrix = distinguishable_colors(length(group_names));
 
 for this_subject_index = 1 : length(subjects)
+    disp(['extracting' subjects{this_subject_index}])
     subj_results_dir = fullfile(project_path, subjects{this_subject_index}, 'Processed', 'MRI_files', task_folder);
     
     dti_results_dir = fullfile(subj_results_dir, strcat('subj_',subjects{this_subject_index},'_dti_roi_fa.csv'));

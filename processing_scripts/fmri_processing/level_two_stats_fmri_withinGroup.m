@@ -17,10 +17,10 @@ function level_two_stats_fmri_withinGroup(create_model_and_estimate, task_folder
 create_model_and_estimate=1;
 task_folder='05_MotorImagery';
 %task_folder = '06_Nback';
- subject_codes = {'1002', '1004', '1010', '1011','1013'};
+ subject_codes = {'1002','1004','1007','1009','1010','1011','1012','1013','1017','1018','1019','1020','1022','1024','1025','1026','1027'};
 %subject_codes = {'2002','2015','2018','2012','2025','2020'};
 % subject_codes =  {'2002','2007','2008','2012','2013','2015','2018','2020','2021','2022','2023','2025','2026'}; % need to write script to pass cell from shell
-group_name='youngAdult';
+group_name='YA';
 % group_name='oldAdult';
 
 % cd 'spreadsheet_data'
