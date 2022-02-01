@@ -20,7 +20,7 @@ opts = setvaropts(opts, ["record_id", "redcap_event_name"], "EmptyFieldRule", "a
 opts = setvaropts(opts, ["somat_10g_1", "somat_10g_2", "somat_10g_3", "somat_4g_1", "somat_4g_2", "somat_4g_3", "somat_2g_1", "somat_2g_2", "somat_2g_3", "somat_04g_1", "somat_04g_2", "somat_04g_3", "somat_007g_1", "somat_007g_2", "somat_007g_3"], "FillValue", 0);
 
 % Import the data ##### CHANGE THE FILENAME TO YOUR FILE NAME AND LOCATION######
-filename="C:\Users\APK-User\Downloads\MindInMotion-MicroFilamentTest_DATA_2021-11-16_1309.csv";
+filename="C:\Users\APK-User\Downloads\MindInMotion-MicroFilamentTest_DATA_2021-12-14_1157";
 test = readtable(filename, opts);
 
 
@@ -38,5 +38,5 @@ for i = 1:length(test.record_id)
     end
 end
 test=[test table(nam)];
-test.Properties.VariableNames{18} = 'Final Score';
-writetable(test,'MicroFilamentScores.csv')
+test.Properties.VariableNames{18} = 'somat_filament_score';
+writetable(test(:,{'record_id','redcap_event_name','somat_filament_score'}),'MicroFilamentScores.csv')
