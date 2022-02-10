@@ -1,4 +1,4 @@
-function mim_transfer_file(varargin)
+function DropBox_transfer(varargin)
 parser = inputParser;
 parser.KeepUnmatched = true;
 addParameter(parser, 'subjects', '')
