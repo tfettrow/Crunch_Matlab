@@ -18,17 +18,17 @@ function conn_setup_restingstate(varargin)
 parser = inputParser;
 parser.KeepUnmatched = true;
 % setup defaults in case no arguments specified
-addParameter(parser, 'project_name', 'conn_project')
+addParameter(parser, 'project_name', 'conn_mim_all_Feb22')
 addParameter(parser, 'primary_smoothed', 'smoothed_warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii')
 addParameter(parser, 'primary_unsmoothed', 'warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii')
-addParameter(parser, 'secondary_smoothed', '')
-addParameter(parser, 'secondary_unsmoothed', '')
+addParameter(parser, 'secondary_smoothed', 'smoothed_warpedToSUIT_CBmasked_coregToT1_unwarpedRealigned_slicetimed_RestingState.nii')
+addParameter(parser, 'secondary_unsmoothed', 'warpedToSUIT_CBmasked_coregToT1_unwarpedRealigned_slicetimed_RestingState.nii')
 addParameter(parser, 'structural', 'warpedToMNI_SkullStripped_biascorrected_T1.nii')
-addParameter(parser, 'roi_settings_filename', '')
-addParameter(parser, 'rs_folder', '')
+addParameter(parser, 'roi_settings_filename', 'ROI_settings_conn_wu120_all_wb_cb.txt')
+addParameter(parser, 'rs_folder', '04_rsfMRI')
 addParameter(parser, 'primary_dataset', 'whole_brain')  % 'whole_brain' or 'cerebellum'
 addParameter(parser, 'TR', 1.5) % assuming default is UF sequence
-addParameter(parser, 'subjects', '')
+addParameter(parser, 'subjects', {'1002','1004','1007','1009','1010','1011','1013','1017','1018','1019','1020','1024','1025','1026','1027','2002','2007','2008','2012','2013','2015','2017','2018','2020','2021','2022','2023','2025','2026','2027','2033','2034','2037','2038','2039','2042','2052','2059','2062','3004','3006','3007','3008','3010','3021','3023','3024','3025','3026','3028','3029','3030','3036','3039','3040','3041','3042','3043','3046','3047','3051','3053','3054','3055','3056','3058','3059','3063','3066','3068','3069','3070','3071','3072','3073','3074','3076'})
 addParameter(parser, 'group_names', '')
 addParameter(parser, 'group_ids', '')
 addParameter(parser, 'add_subjects', 0)
@@ -64,48 +64,48 @@ for this_subject_index = 1:length(subjects)
     data_path = pwd;
     this_subject_path = strcat([data_path filesep this_subject{1} filesep 'Processed' filesep 'MRI_files' filesep rs_folder filesep 'ANTS_Normalization']);
     
-    primary_smoothed_path = spm_select('FPList', this_subject_path, strcat('^',primary_smoothed,'$'));
-    primary_unsmoothed_path = spm_select('FPList', this_subject_path, strcat('^',primary_unsmoothed,'$'));
+    primary_smoothed_path = spm_select('FPList', this_subject_path, ['^' primary_smoothed '*']);
+    primary_unsmoothed_path = spm_select('FPList', this_subject_path, ['^' primary_unsmoothed '*']);
 
     % Beware: Hard coded for WU120 data
-    if ~exist(primary_smoothed_path)
-        primary_smoothed_corename = strsplit(primary_smoothed,'.');
-        primary_unsmoothed_corename = strsplit(primary_unsmoothed,'.');
-        primary_smoothed_path= spm_select('FPList', this_subject_path, strcat('^',primary_smoothed_corename{1},'1.nii'));
-        primary_unsmoothed_path = spm_select('FPList', this_subject_path, strcat('^',primary_unsmoothed_corename{1},'1.nii'));
-    end
+%     if  isempty(primary_smoothed_path)
+%         primary_smoothed_corename = strsplit(primary_smoothed,'.');
+%         primary_unsmoothed_corename = strsplit(primary_unsmoothed,'.');
+%         primary_smoothed_path= spm_select('FPList', this_subject_path, strcat('^',primary_smoothed_corename{1},'1.nii'));
+%         primary_unsmoothed_path = spm_select('FPList', this_subject_path, strcat('^',primary_unsmoothed_corename{1},'1.nii'));
+%     end
     
-    structural_path = spm_select('FPList', this_subject_path, strcat('^',structural,'$'));
+    structural_path = spm_select('FPList', this_subject_path, structural);
     
     if ~isempty(secondary_smoothed)
-        secondary_smoothed_path = spm_select('FPList', this_subject_path, strcat('^',secondary_smoothed,'$'));
+        secondary_smoothed_path = spm_select('FPList', this_subject_path, ['^' secondary_smoothed '*']);
     end
     if ~isempty(secondary_unsmoothed)
-        secondary_unsmoothed_path = spm_select('FPList', this_subject_path, strcat('^',secondary_unsmoothed,'$'));
-         % Beware: Hard coded for WU120 data
-         if ~exist(secondary_smoothed_path)
-             secondary_smoothed_corename = strsplit(secondary_smoothed,'.');
-             secondary_unsmoothed_corename = strsplit(secondary_unsmoothed,'.');
-             secondary_smoothed_path= spm_select('FPList', this_subject_path, strcat('^',secondary_smoothed_corename{1},'1.nii'));
-             secondary_unsmoothed_path = spm_select('FPList', this_subject_path, strcat('^',secondary_unsmoothed_corename{1},'1.nii'));
-         end
+        secondary_unsmoothed_path = spm_select('FPList', this_subject_path, ['^' secondary_unsmoothed '*']);
     end
+    % Beware: Hard coded for WU120 data
+%     if isempty(secondary_smoothed_path)
+%         secondary_smoothed_corename = strsplit(secondary_smoothed,'.');
+%         secondary_unsmoothed_corename = strsplit(secondary_unsmoothed,'.');
+%         secondary_smoothed_path= spm_select('FPList', this_subject_path, strcat('^',secondary_smoothed_corename{1},'1.nii'));
+%         secondary_unsmoothed_path = spm_select('FPList', this_subject_path, strcat('^',secondary_unsmoothed_corename{1},'1.nii'));
+%     end
     if ~isempty(secondary_smoothed) && isempty(secondary_unsmoothed)
         error('need to specify unsmoothed secondary file name ')
     end
      
     BATCH.Setup.nsubjects=length(subjects);
     
-    BATCH.Setup.structurals{this_subject_index} = structural_path;
-    BATCH.Setup.functionals{this_subject_index}{1} = primary_smoothed_path;
+    BATCH.Setup.structurals{this_subject_index} = structural_path(1,:);
+    BATCH.Setup.functionals{this_subject_index}{1} = primary_smoothed_path(1,:);
     
-    gray_matter_path = spm_select('FPList', this_subject_path, '^warpedToMNI_c1T1*');
-    white_matter_path = spm_select('FPList', this_subject_path, '^warpedToMNI_c2T1*');
-    csf_matter_path = spm_select('FPList', this_subject_path, '^warpedToMNI_c3T1*');
+    gray_matter_path = spm_select('FPList', this_subject_path, '^warpedToMNI_c1T1.nii*');
+    white_matter_path = spm_select('FPList', this_subject_path, '^warpedToMNI_c2T1.nii*');
+    csf_matter_path = spm_select('FPList', this_subject_path, '^warpedToMNI_c3T1.nii*');
          
-    BATCH.Setup.masks.Grey.files{this_subject_index} = gray_matter_path;
-    BATCH.Setup.masks.White.files{this_subject_index} = white_matter_path;
-    BATCH.Setup.masks.CSF.files{this_subject_index} = csf_matter_path;
+    BATCH.Setup.masks.Grey.files{this_subject_index} = gray_matter_path(1,:);
+    BATCH.Setup.masks.White.files{this_subject_index} = white_matter_path(1,:);
+    BATCH.Setup.masks.CSF.files{this_subject_index} = csf_matter_path(1,:);
 
     % WARNING: This always set target dataset to smoothed whole-brain
     if strcmp(primary_dataset, 'whole_brain')
@@ -129,29 +129,29 @@ for this_subject_index = 1:length(subjects)
     if ~isempty(primary_unsmoothed)
         BATCH.Setup.secondarydatasets(number_of_secondary_datasets).functionals_type = 4;
         BATCH.Setup.secondarydatasets(number_of_secondary_datasets).functionals_label = 'primary_unsmoothed';
-        BATCH.Setup.secondarydatasets(number_of_secondary_datasets).functionals_explicit{this_subject_index}{1} = primary_unsmoothed_path;
+        BATCH.Setup.secondarydatasets(number_of_secondary_datasets).functionals_explicit{this_subject_index}{1} = primary_unsmoothed_path(1,:);
         number_of_secondary_datasets = number_of_secondary_datasets + 1;
     end
     if ~isempty(secondary_smoothed)
         BATCH.Setup.secondarydatasets(number_of_secondary_datasets).functionals_type = 4;
         BATCH.Setup.secondarydatasets(number_of_secondary_datasets).functionals_label = 'secondary_smoothed';
-        BATCH.Setup.secondarydatasets(number_of_secondary_datasets).functionals_explicit{this_subject_index}{1} = secondary_smoothed_path;
+        BATCH.Setup.secondarydatasets(number_of_secondary_datasets).functionals_explicit{this_subject_index}{1} = secondary_smoothed_path(1,:);
         number_of_secondary_datasets = number_of_secondary_datasets + 1;
     end
     if ~isempty(secondary_unsmoothed)
         BATCH.Setup.secondarydatasets(number_of_secondary_datasets).functionals_type = 4;
         BATCH.Setup.secondarydatasets(number_of_secondary_datasets).functionals_label = 'secondary_unsmoothed';
-        BATCH.Setup.secondarydatasets(number_of_secondary_datasets).functionals_explicit{this_subject_index}{1} = secondary_unsmoothed_path;
+        BATCH.Setup.secondarydatasets(number_of_secondary_datasets).functionals_explicit{this_subject_index}{1} = secondary_unsmoothed_path(1,:);
         number_of_secondary_datasets = number_of_secondary_datasets + 1;
     end
 
 
     BATCH.Setup.covariates.names = {'realignment'};
-    this_movement_file = spm_select('FPList', this_subject_path, strcat('^','rp_unwarpedRealigned_slicetimed_RestingState.txt','$'));
+    this_movement_file = spm_select('FPList', this_subject_path, 'rp_unwarpedRealigned_slicetimed_RestingState.txt');
  
 %     Beware... Hard coded for WU120 data
     if ~exist(this_movement_file)
-        this_movement_file = spm_select('FPList', this_subject_path, strcat('^','rp_unwarpedRealigned_slicetimed_RestingState1.txt','$'));
+        this_movement_file = spm_select('FPList', this_subject_path, 'rp_unwarpedRealigned_slicetimed_RestingState1.txt');
     end
     BATCH.Setup.covariates.files{1}{this_subject_index}{1} = this_movement_file;
     

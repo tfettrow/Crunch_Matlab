@@ -14,19 +14,20 @@ close all
 parser = inputParser;
 parser.KeepUnmatched = true;
 % setup defaults in case no arguments specified
-addParameter(parser, 'conn_project_name', '')
-addParameter(parser, 'roi_settings_filename', '')
-addParameter(parser, 'seed_names', '') % 'mpc_and_pc','right_mouth','left_auditory','right_post_ips','left_insular','right_thalamus','dACC','visual_cortex','left_dlpfc','right_dflpfc'     % 'left_hand','left_mouth','medial_prefrontal_cortex','left_post_ips','left_insular','visual_cortex','left_ips','right_thalamus','left_rsc', 'post_cingulate', 'right_aud_cortex', 'right_post_ips', 'right_insular', 'right_ips', 'right_hand', 'right_mouth', 'right_leg', 'right_rsc', 'left_dlpfc','right_dlpfc', 'left_acc', 'right_acc', 'left_aud_cortex','dACC', 'mpc_and_pc'}
+addParameter(parser, 'conn_project_name', 'conn_mim_all_Feb22')
+addParameter(parser, 'roi_settings_filename', 'ROI_settings_conn_wu120_all_wb_cb.txt')
+addParameter(parser, 'seed_names', {'left_hand','medial_prefrontal_cortex_post_cingulate','right_mouth','left_aud_cortex','right_post_ips','left_insular','dACC','visual_cortex','left_dlpfc','right_dlpfc','left_acc','right_acc'}) % 'mpc_and_pc','right_mouth','left_auditory','right_post_ips','left_insular','right_thalamus','dACC','visual_cortex','left_dlpfc','right_dflpfc'     % 'left_hand','left_mouth','medial_prefrontal_cortex','left_post_ips','left_insular','visual_cortex','left_ips','right_thalamus','left_rsc', 'post_cingulate', 'right_aud_cortex', 'right_post_ips', 'right_insular', 'right_ips', 'right_hand', 'right_mouth', 'right_leg', 'right_rsc', 'left_dlpfc','right_dlpfc', 'left_acc', 'right_acc', 'left_aud_cortex','dACC', 'mpc_and_pc'}
 addParameter(parser, 'group_names', '')
 addParameter(parser, 'group_ids', '')
-addParameter(parser, 'no_labels', '')
+addParameter(parser, 'no_labels', 0)
 addParameter(parser, 'separate_groups', 0)
 addParameter(parser, 'plot_figures', 0)
 addParameter(parser, 'save_figures', 0)
 addParameter(parser, 'export_figures', 0)
 addParameter(parser, 'correlate_outcomes', 0)
 addParameter(parser, 'save_scores', 0)
-addParameter(parser, 'save_mim_scores', 0)
+addParameter(parser, 'save_mim_scores', 1)
+addParameter(parser, 'outfile','Feb19')
 parse(parser, varargin{:})
 conn_project_name = parser.Results.conn_project_name;
 roi_settings_filename = parser.Results.roi_settings_filename;
@@ -38,7 +39,8 @@ export_figures = parser.Results.export_figures;
 correlate_outcomes = parser.Results.correlate_outcomes;
 no_labels = parser.Results.no_labels;
 save_scores = parser.Results.save_scores;
-save_mim_scores = parser.Results.save_scores;
+save_mim_scores = parser.Results.save_mim_scores;
+outfile=parser.Results.outfile;
 
 load([conn_project_name filesep 'subject_ids'])
 
@@ -67,7 +69,7 @@ corr_net = 'SBC_01'; % WARNING: this may change
 
 first_level_corr_folder = strcat(wdir, filesep, corr_net);
 
-corr_file_dir = dir([strcat(first_level_corr_folder, filesep, 'ResultsROI_Subject*.mat')]);
+corr_file_dir = dir([strcat(first_level_corr_folder, filesep, 'resultsROI_Subject*.mat')]);
 clear roi_file_name_list;
 [available_subject_file_name_list{1:length(corr_file_dir)}] = deal(corr_file_dir.name);
 
@@ -173,7 +175,7 @@ for i_subject = 1 : length(available_subject_file_name_list)
     
     % WARNING: MiM Specific
     if save_mim_scores
-        networks_of_interest_indices = find(contains(seed_names,{'left_dlpfc', 'right_dlpfc', 'left_acc', 'right_acc'}));
+        networks_of_interest_indices = find(contains(seed_names,{'left_dlpfc', 'right_dlpfc', 'left_acc'}));
         this_table_cell = {subjects{i_subject}, 'base_v4_mri_arm_1'};
         seed_names_cell = {'record_id', 'redcap_event_name'};
         for i_net = 1:length(networks_of_interest_indices)
@@ -188,7 +190,7 @@ for i_subject = 1 : length(available_subject_file_name_list)
         
         subject_folder = subjects{i_subject};
         mkdir(fullfile(project_path, subject_folder, 'Processed', 'MRI_files','04_rsfMRI','ANTS_Normalization','Level1'));
-        writetable(T, fullfile(project_path, subject_folder, 'Processed', 'MRI_files','04_rsfMRI','ANTS_Normalization','Level1', strcat(subjects{i_subject},'_rsfmri_segregation.csv')))
+        writetable(T, fullfile(project_path, subject_folder, 'Processed', 'MRI_files','04_rsfMRI','ANTS_Normalization','Level1', strcat(subjects{i_subject},outfile,'.csv')))
     end
 end
 

@@ -9,8 +9,6 @@
 % You should have received a copy of the GNU General Public License
 % along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
-function realign_asl(asl_file_name)
 data_path = pwd;
 
 clear matlabbatch
@@ -18,7 +16,7 @@ spm('Defaults','fMRI');
 spm_jobman('initcfg');
 spm_get_defaults('cmdline',true);
 
-this_file_to_realign = spm_select('FPList', data_path, strcat('^',asl_file_name,'$'));
+this_file_to_realign = spm_select('FPList', data_path, '^ASL_Run1.nii');
 
 
 this_file_with_volumes = spm_select('expand', this_file_to_realign);
@@ -38,4 +36,3 @@ matlabbatch{1}.spm.spatial.realign.estwrite.roptions.mask = 1;
 matlabbatch{1}.spm.spatial.realign.estwrite.roptions.prefix = 'realigned_';
 spm_jobman('run',matlabbatch);
 clear matlabbatch
-end
