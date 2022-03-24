@@ -27,7 +27,7 @@ addParameter(parser, 'export_figures', 0)
 addParameter(parser, 'correlate_outcomes', 0)
 addParameter(parser, 'save_scores', 0)
 addParameter(parser, 'save_mim_scores', 1)
-addParameter(parser, 'outfile','Feb19')
+addParameter(parser, 'outfile','Feb22')
 parse(parser, varargin{:})
 conn_project_name = parser.Results.conn_project_name;
 roi_settings_filename = parser.Results.roi_settings_filename;

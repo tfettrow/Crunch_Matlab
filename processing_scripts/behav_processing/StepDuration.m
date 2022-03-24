@@ -36,8 +36,8 @@ ylabel('Variance')
 
 
 OGd_Sts=OG.og_stepdur_high(1:26,1)-OG.og_stepdur_flat(1:26,1);
-OGd_V=OG.og_walkspeed_high(1:26,1)-OG.og_walkspeed_flat(1:26,1);
-GRd_V=(Vbl_Vel(1:26,1)-Typ_Vel(1:26,1))./100;
+OGd_V=(OG.og_walkspeed_high(1:26,1)-OG.og_walkspeed_flat(1:26,1))./OG.og_walkspeed_flat(1:26,1);
+GRd_V=(Vbl_Vel(1:26,1)-Typ_Vel(1:26,1))./Typ_Vel(1:26,1);
 GRd_sts=Vbl_ave(1:26,1)-Typ_ave(1:26,1);
 t=table(GRd_sts, OGd_Sts, GRd_V, OGd_V,'VariableNames',{'grsts' 'ogsts' 'grv' 'ogv'});
 [h,p,~,tst]=ttest(t.grsts,t.ogsts)

@@ -12,8 +12,8 @@ subject_folder_destination = parser.Results.subject_folder_destination;
 subjects = parser.Results.subjects;
 
 study_dir = pwd;
-
-for this_subject = subjects
+for i = 1:length(subjects)
+this_subject = subjects(1,i);
     
     %     sourceFile = fullfile(study_dir, this_subject, file_path_to_transfer);
     %     sourceFile = fullfile(study_dir, 'FAt',strcat('FW_',this_subject, '__FA.nii'));
@@ -63,5 +63,5 @@ for this_subject = subjects
     destinationFile = fullfile(file_path_to_transfer,this_subject,filesep,'SkullStripped_biascorrected_T1.nii');
     copyfile(sourceFile{:}, destinationFile{:})
     disp(['copying' sourceFile{:} 'to' destinationFile{:}])
-    
+end
 end

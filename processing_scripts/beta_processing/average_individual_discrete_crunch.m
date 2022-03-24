@@ -11,7 +11,7 @@ addParameter(parser, 'subjects', '')
 addParameter(parser, 'group_names', '')
 addParameter(parser, 'group_ids', '')
 addParameter(parser, 'no_labels', 0)
-addParameter(parser, 'save_figures', 0)
+addParameter(parser, 'save_figures', 1)
 addParameter(parser, 'plot_subjects', 0)
 addParameter(parser, 'plot_percents', 0)
 addParameter(parser, 'plot_averages', 0)
@@ -104,7 +104,7 @@ for this_subject_index = 1 : length(subjects)
         end
     end
 end
-
+%% plot individual subjects
 if plot_subjects
     for this_group_index = 1 : length(group_names)
         close all;
@@ -691,6 +691,7 @@ if plot_averages
     end
 end
 
+%% plot percent of crunchers no crunchers for each age
 if plot_percents
     close all
     for this_group_index = 1 : length(group_names)
@@ -737,7 +738,7 @@ if plot_percents
                 xtickangle(45)
                 xlim([0 4])
                 ylim([0 100])
-                title('Percent Breakdown')
+                title('MI Percent Breakdown')
                 ylabel([unique_rois(this_roi_index)],'interpreter','latex')
                 if no_labels
                     set(get(gca, 'xlabel'), 'visible', 'off');
@@ -745,6 +746,7 @@ if plot_percents
                     set(get(gca, 'title'), 'visible', 'off');
                     legend(gca, 'hide');
                 end
+                set(gcf,'position',[10 -80 1650 850]);
             elseif any(strcmp(task_folder, '06_Nback'))
                 cruncher_indices_1500 = find(this_group_crunch_results(:,this_roi_index) == 1 | this_group_crunch_results(:,this_roi_index) == 2);
                 cruncher_indices_500 = find(this_group_crunch_results(:,this_roi_index+length(unique_rois)) == 1 | this_group_crunch_results(:,this_roi_index+length(unique_rois)) == 2);
@@ -779,7 +781,7 @@ if plot_percents
                     set(get(gca, 'title'), 'visible', 'off');
                     legend(gca, 'hide');
                 end
-                
+                set(gcf,'position',[10 -80 1650 850]);
                 
                 figure(this_group_index*2)
                 subplot(1, 3, this_figure_number); hold on;
@@ -792,15 +794,15 @@ if plot_percents
                 xtickangle(45)
                 xlim([0 4])
                 ylim([0 100])
-                title([unique_rois(this_roi_index)],'interpreter','latex')
-                ylabel('Percent (%)')
+                title('NB500 Percent Breakdown')
+                ylabel([unique_rois(this_roi_index)],'interpreter','latex')
                 if no_labels
                     set(get(gca, 'xlabel'), 'visible', 'off');
                     set(get(gca, 'ylabel'), 'visible', 'off');
                     set(get(gca, 'title'), 'visible', 'off');
                     legend(gca, 'hide');
                 end
-                
+                set(gcf,'position',[10 -80 1650 850]);
             end
             
             this_figure_number = this_figure_number + 1;
@@ -812,36 +814,36 @@ if plot_percents
                 if ~no_labels
                     suptitle(strcat(group_names{this_group_index},{' '}, 'Percent Breakdown',{' '},task))
                 end
-                filename = strcat('figures',filesep,group_names{this_group_index},'_','percent_breakdown',task,'_CRseparated');
+                filename = strcat('figures',filesep,group_names{this_group_index},'_','percent_breakdown',task,'_CRseparated',date);
                 if save_figures
-                    saveas(gca, filename, 'tiff')
+                    saveas(gca, filename, 'png')
                 end
             elseif any(strcmp(task_folder, '06_Nback'))
                 figure(this_group_index*2-1);
                 if ~no_labels
                     suptitle(strcat(group_names{this_group_index},{' '},task, {' '}, 'Percent Breakdown',{' '}, 'isi-1500'))
                 end
-                filename = strcat('figures',filesep,group_names{this_group_index},'_','percent_breakdown',task,'isi-1500_CRseparated');
+                filename = strcat('figures',filesep,group_names{this_group_index},'_','percent_breakdown',task,'isi-1500_CRseparated',date);
                 if save_figures
-                    saveas(gca, filename, 'tiff')
+                    saveas(gca, filename, 'png')
                 end
                 figure(this_group_index*2);
                 if ~no_labels
                     suptitle(strcat(group_names{this_group_index},{' '},task, {' '}, 'Percent Breakdown',{' '}, 'isi-500'))
                 end
-                filename = strcat('figures',filesep,group_names{this_group_index},'_','percent_breakdown',task,'isi-500_CRseparated');
+                filename = strcat('figures',filesep,group_names{this_group_index},'_','percent_breakdown',task,'isi-500_CRseparated',date);
                 if save_figures
-                    saveas(gca, filename, 'tiff')
+                    saveas(gca, filename, 'png')
                 end
             end
         end
     end
 end
 
-%% Plot averages together
+%% Plot group averages together
 if (plot_groups_together)
     close all;
-    cmat = [1 0 0; 0 0 1];
+    cmat = [0 0 0; 1 0 0; 0 0 1];
     for this_group_index = 1 : length(group_names)
         this_group_subjectindices = find(group_ids==this_group_index);
         if any(strcmp(task_folder, '05_MotorImagery'))
@@ -858,14 +860,16 @@ if (plot_groups_together)
         for this_roi_index = 1 : length(unique_rois)
             this_group_and_roi_beta_results = beta_results(this_group_subjectindices,:,this_roi_index);
             
-            number_of_levels = [(0 : 3);(0 : 3)+.15];
+            for lll=1:length(group_names)
+               number_of_levels(lll,:)=[(0:3)+(lll-1)*.15]; 
+            end
             
             if any(strcmp(task_folder, '05_MotorImagery'))
                 cruncher_indices = find(this_group_crunch_results(:,this_roi_index) == 1 | this_group_crunch_results(:,this_roi_index) == 2);
                 if ~isempty(cruncher_indices)
                     figure(h1);subplot(length(unique_rois), 3, this_figure_number); hold on;
                     if length(cruncher_indices)>1
-                        p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(cruncher_indices,:)),std(this_group_and_roi_beta_results(cruncher_indices,:))./sqrt(length(cruncher_indices)), '-s', 'MarkerFaceColor', cmat(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', group_color_matrix(this_group_index, :));
+                        p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(cruncher_indices,:)),std(this_group_and_roi_beta_results(cruncher_indices,:))./sqrt(length(cruncher_indices)), '-s', 'MarkerFaceColor', cmat(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', cmat(this_group_index, :));
                         p1.Color(4) = 0.6;
                     end
                     xticks([number_of_levels(1,:)])
@@ -885,7 +889,7 @@ if (plot_groups_together)
                 if ~isempty(cruncher_indices_1500)
                     figure(h1); subplot(length(unique_rois), 3, this_figure_number); hold on;
                     if length(cruncher_indices_1500)>1
-                        p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(cruncher_indices_1500,1:4)),std(this_group_and_roi_beta_results(cruncher_indices_1500,1:4))./sqrt(length(cruncher_indices_1500)), '-s', 'MarkerFaceColor', cmat(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', group_color_matrix(this_group_index, :));
+                        p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(cruncher_indices_1500,1:4)),std(this_group_and_roi_beta_results(cruncher_indices_1500,1:4))./sqrt(length(cruncher_indices_1500)), '-s','MarkerFaceColor', cmat(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', cmat(this_group_index, :));
                         p1.Color(4) = 0.6;
                     end
                     figure(h1);
@@ -903,7 +907,7 @@ if (plot_groups_together)
                 if ~isempty(cruncher_indices_500)
                     figure(h2); subplot(length(unique_rois), 3, this_figure_number); hold on;
                     if length(cruncher_indices_500)>1
-                        p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(cruncher_indices_500,5:8)),std(this_group_and_roi_beta_results(cruncher_indices_500,5:8))./sqrt(length(cruncher_indices_500)), '-s', 'MarkerFaceColor', cmat(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', group_color_matrix(this_group_index, :));
+                        p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(cruncher_indices_500,5:8)),std(this_group_and_roi_beta_results(cruncher_indices_500,5:8))./sqrt(length(cruncher_indices_500)), '-s','MarkerFaceColor', cmat(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', cmat(this_group_index, :));
                         p1.Color(4) = 0.6;
                     end
                     figure(h2);
@@ -930,7 +934,7 @@ if (plot_groups_together)
                 if ~isempty(nocruncher_increasing_indices)
                     figure(h1);subplot(length(unique_rois), 3, this_figure_number); hold on;
                     if length(nocruncher_increasing_indices)>1
-                        p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(nocruncher_increasing_indices,:)),std(this_group_and_roi_beta_results(nocruncher_increasing_indices,:))./sqrt(length(nocruncher_increasing_indices)), '-s', 'MarkerFaceColor', cmat(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', group_color_matrix(this_group_index, :));
+                        p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(nocruncher_increasing_indices,:)),std(this_group_and_roi_beta_results(nocruncher_increasing_indices,:))./sqrt(length(nocruncher_increasing_indices)), '-s','MarkerFaceColor', cmat(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', cmat(this_group_index, :));
                         p1.Color(4) = 0.6;
                     end
                     xticks([number_of_levels(1,:)])
@@ -950,7 +954,7 @@ if (plot_groups_together)
                 if ~isempty(nocruncher_increasing_indices_1500)
                     figure(h1); subplot(length(unique_rois), 3, this_figure_number); hold on;
                     if length(nocruncher_increasing_indices_1500)>1
-                        p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(nocruncher_increasing_indices_1500,1:4)),std(this_group_and_roi_beta_results(nocruncher_increasing_indices_1500,1:4))./sqrt(length(nocruncher_increasing_indices_1500)), '-s', 'MarkerFaceColor', cmat(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', group_color_matrix(this_group_index, :));
+                        p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(nocruncher_increasing_indices_1500,1:4)),std(this_group_and_roi_beta_results(nocruncher_increasing_indices_1500,1:4))./sqrt(length(nocruncher_increasing_indices_1500)), '-s','MarkerFaceColor', cmat(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', cmat(this_group_index, :));
                         p1.Color(4) = 0.6;
                     end
                     figure(h1);
@@ -968,7 +972,7 @@ if (plot_groups_together)
                 if ~isempty(nocruncher_increasing_indices_500)
                     figure(h2); subplot(length(unique_rois), 3, this_figure_number); hold on;
                     if length(nocruncher_increasing_indices_500)>1
-                        p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(nocruncher_increasing_indices_500,5:8)),std(this_group_and_roi_beta_results(nocruncher_increasing_indices_500,5:8))./sqrt(length(nocruncher_increasing_indices_500)), '-s', 'MarkerFaceColor', cmat(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', group_color_matrix(this_group_index, :));
+                        p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(nocruncher_increasing_indices_500,5:8)),std(this_group_and_roi_beta_results(nocruncher_increasing_indices_500,5:8))./sqrt(length(nocruncher_increasing_indices_500)), '-s','MarkerFaceColor', cmat(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', cmat(this_group_index, :));
                         p1.Color(4) = 0.6;
                     end
                     figure(h2);
@@ -995,8 +999,8 @@ if (plot_groups_together)
                 if ~isempty(nocruncher_decreasing_indices)
                     figure(h1); subplot(length(unique_rois), 3, this_figure_number); hold on;
                     if length(nocruncher_decreasing_indices)>1
-                        p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(nocruncher_decreasing_indices,:)), std(this_group_and_roi_beta_results(nocruncher_decreasing_indices,:))./sqrt(length(nocruncher_decreasing_indices)), '-s', 'MarkerFaceColor', cmat(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', group_color_matrix(this_group_index, :));
-                        p1.Color(4) = 0.6;
+                        p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(nocruncher_decreasing_indices,:)), std(this_group_and_roi_beta_results(nocruncher_decreasing_indices,:))./sqrt(length(nocruncher_decreasing_indices)), '-s','MarkerFaceColor', cmat(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', cmat(this_group_index, :));
+                        p1.Color(4) = 0.6; 
                     end
                     xticks([number_of_levels(1,:)])
                     xlim([-1 4])
@@ -1015,7 +1019,7 @@ if (plot_groups_together)
                 if ~isempty(nocruncher_decreasing_indices_1500)
                     figure(h1); subplot(length(unique_rois), 3, this_figure_number); hold on;
                     if length(nocruncher_decreasing_indices_1500)>1
-                        p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(nocruncher_decreasing_indices_1500,1:4)), std(this_group_and_roi_beta_results(nocruncher_decreasing_indices_1500,1:4))./sqrt(length(nocruncher_decreasing_indices_1500)), '-s', 'MarkerFaceColor', cmat(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', group_color_matrix(this_group_index, :));
+                        p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(nocruncher_decreasing_indices_1500,1:4)), std(this_group_and_roi_beta_results(nocruncher_decreasing_indices_1500,1:4))./sqrt(length(nocruncher_decreasing_indices_1500)), '-s','MarkerFaceColor', cmat(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', cmat(this_group_index, :));
                         p1.Color(4) = 0.6;
                     end
                     figure(h1);
@@ -1033,7 +1037,7 @@ if (plot_groups_together)
                 if ~isempty(nocruncher_decreasing_indices_500)
                     figure(h2); subplot(length(unique_rois), 3, this_figure_number); hold on;
                     if length(nocruncher_decreasing_indices_500)>1
-                        p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(nocruncher_decreasing_indices_500,5:8)), std(this_group_and_roi_beta_results(nocruncher_decreasing_indices_500,5:8))./sqrt(length(nocruncher_decreasing_indices_500)), '-s', 'MarkerFaceColor', cmat(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', group_color_matrix(this_group_index, :));
+                        p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(nocruncher_decreasing_indices_500,5:8)), std(this_group_and_roi_beta_results(nocruncher_decreasing_indices_500,5:8))./sqrt(length(nocruncher_decreasing_indices_500)), '-s','MarkerFaceColor', cmat(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', cmat(this_group_index, :));
                         p1.Color(4) = 0.6;
                     end
                     figure(h2);
@@ -1048,47 +1052,52 @@ if (plot_groups_together)
                         legend(gca, 'hide');
                     end
                 end
+                
             end
             
             % on to the next subplot
             this_figure_number = this_figure_number + 1;
         end
+
     end
     if any(strcmp(task_folder, '05_MotorImagery'))
+        set(h1,'position',[0 -80 1650 850]);
         figure(h1);
-        filename = strcat(data_path,'/figures',filesep,'All_Groups_',task,beta_filename_extension,'_CRseparated_nolabels');
+        filename = strcat(data_path,'/figures',filesep,'All_Groups_',task,beta_filename_extension,'_CRseparated_nolabels',date);
         if ~no_labels
             suptitle(strcat('All Groups ',{' '}, task))
-            filename = strcat(data_path,'/figures',filesep,'All_Groups_',task,beta_filename_extension,'_CRseparated');
+            filename = strcat(data_path,'/figures',filesep,'All_Groups_',task,beta_filename_extension,date,'_CRseparated',date);
         end
         if save_figures
-            saveas(gca, filename, 'tiff')
+            saveas(gca, filename, 'png')
         end
     elseif any(strcmp(task_folder, '06_Nback'))
+        set(h1,'position',[10 -80 1650 850]);
+        set(h2,'position',[10 -80 1650 850]);
         figure(h1);
-        filename = strcat(data_path,'/figures',filesep,'All_Groups_',task,beta_filename_extension,'isi-1500_CRseparated_nolabels');
+        filename = strcat(data_path,'/figures',filesep,'All_Groups_',task,beta_filename_extension,date,'isi-1500_CRseparated_nolabels',date);
         if ~no_labels
             suptitle(strcat('All Groups ',{' '}, task))
-            filename = strcat(data_path,'/figures',filesep,'All_Groups_',task,beta_filename_extension,'isi-1500_CRseparated');
+            filename = strcat(data_path,'/figures',filesep,'All_Groups_',task,beta_filename_extension,date,'isi-1500_CRseparated',date);
         end
         if save_figures
-            saveas(gca, filename, 'tiff')
+            saveas(gca, filename, 'png')
         end
         figure(h2);
-        filename = strcat(data_path,'/figures',filesep,'All_Groups_',task,beta_filename_extension,'isi-500_CRseparated_nolabels');
+        filename = strcat(data_path,'/figures',filesep,'All_Groups_',task,beta_filename_extension,date,'isi-500_CRseparated_nolabels',date);
         if ~no_labels
             suptitle(strcat('All Groups ',{' '}, task))
-            filename = strcat(data_path,'/figures',filesep,'All_Groups_',task,beta_filename_extension,'isi-500_CRseparated');
+            filename = strcat(data_path,'/figures',filesep,'All_Groups_',task,beta_filename_extension,date,'isi-500_CRseparated',date);
         end
         if save_figures
-            saveas(gca, filename, 'tiff')
+            saveas(gca, filename, 'png')
         end
     end
 end
 %% Plot averages together with no group separation
 if (no_crunch_separate)
     close all;
-    cmat = [1 0 0; 0 0 1];
+    cmat = [0 0 0; 1 0 0;0 0 1];
     if any(strcmp(task_folder, '05_MotorImagery'))
         h1 = figure(1); subplot(length(unique_rois), 3, 1); hold on;
     elseif any(strcmp(task_folder, '06_Nback'))
@@ -1100,11 +1109,13 @@ if (no_crunch_separate)
         for this_roi_index = 1 : length(unique_rois)
             this_group_and_roi_beta_results = beta_results(this_group_subjectindices,:,this_roi_index);
             
-            number_of_levels = [(0 : 3);(0 : 3)+.15];
+            for lll=1:length(group_names)
+               number_of_levels(lll,:)=[(0:3)+(lll-1)*.15]; 
+            end
             
             if any(strcmp(task_folder, '05_MotorImagery'))
                 figure(h1);subplot(length(unique_rois), 1, this_roi_index); hold on;
-                p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results),std(this_group_and_roi_beta_results)./sqrt(length(this_group_and_roi_beta_results)), '-s', 'MarkerFaceColor', cmat(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', group_color_matrix(this_group_index, :));
+                p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results),std(this_group_and_roi_beta_results)./sqrt(length(this_group_and_roi_beta_results)), '-s', 'MarkerFaceColor', cmat(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', cmat(this_group_index, :));
                 p1.Color(4) = 0.6;
                 xticks([number_of_levels(1,:)])
                 xlim([-1 4])
@@ -1118,7 +1129,7 @@ if (no_crunch_separate)
                 end
             elseif any(strcmp(task_folder, '06_Nback'))
                 figure(h1); subplot(length(unique_rois), 1, this_roi_index); hold on;
-                p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(:,1:4)),std(this_group_and_roi_beta_results(:,1:4))./sqrt(length(this_group_and_roi_beta_results(:,1:4))), '-s', 'MarkerFaceColor', cmat(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', group_color_matrix(this_group_index, :));
+                p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(:,1:4)),std(this_group_and_roi_beta_results(:,1:4))./sqrt(length(this_group_and_roi_beta_results(:,1:4))), '-s','MarkerFaceColor', cmat(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', cmat(this_group_index, :));
                 p1.Color(4) = 0.6;
                 figure(h1); hold on;
                 xticks([number_of_levels(1,:)])
@@ -1131,7 +1142,7 @@ if (no_crunch_separate)
                     legend(gca, 'hide');
                 end
                 figure(h2); subplot(length(unique_rois), 1, this_roi_index); hold on;
-                p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(:,5:8)),std(this_group_and_roi_beta_results(:,5:8))./sqrt(length(this_group_and_roi_beta_results(:,5:8))), '-s', 'MarkerFaceColor', cmat(this_group_index, :), 'MarkerEdgeColor', group_color_matrix(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', group_color_matrix(this_group_index, :));
+                p1 = errorbar(number_of_levels(this_group_index,:), mean(this_group_and_roi_beta_results(:,5:8)),std(this_group_and_roi_beta_results(:,5:8))./sqrt(length(this_group_and_roi_beta_results(:,5:8))), '-s','MarkerFaceColor', cmat(this_group_index, :),'MarkerSize', 10, 'LineWidth',2.5, 'Color', cmat(this_group_index, :));
                 p1.Color(4) = 0.6;
                 figure(h2); hold on;
                 xticks([number_of_levels(1,:)])
@@ -1148,33 +1159,36 @@ if (no_crunch_separate)
         
     end
     if any(strcmp(task_folder, '05_MotorImagery'))
+        set(h1,'position',[10 -80 385 850]);
         figure(h1);
-        filename = strcat(data_path,'/figures',filesep,'All_Groups_',task,beta_filename_extension,'_nolabels');
+        filename = strcat(data_path,'/figures',filesep,'All_Groups_',task,beta_filename_extension,'_nolabels',date);
         if ~no_labels
             suptitle(strcat('All Groups ',{' '}, task))
-            filename = strcat(data_path,'/figures',filesep,'All_Groups_',task,beta_filename_extension,'');
+            filename = strcat(data_path,'/figures',filesep,'All_Groups_',task,beta_filename_extension,date);
         end
         if save_figures
-            saveas(gca, filename, 'tiff')
+            saveas(gca, filename, 'png')
         end
     elseif any(strcmp(task_folder, '06_Nback'))
+        set(h1,'position',[10 -80 385 850]);
+        set(h2,'position',[10 -80 385 850]);
         figure(h1);
-        filename = strcat(data_path,'/figures',filesep,'All_Groups_',task,beta_filename_extension,'isi-1500_nolabels');
+        filename = strcat(data_path,'/figures',filesep,'All_Groups_',task,beta_filename_extension,'isi-1500_nolabels',date);
         if ~no_labels
             suptitle(strcat('All Groups_1500isi ',{' '}, task))
-            filename = strcat(data_path,'/figures',filesep,'All_Groups_',task,beta_filename_extension,'isi-1500');
+            filename = strcat(data_path,'/figures',filesep,'All_Groups_',task,beta_filename_extension,'isi-1500',date);
         end
         if save_figures
-            saveas(gca, filename, 'tiff')
+            saveas(gca, filename, 'png')
         end
         figure(h2);
-        filename = strcat(data_path,'/figures',filesep,'All_Groups_',task,beta_filename_extension,'isi-500_nolabels');
+        filename = strcat(data_path,'/figures',filesep,'All_Groups_',task,beta_filename_extension,'isi-500_nolabels',date);
         if ~no_labels
             suptitle(strcat('All Groups_500isi ',{' '}, task))
-            filename = strcat(data_path,'/figures',filesep,'All_Groups_',task,beta_filename_extension,'isi-500');
+            filename = strcat(data_path,'/figures',filesep,'All_Groups_',task,beta_filename_extension,'isi-500',date);
         end
         if save_figures
-            saveas(gca, filename, 'tiff')
+            saveas(gca, filename, 'png')
         end
     end
 end

@@ -20,7 +20,7 @@ opts = setvaropts(opts, ["record_id", "redcap_event_name"], "EmptyFieldRule", "a
 opts = setvaropts(opts, ["somat_15mm_1", "somat_15mm_2", "somat_15mm_3", "somat_15mm_4", "somat_15mm_5", "somat_13mm_1", "somat_13mm_2", "somat_13mm_3", "somat_13mm_4", "somat_13mm_5", "somat_10mm_1", "somat_10mm_2", "somat_10mm_3", "somat_10mm_4", "somat_10mm_5", "somat_7mm_1", "somat_7mm_2", "somat_7mm_3", "somat_7mm_4", "somat_7mm_5", "somat_4mm_1", "somat_4mm_2", "somat_4mm_3", "somat_4mm_4", "somat_4mm_5"], "FillValue", 0);
 
 % Import the data
-filename ="C:\Users\APK-User\Downloads\MindInMotion-2ptDisc_DATA_2021-12-14_1158";
+filename ="C:\Users\APK-User\Downloads\MindInMotion-2ptDisc_DATA_2022-03-15_1428";
 test = readtable(filename, opts);
 
 %% Clear temporary variables
