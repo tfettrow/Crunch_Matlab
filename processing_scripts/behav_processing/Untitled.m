@@ -9,7 +9,7 @@ Typ_ave=mean([Typ_L,Typ_R],2);
 Vbl_Vel=mean(table2array(Vbl(:,14:16)),2);
 Typ_Vel=mean(table2array(Typ(:,14:16)),2);
 
-d=[Typ_Vel(19:44,:)./100 Vbl_Vel(19:44,:)./100 OG.og_walkspeed_flat(19:44,:) OG.og_walkspeed_low(19:44,:) OG.og_walkspeed_med(19:44,:) OG.og_walkspeed_high(19:44,:)];
+d=[Typ_Vel(1:36,:)./100 Vbl_Vel(1:36,:)./100 OG.og_walkspeed_flat(1:36,:) OG.og_walkspeed_low(1:36,:) OG.og_walkspeed_med(1:36,:) OG.og_walkspeed_high(1:36,:)];
 figure;boxplot(d,'Labels',{'Typ','VBL','OG Flat','OG Low','OG Med','OG High'})
 title('HOA Velocity');
 ylabel('Velocity (m/s)')
@@ -17,7 +17,7 @@ ylabel('Velocity (m/s)')
 % figure;boxplot(dd,'Labels',{'Typ','VBL','OG Flat','OG Low','OG Med','OG High'})
 % title('LOA Velocity');
 % ylabel('Velocity (m/s)')
-b=[Typ_ave(19:44,:) Vbl_ave(19:44,:) OG.og_stepdur_flat(19:44,:) OG.og_stepdur_low(19:44,:) OG.og_stepdur_med(19:44,:) OG.og_stepdur_high(19:44,:)];
+b=[Typ_ave(1:36,:) Vbl_ave(1:36,:) OG.og_stepdur_flat(1:36,:) OG.og_stepdur_low(1:36,:) OG.og_stepdur_med(1:36,:) OG.og_stepdur_high(1:36,:)];
 figure;boxplot(b,'Labels',{'Typ','VBL','OG Flat','OG Low','OG Med','OG High'})
 title('HOA Step Duration');
 ylabel('Duration (s)')
@@ -25,7 +25,7 @@ ylabel('Duration (s)')
 % figure;boxplot(bb,'Labels',{'Typ','VBL','OG Flat','OG Low','OG Med','OG High'})
 % title('LOA Step Duration');
 % ylabel('Duration (s)')
-c=[Typ_var(19:44,:).*100 Vbl_var(19:44,:).*100 OG.og_stepdurvar_flat(19:44,:) OG.og_stepdurvar_low(19:44,:) OG.og_stepdurvar_med(19:44,:) OG.og_stepdurvar_high(19:44,:)];
+c=[Typ_var(1:36,:).*100 Vbl_var(1:36,:).*100 OG.og_stepdurvar_flat(1:36,:) OG.og_stepdurvar_low(1:36,:) OG.og_stepdurvar_med(1:36,:) OG.og_stepdurvar_high(1:36,:)];
 figure;boxplot(c,'Labels',{'Typ','VBL','OG Flat','OG Low','OG Med','OG High'})
 title('HOA Step Duration Variance');
 ylabel('Variance')
@@ -35,10 +35,10 @@ ylabel('Variance')
 % ylabel('Variance')
 
 
-OGd_Sts_L=mean((OG.og_stepdur_high(45:end,1)-OG.og_stepdur_flat(45:end,1))./OG.og_stepdur_flat(45:end,1),'omitnan')
-OGd_V_L=mean((OG.og_walkspeed_high(45:end,1)-OG.og_walkspeed_flat(45:end,1))./OG.og_walkspeed_flat(45:end,1),'omitnan')
-GRd_V_L=mean((Vbl_Vel(45:end,1)-Typ_Vel(45:end,1))./Typ_Vel(45:end,1),'omitnan')
-GRd_sts_L=mean((Vbl_ave(45:end,1)-Typ_ave(45:end,1))./Typ_ave(45:end,1),'omitnan')
+OGd_Sts_L=mean((OG.og_stepdur_high(37:end,1)-OG.og_stepdur_flat(37:end,1))./OG.og_stepdur_flat(37:end,1),'omitnan')
+OGd_V_L=(OG.og_walkspeed_high(37:end,1)-OG.og_walkspeed_flat(37:end,1))./OG.og_walkspeed_flat(37:end,1)
+GRd_V_L=(Vbl_Vel(37:end,1)-Typ_Vel(37:end,1))./Typ_Vel(37:end,1)
+GRd_sts_L=mean((Vbl_ave(37:end,1)-Typ_ave(37:end,1))./Typ_ave(37:end,1),'omitnan')
 t=table(GRd_sts, OGd_Sts, GRd_V, OGd_V,'VariableNames',{'grsts' 'ogsts' 'grv' 'ogv'});
 [h,p,~,tst]=ttest(t.grsts,t.ogsts)
 [h,p,~,tst]=ttest(t.grv,t.ogv)

@@ -23,7 +23,7 @@ data_path = pwd;
 %--------------------------------------------------------------------------
 % Select which files you want to smooth. 
 
-all_files_to_coregister = spm_select('FPList', fullfile(data_path),'^warpedToSUIT.*\.nii$');
+all_files_to_coregister = spm_select('FPList', fullfile(data_path),'^warpedToSUIT_CBmasked.*\.nii$');
 
 for i_file = 1 : size(all_files_to_coregister,1)
     %All of the con images (8 images)

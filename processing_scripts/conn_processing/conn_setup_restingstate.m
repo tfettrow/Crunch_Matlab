@@ -18,7 +18,7 @@ function conn_setup_restingstate(varargin)
 parser = inputParser;
 parser.KeepUnmatched = true;
 % setup defaults in case no arguments specified
-addParameter(parser, 'project_name', 'conn_mim_all_Feb22')
+addParameter(parser, 'project_name', 'conn_mim_02Jun22')
 addParameter(parser, 'primary_smoothed', 'smoothed_warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii')
 addParameter(parser, 'primary_unsmoothed', 'warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii')
 addParameter(parser, 'secondary_smoothed', 'smoothed_warpedToSUIT_CBmasked_coregToT1_unwarpedRealigned_slicetimed_RestingState.nii')
@@ -28,9 +28,10 @@ addParameter(parser, 'roi_settings_filename', 'ROI_settings_conn_wu120_all_wb_cb
 addParameter(parser, 'rs_folder', '04_rsfMRI')
 addParameter(parser, 'primary_dataset', 'whole_brain')  % 'whole_brain' or 'cerebellum'
 addParameter(parser, 'TR', 1.5) % assuming default is UF sequence
-addParameter(parser, 'subjects', {'1002','1004','1007','1009','1010','1011','1013','1017','1018','1019','1020','1024','1025','1026','1027','2002','2007','2008','2012','2013','2015','2017','2018','2020','2021','2022','2023','2025','2026','2027','2033','2034','2037','2038','2039','2042','2052','2059','2062','3004','3006','3007','3008','3010','3021','3023','3024','3025','3026','3028','3029','3030','3036','3039','3040','3041','3042','3043','3046','3047','3051','3053','3054','3055','3056','3058','3059','3063','3066','3068','3069','3070','3071','3072','3073','3074','3076'})
-addParameter(parser, 'group_names', '')
-addParameter(parser, 'group_ids', '')
+addParameter(parser, 'subjects', {'1017','3041','3054','3069','3070','3071','3072','3073','3074','3076','3055','3077','3082','1029','2082','3092','3086','3106','1030','3105','3104','3090','3102'})
+%addParameter(parser, 'subjects', {'1002','1004','1007','1009','1010','1011','1013','1017','1018','1019','1020','1024','1025','1026','1027','2002','2007','2008','2012','2013','2015','2017','2018','2020','2021','2022','2023','2025','2026','2027','2033','2034','2037','2038','2039','2042','2052','2059','2062','3004','3006','3007','3008','3010','3021','3023','3024','3025','3026','3028','3029','3030','3036','3039','3040','3041','3042','3043','3046','3047','3051','3053','3054','3055','3056','3058','3059','3063','3066','3068','3069','3070','3071','3072','3073','3074','3076'})
+addParameter(parser, 'group_names', {'ya','hoa','loa'})
+addParameter(parser, 'group_ids', [1 3 3 3 3 3 3 3 3 3 3 3 3 1 2 3 3 3 1 3 3 3 3])
 addParameter(parser, 'add_subjects', 0)
 parse(parser, varargin{:})
 TR = parser.Results.TR;
