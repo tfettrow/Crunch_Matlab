@@ -26,7 +26,7 @@ function art_restingstate(functional_file_name)
     BATCH.New.steps = {'functional_art'};
     BATCH.filename = 'Conn_Art_Folder_Stuff';
     BATCH.New.art_thresholds(1)= 9;  % z threshold
-    BATCH.New.art_thresholds(2)= 0.5;  % movement threshold
+    BATCH.New.art_thresholds(2)= 2.5;  % movement threshold
     
     conn_batch(BATCH)
     
