@@ -35,18 +35,18 @@ this_subject = subjects(1,i);
 %     end
 %     cd ../../../../..;
 %     
-    sourceFile = fullfile(study_dir,this_subject,'Processed','MRI_files','04_rsfMRI',filesep,'RestingState.nii');
-    destinationFile = fullfile(file_path_to_transfer,this_subject,filesep,'RestingState.nii');
+    sourceFile = fullfile(study_dir,this_subject,'Processed','MRI_files','04_rsfMRI',filesep,'RestingState.nii*');
+    destinationFile = fullfile(file_path_to_transfer,this_subject,filesep);%,'RestingState.nii');
     copyfile(sourceFile{:}, destinationFile{:})
     disp(['copying' sourceFile{:} 'to' destinationFile{:}])
        
-    sourceFile = fullfile(study_dir,this_subject,'Processed','MRI_files','04_rsfMRI',filesep,'unwarpedRealigned_slicetimed_RestingState.nii');
-    destinationFile = fullfile(file_path_to_transfer,this_subject,filesep,'unwarpedRealigned_slicetimed_RestingState.nii');
+    sourceFile = fullfile(study_dir,this_subject,'Processed','MRI_files','04_rsfMRI',filesep,'unwarpedRealigned_slicetimed_RestingState.nii*');
+    destinationFile = fullfile(file_path_to_transfer,this_subject,filesep);%,'unwarpedRealigned_slicetimed_RestingState.nii');
     copyfile(sourceFile{:}, destinationFile{:})
     disp(['copying' sourceFile{:} 'to' destinationFile{:}])
     
-    sourceFile = fullfile(study_dir,this_subject,'Processed','MRI_files','04_rsfMRI',filesep,'ANTS_Normalization',filesep,'smoothed_warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii');
-    destinationFile = fullfile(file_path_to_transfer,this_subject,filesep,'smoothed_warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii');
+    sourceFile = fullfile(study_dir,this_subject,'Processed','MRI_files','04_rsfMRI',filesep,'ANTS_Normalization',filesep,'smoothed_warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii*');
+    destinationFile = fullfile(file_path_to_transfer,this_subject,filesep);%,'smoothed_warpedToMNI_unwarpedRealigned_slicetimed_RestingState.nii');
     copyfile(sourceFile{:}, destinationFile{:})
     disp(['copying' sourceFile{:} 'to' destinationFile{:}])
     
