@@ -193,7 +193,7 @@ end
 BATCH.Setup.preprocessing.steps = {'functional_art'};
 %     BATCH.filename = 'Conn_Art_Folder_Stuff';
 BATCH.Setup.preprocessing.art_thresholds(1)= 9;  % z threshold
-BATCH.Setup.preprocessing.art_thresholds(2)= 0.5;  % movement threshold
+BATCH.Setup.preprocessing.art_thresholds(2)= 2.5;  % movement threshold
 
 % read roi settings file
  
